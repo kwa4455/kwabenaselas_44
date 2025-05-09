@@ -3,10 +3,10 @@ from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_d
 
 st.set_page_config(page_title="PM₂.₅ Monitoring Data Entry App", layout="wide")
 # --- Page Title ---
-st.title("🇬🇭 EPA Ghana |PM₂.₅ Monitoring Data Entry")
+st.title("🇬🇭 EPA Ghana |PM₂.₅ Monitoring Data Entry App")
 
 st.markdown("""
-Welcome to the PM₂.₅ Air Quality Monitoring Data Entry. Use the sidebar to navigate between:
+Welcome to the PM₂.₅ Air Quality Monitoring Data Entry Tool. Use the sidebar to navigate between:
 - 📝 New data entry
 - ✏️ Edit submitted records
 """)
