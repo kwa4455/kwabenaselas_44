@@ -47,20 +47,20 @@ except gspread.WorksheetNotFound:
         "Submitted At"
     ])
 
-# === Functions ===
+def convert_timestamps_to_string(df):
+    """Convert all Timestamp columns in a DataFrame to string."""
+    for column in df.select_dtypes(include=['datetime64[ns]']).columns:
+        df[column] = df[column].dt.strftime('%Y-%m-%d %H:%M:%S')  # Convert to string format
+    return df
+
 def load_data_from_sheet(sheet):
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-
-    # Convert datetime columns to string for JSON serialization
-    if "Submitted At" in df.columns:
-        df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce").dt.strftime('%Y-%m-%d %H:%M:%S')
-
-    if "Date" in df.columns:
-        df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.strftime('%Y-%m-%d')
+    
+    # Convert datetime columns to string
+    df = convert_timestamps_to_string(df)
 
     return df
-
 
 
 def add_data(row):
@@ -91,12 +91,16 @@ def merge_start_stop(df):
     return merged_df
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
+    # Convert all Timestamp columns to strings before saving to the sheet
+    df = convert_timestamps_to_string(df)
+
     if sheet_name in [ws.title for ws in spreadsheet.worksheets()]:
         sheet = spreadsheet.worksheet(sheet_name)
         spreadsheet.del_worksheet(sheet)
+
     sheet = spreadsheet.add_worksheet(title=sheet_name, rows="1000", cols="50")
     sheet.update([df.columns.tolist()] + df.values.tolist())
-import pandas as pd
+
 
 def filter_dataframe(df, site_filter=None, date_range=None):
     """Filter the dataframe by site and date range."""
