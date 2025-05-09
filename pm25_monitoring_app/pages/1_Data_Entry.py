@@ -4,7 +4,7 @@ from datetime import datetime
 from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_data_to_sheet,sheet,spreadsheet
 from constants import MERGED_SHEET, MAIN_SHEET, SPREADSHEET_ID
 
-st.header("📝 New PM2.5 Monitoring Entry")
+
 
 ids = ["",'1', '2', '3','4','5','6','7','8','9','10']
 sites = ["",'Kaneshie First Light', 'Tetteh Quarshie', 'Achimota', 'La','Mallam Market','Graphic Road','Weija','Tantra Hill', 'Amasaman']
