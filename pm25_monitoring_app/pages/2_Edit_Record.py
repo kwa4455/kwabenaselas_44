@@ -1,26 +1,34 @@
 import pandas as pd
 import streamlit as st
+from datetime import datetime
 
 def generate_record_id(row):
+    """Generate a unique record ID."""
     try:
         timestamp = row['Submitted At']
+        # Handle invalid timestamp
         if pd.notnull(timestamp):
-            timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M')
+            timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M')  # Format the timestamp
         else:
             timestamp_str = "Invalid Date"
         return f"{row['Entry Type']} | {row['ID']} | {row['Site']} | {timestamp_str}"
     except Exception as e:
+        # Return a more informative error if it occurs
         return f"Invalid Record | Error: {e}"
 
 def render_edit_form(record_data):
+    """Render the form for editing a record."""
     with st.form("edit_form"):
         entry_type = st.selectbox("Entry Type", ["START", "STOP"], index=["START", "STOP"].index(record_data["Entry Type"]))
         site_id = st.text_input("ID", value=record_data["ID"])
         site = st.text_input("Site", value=record_data["Site"])
         monitoring_officer = st.text_input("Monitoring Officer", value=record_data["Monitoring Officer"])
         driver = st.text_input("Driver", value=record_data["Driver"])
-        date = st.date_input("Date", value=pd.to_datetime(record_data["Date"]))
-        time = st.time_input("Time", value=pd.to_datetime(record_data["Time"]).time())
+        
+        # Ensure date and time inputs are handled correctly
+        date = st.date_input("Date", value=pd.to_datetime(record_data["Date"]) if pd.notnull(record_data["Date"]) else datetime.today())
+        time = st.time_input("Time", value=pd.to_datetime(record_data["Time"]).time() if pd.notnull(record_data["Time"]) else datetime.now().time())
+        
         temperature = st.number_input("Temperature (°C)", value=float(record_data["Temperature (°C)"]), step=0.1)
         rh = st.number_input("Relative Humidity (%)", value=float(record_data["RH (%)"]), step=0.1)
         pressure = st.number_input("Pressure (mbar)", value=float(record_data["Pressure (mbar)"]), step=0.1)
@@ -29,6 +37,7 @@ def render_edit_form(record_data):
         elapsed_time = st.number_input("Elapsed Time (min)", value=float(record_data["Elapsed Time (min)"]), step=1.0)
         flow_rate = st.number_input("Flow Rate (L/min)", value=float(record_data["Flow Rate (L/min)"]), step=0.1)
         observation = st.text_area("Observation", value=record_data.get("Observation", ""))
+        
         submitted = st.form_submit_button("Update Record")
         return submitted, {
             "entry_type": entry_type, "site_id": site_id, "site": site,
@@ -40,6 +49,7 @@ def render_edit_form(record_data):
         }
 
 def edit_submitted_record(df, sheet, spreadsheet, merged_sheet_name, load_data_from_sheet, merge_start_stop, save_merged_data_to_sheet):
+    """Function to edit submitted records."""
     if "selected_record" not in st.session_state:
         st.session_state.selected_record = None
     if "edit_expanded" not in st.session_state:
@@ -49,12 +59,14 @@ def edit_submitted_record(df, sheet, spreadsheet, merged_sheet_name, load_data_f
         st.warning("No records available to edit.")
         return
 
-    # Safely convert types
+    # Ensure proper data types
     df["Entry Type"] = df["Entry Type"].astype(str)
     df["ID"] = df["ID"].astype(str)
     df["Site"] = df["Site"].astype(str)
+    
+    # Handle invalid or missing dates in the "Submitted At" column
     df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
-
+    
     # Assign row numbers
     df["Row Number"] = df.index + 2
 
@@ -99,11 +111,13 @@ def edit_submitted_record(df, sheet, spreadsheet, merged_sheet_name, load_data_f
                 st.session_state.selected_record = None
                 st.session_state.edit_expanded = False
 
+                # Reload data and reapply necessary transformations
                 df = load_data_from_sheet(sheet)
                 df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
                 df["Row Number"] = df.index + 2
                 df["Record ID"] = df.apply(generate_record_id, axis=1)
 
+                # Merge start/stop records if applicable
                 merged_df = merge_start_stop(df)
                 if not merged_df.empty:
                     save_merged_data_to_sheet(merged_df, spreadsheet, sheet_name=merged_sheet_name)
