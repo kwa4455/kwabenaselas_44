@@ -13,8 +13,6 @@ Welcome to the PM2.5 Air Quality Monitoring Dashboard. Use the sidebar to naviga
 """)
 
 if "df" not in st.session_state:
-    sheet = spreadsheet.worksheet(MAIN_SHEET)
-    spreadsheet = client.open_by_key(SPREADSHEET_ID)
     df = load_data_from_sheet(sheet)
     st.session_state.df = df
     st.session_state.sheet = sheet
