@@ -4,7 +4,7 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
-from constants import SPREADSHEET_ID, MAIN_SHEET  # ✅ Add this line
+from constants import SPREADSHEET_ID, MAIN_SHEET,MERGED_SHEET  # ✅ Add this line
 
 # === Google Sheets Setup ===
 creds_json = st.secrets["GOOGLE_CREDENTIALS"]
