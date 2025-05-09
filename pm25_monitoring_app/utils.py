@@ -88,6 +88,49 @@ def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
         spreadsheet.del_worksheet(sheet)
     sheet = spreadsheet.add_worksheet(title=sheet_name, rows="1000", cols="50")
     sheet.update([df.columns.tolist()] + df.values.tolist())
+import pandas as pd
+
+def filter_dataframe(df, site_filter=None, date_range=None):
+    """Filter the dataframe by site and date range."""
+    if df.empty:
+        return df
+
+    # Ensure datetime format
+    if "Submitted At" in df.columns:
+        df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
+
+    if site_filter and site_filter != "All":
+        df = df[df["Site"] == site_filter]
+
+    if date_range and len(date_range) == 2:
+        start, end = date_range
+        df = df[(df["Submitted At"].dt.date >= start) & (df["Submitted At"].dt.date <= end)]
+
+    return df
+
+
+def display_and_merge_data(df, spreadsheet, merged_sheet_name):
+    """Display filtered data, merge START/STOP pairs, and save merged data."""
+    import streamlit as st
+
+    if df.empty:
+        st.info("No data submitted yet.")
+        return
+
+    with st.expander("🔍 Filter Records"):
+        site_filter = st.selectbox("Filter by Site", ["All"] + sorted(df["Site"].dropna().unique().tolist()))
+        date_range = st.date_input("Filter by Date Range", [])
+
+    filtered_df = filter_dataframe(df, site_filter, date_range)
+    st.dataframe(filtered_df, use_container_width=True)
+
+    merged_df = merge_start_stop(filtered_df)
+    if not merged_df.empty:
+        save_merged_data_to_sheet(merged_df, spreadsheet, sheet_name=merged_sheet_name)
+        st.success("Merged records saved to Google Sheets.")
+        st.dataframe(merged_df, use_container_width=True)
+    else:
+        st.warning("No matching START and STOP records found to merge.")
 
 
 
