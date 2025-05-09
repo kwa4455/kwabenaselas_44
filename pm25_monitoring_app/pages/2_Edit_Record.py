@@ -78,7 +78,7 @@ def edit_submitted_record(df, sheet, spreadsheet, merged_sheet_name, load_data_f
                         sheet.update_cell(row_number, col_index, value)
 
                     st.success("Record updated successfully!")
-
+                    df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
                     # Reset session state (collapse the expander and reset selection)
                     st.session_state.selected_record = None
                     st.session_state.edit_expanded = False
