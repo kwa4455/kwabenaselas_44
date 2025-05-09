@@ -6,6 +6,9 @@ from constants import MERGED_SHEET, MAIN_SHEET, SPREADSHEET_ID
 
 df = load_data_from_sheet(sheet)
 
+# Convert to datetime if not already
+df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors='coerce')
+
 # Initialize session state
 if 'selected_record' not in st.session_state:
     st.session_state.selected_record = None
