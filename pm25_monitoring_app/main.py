@@ -1,8 +1,9 @@
 import streamlit as st
 from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_data_to_sheet,sheet,spreadsheet
 
-st.set_page_config(page_title="PM2.5 Monitoring App", layout="wide")
-st.title("🌫️ PM2.5 Monitoring Dashboard")
+st.set_page_config(page_title="PM₂.₅ Monitoring Data Entry App", layout="wide")
+# --- Page Title ---
+st.title("🇬🇭 EPA Ghana |PM₂.₅ Monitoring Data Entry")
 
 st.markdown("""
 Welcome to the PM2.5 Air Quality Monitoring Dashboard. Use the sidebar to navigate between:
@@ -46,8 +47,7 @@ with st.sidebar:
     st.markdown("---")
     
 
-# --- Page Title ---
-st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring Data Entry")
+
 
 if "df" not in st.session_state:
     df = load_data_from_sheet(sheet)
