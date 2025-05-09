@@ -1,6 +1,5 @@
 import streamlit as st
 from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_data_to_sheet,sheet,spreadsheet
-from constants import SPREADSHEET_ID, MAIN_SHEET,MERGED_SHEET
 
 st.set_page_config(page_title="PM2.5 Monitoring App", layout="wide")
 st.title("🌫️ PM2.5 Monitoring Dashboard")
