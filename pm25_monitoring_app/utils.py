@@ -51,9 +51,17 @@ except gspread.WorksheetNotFound:
 def load_data_from_sheet(sheet):
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    df["Submitted At"] = pd.to_datetime(df["Submitted At"])
-    df["Date"] = pd.to_datetime(df["Date"])
+
+    if "Submitted At" in df.columns:
+        df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
+        df["Submitted At"] = df["Submitted At"].astype(str)
+
+    if "Date" in df.columns:
+        df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+        df["Date"] = df["Date"].astype(str)
+
     return df
+
 
 def add_data(row):
     row.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))  # Timestamp
