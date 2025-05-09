@@ -88,6 +88,10 @@ else:
 
             except Exception as e:
                 st.error(f"Error: {e}")
+# Initialize session state
+if 'selected_record' not in st.session_state:
+
+
 edit_submitted_record(
     df=df,
     sheet=sheet,
