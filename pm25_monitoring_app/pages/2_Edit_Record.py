@@ -101,7 +101,7 @@ def edit_submitted_record(df, sheet, spreadsheet, merged_sheet_name, load_data_f
             st.error(f"An error occurred while editing: {e}")
 
 
-
+df = load_data_from_sheet(sheet)
 edit_submitted_record(
     df=df,
     sheet=sheet,
