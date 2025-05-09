@@ -16,7 +16,9 @@ def edit_submitted_record(df, sheet, spreadsheet, merged_sheet_name, load_data_f
         return
 
     # Add metadata to DataFrame for easy record identification
-    df["Row Number"] = df.index + 2
+    df["Entry Type"] = df["Entry Type"].astype(str)
+    df["ID"] = df["ID"].astype(str)
+    df["Site"] = df["Site"].astype(str)
     df["Record ID"] = df.apply(
         lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At'].strftime('%Y-%m-%d %H:%M')}",
         axis=1
