@@ -1,7 +1,7 @@
 # data entry.pyimport streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_data_to_sheet,sheet,spreadsheet
+from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_data_to_sheet,sheet,spreadsheet,filter_dataframe,display_and_merge_data
 from constants import MERGED_SHEET, MAIN_SHEET, SPREADSHEET_ID
 
 
@@ -83,33 +83,9 @@ elif entry_type == "STOP":
 
 # === Display & Merge Records ===
 st.header("Submitted Monitoring Records")
-df = read_data()
+df = load_data_from_sheet(sheet)
+display_and_merge_data(df, spreadsheet, MERGED_SHEET)
 
-if df.empty:
-    st.info("No data submitted yet.")
-else:
-    with st.expander("🔍 Filter Records"):
-        id_filter = st.selectbox("Filter by Site", ["All"] + sorted(df["Site"].unique().tolist()))
-        date_range = st.date_input("Filter by Date Range", [])
-
-        if id_filter != "All":
-            df = df[df["Site"] == id_filter]
-        if len(date_range) == 2:
-            start, end = date_range
-            df = df[(df["Submitted At"].dt.date >= start) & (df["Submitted At"].dt.date <= end)]
-
-    st.dataframe(df, use_container_width=True)
-    
-    df = load_data_from_sheet(sheet)
-
-    
-    merged_df = merge_start_stop(df)
-    if not merged_df.empty:
-        save_merged_data_to_sheet(merged_df, spreadsheet, sheet_name=MERGED_SHEET)
-        st.success("Merged records saved to Google Sheets.")
-        st.dataframe(merged_df, use_container_width=True)
-    else:
-        st.warning("No matching START and STOP records found to merge.")
 
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
