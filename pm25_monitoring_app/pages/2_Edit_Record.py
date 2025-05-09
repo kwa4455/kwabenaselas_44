@@ -90,6 +90,15 @@ else:
                 st.error(f"Error: {e}")
 
 
+edit_submitted_record(
+    df=df,
+    sheet=sheet,
+    spreadsheet=spreadsheet,
+    merged_sheet_name=MERGED_SHEET,
+    load_data_from_sheet=load_data_from_sheet,
+    merge_start_stop=merge_start_stop,
+    save_merged_data_to_sheet=save_merged_data_to_sheet
+)
 
 
 
