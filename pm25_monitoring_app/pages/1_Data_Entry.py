@@ -87,43 +87,6 @@ st.header("Submitted Monitoring Records")
 df = load_data_from_sheet(sheet)
 display_and_merge_data(df, spreadsheet, MERGED_SHEET)
 
-# === Delete Submitted Records ===
-st.subheader("🗑️ Delete Submitted Record")
-if not df.empty:
-    df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
-    df["Record Label"] = df.apply(
-        lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At'].strftime('%Y-%m-%d %H:%M')}",
-        axis=1
-    )
-    selected_to_delete = st.selectbox("Select a submitted record to delete", [""] + df["Record Label"].tolist())
-
-    if selected_to_delete:
-        with st.form("delete_submitted_form"):
-            st.warning("Are you sure you want to delete this submitted record?")
-            confirm = st.form_submit_button("🗑️ Delete Submitted Record")
-            if confirm:
-                idx = df[df["Record Label"] == selected_to_delete].index[0]
-                row_number = idx + 2  # Adjust for header
-                delete_row(sheet, row_number)
-                st.success("Submitted record deleted.")
-
-# === Delete Merged Records ===
-st.subheader("🗑️ Delete Merged Record")
-merged_df = merge_start_stop(df)
-if not merged_df.empty:
-    merged_df["Record Label"] = merged_df.apply(
-        lambda x: f"{x['ID']} | {x['Site']} | {x['Start Date']} - {x['Stop Date']}", axis=1
-    )
-    selected_merged_to_delete = st.selectbox("Select a merged record to delete", [""] + merged_df["Record Label"].tolist())
-
-    if selected_merged_to_delete:
-        with st.form("delete_merged_form"):
-            st.warning("Are you sure you want to delete this merged record?")
-            confirm_merged = st.form_submit_button("🗑️ Delete Merged Record")
-            if confirm_merged:
-                idx = merged_df[merged_df["Record Label"] == selected_merged_to_delete].index[0]
-                delete_merged_record_by_index(spreadsheet, MERGED_SHEET, idx)
-                st.success("Merged record deleted.")
 
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
