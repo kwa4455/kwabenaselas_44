@@ -102,15 +102,6 @@ def filter_dataframe(df, site_filter=None, date_range=None):
 
 
 
-def delete_row(sheet, row_number):
-    sheet.delete_rows(row_number)
-
-def delete_merged_record_by_index(spreadsheet, sheet_name, index):
-    worksheet = spreadsheet.worksheet(sheet_name)
-    worksheet.delete_rows(index + 2)  # +2 to account for header row + 0-based index
-
-
-
 def display_and_merge_data(df, spreadsheet, merged_sheet_name):
     """Display data in Streamlit, filter it, and merge start/stop records."""
     if df.empty:
