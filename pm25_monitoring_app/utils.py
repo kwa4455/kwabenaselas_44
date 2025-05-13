@@ -100,6 +100,56 @@ def filter_dataframe(df, site_filter=None, date_range=None):
 
     return df
 
+
+
+def delete_row(sheet, row_number):
+    sheet.delete_rows(row_number)
+
+# --- Inside your edit_submitted_record function or wherever applicable ---
+# After the Update button in the form:
+if st.form_submit_button("🗑️ Delete Record"):
+    try:
+        sheet.delete_rows(row_number)
+        st.success("Record deleted successfully!")
+        st.session_state.selected_record = None
+        st.session_state.edit_expanded = False
+
+        handle_merge_logic(
+            sheet=sheet,
+            spreadsheet=spreadsheet,
+            merged_sheet_name=merged_sheet_name,
+            load_data_from_sheet=load_data_from_sheet,
+            merge_start_stop=merge_start_stop,
+            save_merged_data_to_sheet=save_merged_data_to_sheet
+        )
+
+    except Exception as e:
+        st.error(f"Failed to delete record: {e}")
+
+# --- For deleting from Merged Sheet directly (if needed) ---
+def delete_merged_record_by_index(merged_sheet, index):
+    # Add +2 because Google Sheets is 1-indexed and row 1 is the header
+    merged_sheet.delete_rows(index + 2)
+
+# --- UI in data entry app to optionally delete from merged records ---
+with st.expander("🗑️ Delete Merged Record"):
+    merged_sheet = spreadsheet.worksheet(MERGED_SHEET)
+    merged_df = pd.DataFrame(merged_sheet.get_all_records())
+    if not merged_df.empty:
+        merged_df["Row Number"] = merged_df.index + 2
+        merged_df["Merged Record"] = merged_df.apply(lambda x: f"{x['ID']} | {x['Site']} | {x['Date_Start']} -> {x['Date_Stop']}", axis=1)
+
+        to_delete = st.selectbox("Select merged record to delete", [""] + merged_df["Merged Record"].tolist())
+        if to_delete:
+            row_index = merged_df[merged_df["Merged Record"] == to_delete].index[0]
+            if st.button("Delete Selected Merged Record"):
+                delete_merged_record_by_index(merged_sheet, row_index)
+                st.success("Merged record deleted.")
+    else:
+        st.info("No merged records found.")
+
+
+
 def display_and_merge_data(df, spreadsheet, merged_sheet_name):
     """Display data in Streamlit, filter it, and merge start/stop records."""
     if df.empty:
