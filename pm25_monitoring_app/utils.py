@@ -154,32 +154,27 @@ def authenticate_with_google():
         redirect_uri=redirect_uri
     )
 
-    if "code" not in st.query_params:
+    query_params = st.experimental_get_query_params()
+
+    if "code" not in query_params:
         auth_url, _ = flow.authorization_url(prompt="consent")
         st.markdown(f"[🔐 Sign in with Google]({auth_url})")
         st.stop()
     else:
-        flow.fetch_token(code=st.query_params["code"])
+        flow.fetch_token(code=query_params["code"][0])
         session = flow.authorized_session()
         user_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
         email = user_info["email"]
 
         st.session_state["user_email"] = email
 
+        # Assign role
         for role, emails in st.secrets["roles"].items():
             if email in emails:
                 st.session_state["role"] = role
                 return email, role
 
         st.error("You are not assigned a role. Access denied.")
-        st.stop()
-
-def require_roles(*allowed_roles):
-    if "role" not in st.session_state:
-        st.warning("Unauthorized access.")
-        st.stop()
-    if st.session_state["role"] not in allowed_roles:
-        st.warning("You do not have permission to view this page.")
         st.stop()
 
 def logout_button():
