@@ -3,9 +3,11 @@ import pandas as pd
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from streamlit_oauth import OAuth2Component
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 import json
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
+
 
 # === Google Sheets Setup ===
 def setup_google_sheets():
@@ -23,6 +25,7 @@ def setup_google_sheets():
     client = gspread.authorize(creds)
     return client.open_by_key(SPREADSHEET_ID)
 
+
 # Initialize spreadsheet and ensure MAIN_SHEET exists
 spreadsheet = setup_google_sheets()
 
@@ -38,7 +41,6 @@ except gspread.WorksheetNotFound:
     ])
 
 # === Utility Functions ===
-
 def convert_timestamps_to_string(df):
     """Convert all datetime columns in a DataFrame to strings."""
     for column in df.select_dtypes(include=['datetime64[ns]']).columns:
@@ -108,52 +110,51 @@ def delete_merged_record_by_index(spreadsheet, sheet_name, row_number):
     sheet = spreadsheet.worksheet(sheet_name)
     sheet.delete_rows(row_number)
 
-
-
+# Google OAuth Functionality
 def authenticate_with_google():
-    oauth2 = OAuth2Component(
-        client_id=st.secrets["oauth"]["client_id"],
-        client_secret=st.secrets["oauth"]["client_secret"],
-        provider="google"
+    """Authenticate user with Google OAuth."""
+    # OAuth flow setup
+    client_id = st.secrets["google_oauth"]["client_id"]
+    client_secret = st.secrets["google_oauth"]["client_secret"]
+    redirect_uri = "https://epa-gh-eq-air-monitoring-data-entry.streamlit.app"
+
+    flow = InstalledAppFlow.from_client_secrets_file(
+        'credentials.json', scopes=["https://www.googleapis.com/auth/userinfo.email"]
     )
 
-    token = oauth2.authorize_button("🔐 Sign in with Google", "login")
+    credentials = flow.run_local_server(port=0)
+    session = credentials.authorize(httplib2.Http())
+    
+    # Get user info
+    service = build('oauth2', 'v2', http=session)
+    user_info = service.userinfo().get().execute()
 
-    if token:
-        user_info = oauth2.get_user_info(token)
-        email = user_info["email"]
-        st.session_state["user_email"] = email
+    email = user_info['email']
+    st.session_state['user_email'] = email
 
-        for role, emails in st.secrets["roles"].items():
-            if email in emails:
-                st.session_state["role"] = role
-                return email, role
+    # Role assignment
+    for role, emails in st.secrets["roles"].items():
+        if email in emails:
+            st.session_state["role"] = role
+            return email, role
 
-        st.error("You are not assigned a role. Access denied.")
-        st.stop()
-
-    st.info("Please sign in using your Google account.")
+    st.error("You are not assigned a role. Access denied.")
     st.stop()
 
-
-
-
-
-
-
 def require_roles(*allowed_roles):
+    """Check if the current user has the required role."""
     if "role" not in st.session_state:
         st.warning("Unauthorized access.")
         st.stop()
     if st.session_state["role"] not in allowed_roles:
         st.warning("You do not have permission to view this page.")
         st.stop()
+
 def logout_button():
     """Displays a logout button in the sidebar and clears session state."""
     if st.sidebar.button("🚪 Logout"):
         st.session_state.clear()
         st.experimental_rerun()
-
 
 def display_and_merge_data(df, spreadsheet, merged_sheet_name):
     """Display data in Streamlit, filter it, and merge start/stop records."""
