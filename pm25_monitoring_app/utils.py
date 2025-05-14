@@ -39,9 +39,9 @@ except gspread.WorksheetNotFound:
         "Submitted At"
     ])
 USERS = {
-    "clement": {"password": "admin123", "role": "admin"},
-    "selasi": {"password": "editor123", "role": "editor"},
-    "peter": {"password": "collector123", "role": "collector"},
+    "clement": {"password": "admin123", "role": "admin", "email": "clement@epa.gov.gh"},
+    "peter": {"password": "editor123", "role": "editor", "email": "peter@epa.gov.gh"},
+    "mawuli": {"password": "collector123", "role": "collector", "email": "mawuli@epa.gov.gh"},
 }
 
 def login():
@@ -59,7 +59,8 @@ def login():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 st.session_state.role = user["role"]
-                st.script_runner.rerun()
+                st.session_state.user_email = user.get("email", f"{username}@epa.gov.gh")
+                st.experimental_rerun()
             else:
                 st.error("❌ Invalid credentials")
 
