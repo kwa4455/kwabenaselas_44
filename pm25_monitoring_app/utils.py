@@ -133,6 +133,10 @@ def undo_last_delete(sheet):
 
 # === Google OAuth Authentication ===
 
+from google_auth_oauthlib.flow import Flow
+import streamlit as st
+import requests
+
 def authenticate_with_google():
     client_config = {
         "web": {
@@ -154,21 +158,21 @@ def authenticate_with_google():
         redirect_uri=redirect_uri
     )
 
-    query_params = st.experimental_get_query_params()
+    # ✅ UPDATED: st.query_params instead of deprecated experimental_get_query_params
+    query_params = st.query_params
 
     if "code" not in query_params:
         auth_url, _ = flow.authorization_url(prompt="consent")
         st.markdown(f"[🔐 Sign in with Google]({auth_url})")
         st.stop()
     else:
-        flow.fetch_token(code=query_params["code"][0])
+        flow.fetch_token(code=query_params["code"])
         session = flow.authorized_session()
         user_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
         email = user_info["email"]
 
         st.session_state["user_email"] = email
 
-        # Assign role
         for role, emails in st.secrets["roles"].items():
             if email in emails:
                 st.session_state["role"] = role
