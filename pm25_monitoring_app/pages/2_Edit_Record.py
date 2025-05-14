@@ -19,7 +19,7 @@ st.title("✏️ Editor Tools")
 
 require_roles("admin", "editor","collector")
 
-st.info(f"👤 Logged in as: **{st.session_state['user_email']}** (Role: {st.session_state['role']})")
+
 
 # --- Utility Functions ---
 def safe_float(val, default=0.0):
