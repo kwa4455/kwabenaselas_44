@@ -177,6 +177,20 @@ def authenticate_with_google():
         st.error("You are not assigned a role. Access denied.")
         st.stop()
 
+def require_roles(*allowed_roles):
+    """
+    Restrict access to only users with the given roles.
+    This should be called after authenticate_with_google().
+    """
+    if "role" not in st.session_state:
+        st.error("No role found in session. Please sign in.")
+        st.stop()
+
+    user_role = st.session_state["role"]
+    if user_role not in allowed_roles:
+        st.error(f"Access denied. This page is for roles: {', '.join(allowed_roles)}.")
+        st.stop()
+
 def logout_button():
     if st.sidebar.button("🚪 Logout"):
         st.session_state.clear()
