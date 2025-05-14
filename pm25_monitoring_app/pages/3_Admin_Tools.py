@@ -61,6 +61,11 @@ else:
         if st.button("🗑️ Delete Merged Record"):
             delete_merged_record_by_index(index_to_delete)
             st.success("Merged record deleted successfully.")
+   
+    if st.button("Undo Last Deletion"):
+    undo_last_delete(sheet)
+    st.success("Last deleted record has been restored!")
+
 
 
 
