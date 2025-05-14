@@ -38,43 +38,45 @@ except gspread.WorksheetNotFound:
         "Weather", "Wind", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
         "Submitted At"
     ])
-# === Authentication ===
 USERS = {
-    "admin": {"password": "admin123", "role": "admin"},
-    "editor": {"password": "officer123", "role": "editor"},
-    "collector": {"password": "collector123", "role": "collector"},
+    "clement": {"password": "admin123", "role": "admin"},
+    "selasi": {"password": "editor123", "role": "editor"},
+    "peter": {"password": "collector123", "role": "collector"},
 }
 
 def login():
-    if st.session_state.get("logged_in"):
-        return
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
 
-    st.title("🔐 PM₂.₅ Monitoring Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    if not st.session_state.logged_in:
+        st.title("🔐 Login to PM₂.₅ Monitoring App")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
 
-    if st.button("Login"):
-        user = USERS.get(username)
-        if user and user["password"] == password:
-            st.session_state.logged_in = True
-            st.session_state.user_email = username
-            st.session_state.role = user["role"]
-            st.rerun()
-        else:
-            st.error("❌ Invalid credentials")
+        if st.button("Login"):
+            user = USERS.get(username)
+            if user and user["password"] == password:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.role = user["role"]
+                st.experimental_rerun()
+            else:
+                st.error("❌ Invalid credentials")
+
+        st.stop()  # Prevent execution beyond login screen
+
+def require_roles(*allowed_roles):
+    if "role" not in st.session_state:
+        st.error("You must log in first.")
+        st.stop()
+    if st.session_state["role"] not in allowed_roles:
+        st.error(f"Access denied. This page is for roles: {', '.join(allowed_roles)}.")
+        st.stop()
 
 def logout_button():
     if st.sidebar.button("🚪 Logout"):
         st.session_state.clear()
-        st.rerun()
-
-def require_roles(*roles):
-    if not st.session_state.get("logged_in"):
-        st.warning("⛔ Please log in to access this page.")
-        st.stop()
-    if st.session_state["role"] not in roles:
-        st.error("🔒 You do not have permission to view this page.")
-        st.stop()
+        st.experimental_rerun()
 
 
 # === Data Utilities ===
