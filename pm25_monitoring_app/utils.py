@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from streamlit_oauth import OAuth2Component
 import json
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
 
@@ -100,6 +101,58 @@ def filter_dataframe(df, site_filter=None, date_range=None):
 
     return df
 
+def delete_row(sheet, row_number):
+    sheet.delete_rows(row_number)
+
+def delete_merged_record_by_index(spreadsheet, sheet_name, row_number):
+    sheet = spreadsheet.worksheet(sheet_name)
+    sheet.delete_rows(row_number)
+
+# utils.py
+
+
+
+def authenticate_with_google():
+    oauth2 = OAuth2Component(
+        client_id=st.secrets["oauth"]["client_id"],
+        client_secret=st.secrets["oauth"]["client_secret"],
+        authorize_url="https://accounts.google.com/o/oauth2/auth",
+        token_url="https://oauth2.googleapis.com/token",
+        redirect_uri="http://localhost:8501",
+        scopes=["https://www.googleapis.com/auth/userinfo.email"]
+    )
+
+    token = oauth2.authorize_button("🔐 Sign in with Google", "login")
+    if token:
+        user_info = oauth2.get_user_info(token)
+        email = user_info["email"]
+        st.session_state["user_email"] = email
+
+        # Determine role
+        for role, emails in st.secrets["roles"].items():
+            if email in emails:
+                st.session_state["role"] = role
+                return email, role
+
+        st.error("You are not assigned a role. Access denied.")
+        st.stop()
+
+    st.info("Please sign in using your Google account.")
+    st.stop()
+
+
+def require_roles(*allowed_roles):
+    if "role" not in st.session_state:
+        st.warning("Unauthorized access.")
+        st.stop()
+    if st.session_state["role"] not in allowed_roles:
+        st.warning("You do not have permission to view this page.")
+        st.stop()
+def logout_button():
+    """Displays a logout button in the sidebar and clears session state."""
+    if st.sidebar.button("🚪 Logout"):
+        st.session_state.clear()
+        st.experimental_rerun()
 
 
 def display_and_merge_data(df, spreadsheet, merged_sheet_name):
