@@ -108,7 +108,7 @@ def delete_merged_record_by_index(spreadsheet, sheet_name, row_number):
     sheet = spreadsheet.worksheet(sheet_name)
     sheet.delete_rows(row_number)
 
-# utils.py
+
 
 
 
