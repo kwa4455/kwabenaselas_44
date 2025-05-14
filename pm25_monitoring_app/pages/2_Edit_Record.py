@@ -8,7 +8,6 @@ from utils import (
     sheet,
     spreadsheet,
     display_and_merge_data,
-    authenticate_with_google,
     require_roles,
     logout_button
 )
@@ -17,9 +16,6 @@ from constants import MERGED_SHEET
 # --- Page Title ---
 st.title("✏️ Editor Tools")
 
-# --- Authentication & Role Check ---
-if "user_email" not in st.session_state:
-    authenticate_with_google()
 
 require_roles("admin", "collector", "editor")
 logout_button()
