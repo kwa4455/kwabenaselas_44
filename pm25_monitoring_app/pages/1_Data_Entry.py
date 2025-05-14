@@ -2,9 +2,19 @@
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+from utils.auth import authenticate_with_google, require_roles
 from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_data_to_sheet,sheet,spreadsheet,filter_dataframe,display_and_merge_data
 from constants import MERGED_SHEET, MAIN_SHEET, SPREADSHEET_ID
+from utils.auth import authenticate_with_google, require_roles
 
+st.title("📄 Enter Data")
+if "user_email" not in st.session_state:
+    authenticate_with_google()
+
+require_roles("admin", "collector", "editor")
+
+st.info(f"Logged in as: {st.session_state['user_email']} (Role: {st.session_state['role']})")
+# Display read-only data here
 
 
 ids = ["",'1', '2', '3','4','5','6','7','8','9','10']
