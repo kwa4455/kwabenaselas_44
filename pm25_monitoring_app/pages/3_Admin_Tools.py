@@ -6,16 +6,15 @@ from utils import (
     delete_row,
     delete_merged_record_by_index,
     sheet,
-    spreadsheet
+    spreadsheet,
+    require_roles
 )
 from constants import MAIN_SHEET, MERGED_SHEET
-from utils import authenticate_with_google, require_roles, logout_button
+
 
 # Admin Access Check
 st.title("🔧 Admin Tools")
 
-if "user_email" not in st.session_state:
-    authenticate_with_google()
 
 require_roles("admin")  # Only admins can proceed
 
