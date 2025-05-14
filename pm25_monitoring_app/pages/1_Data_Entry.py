@@ -2,23 +2,20 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from utils import (
-    authenticate_with_google, require_roles, logout_button,
-    load_data_from_sheet, add_data, merge_start_stop, save_merged_data_to_sheet,
-    sheet, spreadsheet, display_and_merge_data
+    load_data_from_sheet,
+    add_data,
+    merge_start_stop,
+    save_merged_data_to_sheet,
+    sheet,
+    spreadsheet,
+    display_and_merge_data,
 )
-from constants import MERGED_SHEET, MAIN_SHEET, SPREADSHEET_ID
+from constants import MERGED_SHEET
 
 # --- Page Title ---
 st.title("📄 Enter PM₂.₅ Monitoring Data")
 
-# --- Authentication ---
-if "user_email" not in st.session_state:
-    authenticate_with_google()
-
-require_roles("admin", "collector", "editor")
-logout_button()
-
-st.info(f"👤 Logged in as: **{st.session_state['user_email']}** (Role: {st.session_state['role']})")
+st.info("Welcome to the data entry form. Please provide monitoring details below.")
 
 # --- Dropdown Options ---
 ids = ["", '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
