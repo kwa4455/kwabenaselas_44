@@ -41,7 +41,7 @@ except gspread.WorksheetNotFound:
 # === Authentication ===
 USERS = {
     "admin": {"password": "admin123", "role": "admin"},
-    "officer": {"password": "officer123", "role": "editor"},
+    "editor": {"password": "officer123", "role": "editor"},
     "collector": {"password": "collector123", "role": "collector"},
 }
 
