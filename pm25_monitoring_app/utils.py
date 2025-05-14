@@ -9,6 +9,14 @@ import json
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
 
 
+# Authenticate with Google Sheets API
+def authenticate_google_sheets():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name("path/to/your/service_account.json", scope)
+    client = gspread.authorize(creds)
+    return client
+
+
 # === Google Sheets Setup ===
 def setup_google_sheets():
     creds_json = st.secrets["GOOGLE_CREDENTIALS"]
@@ -100,6 +108,28 @@ def delete_merged_record_by_index(spreadsheet, sheet_name, row_number):
     sheet = spreadsheet.worksheet(sheet_name)
     sheet.delete_rows(row_number)
 
+import time
+
+# Store a backup of the deleted record temporarily
+deleted_records = []
+
+def delete_row(sheet, row_number, record_data=None):
+    """Delete a row but back it up for potential undo."""
+    if record_data:
+        # Save record to the deleted records list (backup)
+        deleted_records.append({"time": time.time(), "data": record_data})
+    try:
+        sheet.delete_row(row_number)
+    except Exception as e:
+        print(f"Error deleting row {row_number}: {e}")
+
+def undo_last_delete(sheet):
+    """Undo the last delete action."""
+    if deleted_records:
+        last_deleted = deleted_records.pop()
+        # You can now re-insert the deleted record if needed.
+        sheet.append_row(last_deleted["data"])  # You may need to adjust the format of data.
+        print(f"Restored record: {last_deleted}")
 
 # === Google OAuth Authentication ===
 
