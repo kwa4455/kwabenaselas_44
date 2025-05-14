@@ -8,7 +8,6 @@ from googleapiclient.discovery import build
 import json
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
 
-
 # === Google Sheets Setup ===
 def setup_google_sheets():
     """Authenticate and return the spreadsheet object."""
@@ -118,15 +117,23 @@ def authenticate_with_google():
     client_secret = st.secrets["google_oauth"]["client_secret"]
     redirect_uri = "https://epa-gh-eq-air-monitoring-data-entry.streamlit.app"
 
-    flow = InstalledAppFlow.from_client_secrets_file(
-        'credentials.json', scopes=["https://www.googleapis.com/auth/userinfo.email"]
+    # Set up the OAuth flow
+    flow = InstalledAppFlow.from_client_config(
+        {
+            "installed": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "redirect_uris": [redirect_uri],
+            }
+        },
+        scopes=["https://www.googleapis.com/auth/userinfo.email"],
     )
 
+    # Run the OAuth flow to get the credentials
     credentials = flow.run_local_server(port=0)
-    session = credentials.authorize(httplib2.Http())
-    
+
     # Get user info
-    service = build('oauth2', 'v2', http=session)
+    service = build('oauth2', 'v2', credentials=credentials)
     user_info = service.userinfo().get().execute()
 
     email = user_info['email']
