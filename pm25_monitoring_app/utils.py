@@ -82,6 +82,23 @@ def logout_button():
         st.session_state.clear()
         st.experimental_rerun()
 
+def delete_row(sheet, row_number):
+    """Deletes a row from the main sheet and saves a backup."""
+    row_data = sheet.row_values(row_number)
+    backup_deleted_row(row_data, "Main Sheet", row_number)
+    sheet.delete_rows(row_number)
+
+def delete_merged_record_by_index(index_to_delete):
+    """Deletes a row from the merged sheet by index and saves a backup."""
+    worksheet = sheet.spreadsheet.worksheet(MERGED_SHEET)
+    row_data = worksheet.row_values(index_to_delete + 2)  # +2 to skip header
+    backup_deleted_row(row_data, "Merged Sheet", index_to_delete + 2)
+    worksheet.delete_rows(index_to_delete + 2)
+
+def undo_last_delete(sheet):
+    """Cannot restore automatically with backup sheet. Just inform user."""
+    st.warning("⚠️ Undo not supported with backup sheet. Check 'Deleted Records Backup' for recovery.")
+
 
 # === Data Utilities ===
 def convert_timestamps_to_string(df):
