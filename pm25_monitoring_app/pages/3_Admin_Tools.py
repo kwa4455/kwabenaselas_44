@@ -9,7 +9,7 @@ from utils import (
     spreadsheet
 )
 from constants import MAIN_SHEET, MERGED_SHEET
-from utils.auth import authenticate_with_google, require_roles,logout_button
+from utils import authenticate_with_google, require_roles,logout_button
 
 # Admin Access Check
 st.title("🔧 Admin Tools")
