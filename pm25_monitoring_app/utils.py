@@ -65,12 +65,15 @@ def login():
 
         st.stop()  # Prevent execution beyond login screen
 
+
 def require_roles(*allowed_roles):
     if "role" not in st.session_state:
-        st.error("You must log in first.")
+        st.error("❌ Please log in first.")
         st.stop()
-    if st.session_state["role"] not in allowed_roles:
-        st.error(f"Access denied. This page is for roles: {', '.join(allowed_roles)}.")
+    
+    user_role = st.session_state.get("role")
+    if user_role not in allowed_roles:
+        st.error(f"❌ Your role ({user_role}) is not authorized to view this page.")
         st.stop()
 
 def logout_button():
