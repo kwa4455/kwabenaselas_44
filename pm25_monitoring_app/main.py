@@ -10,8 +10,6 @@ Welcome to the PM₂.₅ Air Quality Monitoring Data Entry Tool. Use the sidebar
 - 📝 New data entry
 - ✏️ Edit submitted records
 """)
-if "user_email" not in st.session_state:
-    authenticate_with_google()
 
 # --- Custom CSS + Google Fonts ---
 st.markdown("""
