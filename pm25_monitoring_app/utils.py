@@ -133,10 +133,6 @@ def undo_last_delete(sheet):
 
 # === Google OAuth Authentication ===
 
-from google_auth_oauthlib.flow import Flow
-import streamlit as st
-import requests
-
 def authenticate_with_google():
     client_config = {
         "web": {
@@ -152,35 +148,48 @@ def authenticate_with_google():
 
     redirect_uri = client_config["web"]["redirect_uris"][0]
 
+    # Initialize OAuth flow
     flow = Flow.from_client_config(
         client_config=client_config,
         scopes=["openid", "https://www.googleapis.com/auth/userinfo.email"],
         redirect_uri=redirect_uri
     )
 
-    # ✅ UPDATED: st.query_params instead of deprecated experimental_get_query_params
+    # ✅ Use st.query_params to get the 'code' param
     query_params = st.query_params
-
     if "code" not in query_params:
+        # If there's no 'code' param, start the OAuth flow
         auth_url, _ = flow.authorization_url(prompt="consent")
         st.markdown(f"[🔐 Sign in with Google]({auth_url})")
-        st.stop()
+        st.stop()  # Stop execution to await Google login
     else:
-        flow.fetch_token(code=query_params["code"])
-        session = flow.authorized_session()
-        user_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
-        email = user_info["email"]
+        # Exchange the 'code' for an access token
+        try:
+            flow.fetch_token(code=query_params["code"])
+            session = flow.authorized_session()
+            user_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
+            email = user_info["email"]
 
-        st.session_state["user_email"] = email
+            # Save user email to session state
+            st.session_state["user_email"] = email
 
-        for role, emails in st.secrets["roles"].items():
-            if email in emails:
-                st.session_state["role"] = role
-                return email, role
+            # Check roles and set the role in session state
+            for role, emails in st.secrets["roles"].items():
+                if email in emails:
+                    st.session_state["role"] = role
+                    st.success(f"Welcome back, **{email}**! You are signed in as **{role}**.")
+                    return email, role  # Successfully logged in with role
 
-        st.error("You are not assigned a role. Access denied.")
-        st.stop()
+            # If email not assigned any role, show an error
+            st.error(f"Access denied! The email {email} does not have any role assigned.")
+            st.stop()  # Stop execution to prevent further access
+        except Exception as e:
+            st.error(f"Error during Google authentication: {e}")
+            st.stop()  # Stop execution in case of an error
 
+    # ✅ If the email and role are set correctly, run the app again
+    if "user_email" in st.session_state:
+        st.experimental_rerun()  # Ensure the session is properly loaded and rerun the app
 def require_roles(*allowed_roles):
     """
     Restrict access to only users with the given roles.
