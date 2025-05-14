@@ -116,9 +116,8 @@ def authenticate_with_google():
     oauth2 = OAuth2Component(
         client_id=st.secrets["oauth"]["client_id"],
         client_secret=st.secrets["oauth"]["client_secret"],
-        authorize_url="https://accounts.google.com/o/oauth2/auth",
-        token_url="https://oauth2.googleapis.com/token",
-        redirect_uri="http://localhost:8501",
+        redirect_uri="http://localhost:8501",  # Change this on deployment
+        provider="google",
         scopes=["https://www.googleapis.com/auth/userinfo.email"]
     )
 
@@ -139,6 +138,7 @@ def authenticate_with_google():
 
     st.info("Please sign in using your Google account.")
     st.stop()
+
 
 
 def require_roles(*allowed_roles):
