@@ -1,34 +1,27 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 import gspread
+from datetime import datetime
 from oauth2client.service_account import ServiceAccountCredentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google_auth_oauthlib.flow import Flow
-import google.auth.transport.requests
 import requests
-from googleapiclient.discovery import build
 import json
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
 
+
 # === Google Sheets Setup ===
 def setup_google_sheets():
-    """Authenticate and return the spreadsheet object."""
     creds_json = st.secrets["GOOGLE_CREDENTIALS"]
     creds_dict = json.loads(creds_json)
-
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive.file",
         "https://www.googleapis.com/auth/drive"
     ]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     return client.open_by_key(SPREADSHEET_ID)
 
-
-# Initialize spreadsheet and ensure MAIN_SHEET exists
 spreadsheet = setup_google_sheets()
 
 try:
@@ -42,44 +35,41 @@ except gspread.WorksheetNotFound:
         "Submitted At"
     ])
 
-# === Utility Functions ===
+
+# === Data Utilities ===
+
 def convert_timestamps_to_string(df):
-    """Convert all datetime columns in a DataFrame to strings."""
-    for column in df.select_dtypes(include=['datetime64[ns]']).columns:
-        df[column] = df[column].dt.strftime('%Y-%m-%d %H:%M:%S')
+    for col in df.select_dtypes(include=['datetime64[ns]']).columns:
+        df[col] = df[col].dt.strftime('%Y-%m-%d %H:%M:%S')
     return df
 
 def load_data_from_sheet(sheet):
-    """Load all data from the given worksheet into a DataFrame."""
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
     return convert_timestamps_to_string(df)
 
 def add_data(row):
-    """Append a row with timestamp to the main worksheet."""
     row.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     sheet.append_row(row)
 
 def merge_start_stop(df):
-    """Merge START and STOP records based on ID and Site."""
     start_df = df[df["Entry Type"] == "START"].copy()
     stop_df = df[df["Entry Type"] == "STOP"].copy()
-
     merge_keys = ["ID", "Site"]
+
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys else x)
 
-    merged_df = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
+    merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    if "Elapsed Time (min)_Start" in merged_df.columns and "Elapsed Time (min)_Stop" in merged_df.columns:
-        merged_df["Elapsed Time Diff (min)"] = (
-            merged_df["Elapsed Time (min)_Stop"] - merged_df["Elapsed Time (min)_Start"]
+    if "Elapsed Time (min)_Start" in merged.columns and "Elapsed Time (min)_Stop" in merged.columns:
+        merged["Elapsed Time Diff (min)"] = (
+            merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
         )
 
-    return merged_df
+    return merged
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
-    """Save merged data to a specified worksheet."""
     df = convert_timestamps_to_string(df)
 
     if sheet_name in [ws.title for ws in spreadsheet.worksheets()]:
@@ -89,10 +79,8 @@ def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     new_sheet.update([df.columns.tolist()] + df.values.tolist())
 
 def filter_dataframe(df, site_filter=None, date_range=None):
-    """Filter the DataFrame by site and date range."""
     if df.empty:
         return df
-
     if "Submitted At" in df.columns:
         df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors="coerce")
 
@@ -112,11 +100,10 @@ def delete_merged_record_by_index(spreadsheet, sheet_name, row_number):
     sheet = spreadsheet.worksheet(sheet_name)
     sheet.delete_rows(row_number)
 
-# Google OAuth Functionality
-def authenticate_with_google():
-    """Perform OAuth2 authentication using Google's Installed App Flow."""
 
-    # Construct the client secrets dict in correct format
+# === Google OAuth Authentication ===
+
+def authenticate_with_google():
     client_config = {
         "web": {
             "client_id": st.secrets["google_client_secrets"]["client_id"],
@@ -125,42 +112,39 @@ def authenticate_with_google():
             "token_uri": st.secrets["google_client_secrets"]["token_uri"],
             "auth_provider_x509_cert_url": st.secrets["google_client_secrets"]["auth_provider_x509_cert_url"],
             "client_secret": st.secrets["google_client_secrets"]["client_secret"],
-            "redirect_uris": [st.secrets["google_client_secrets"]["redirect_uri"]],
+            "redirect_uris": [st.secrets["google_client_secrets"]["redirect_uri"]]
         }
     }
 
+    redirect_uri = client_config["web"]["redirect_uris"][0]
+
     flow = Flow.from_client_config(
         client_config=client_config,
-        scopes=["https://www.googleapis.com/auth/userinfo.email", "openid"],
-        redirect_uri=st.secrets["google_client_secrets"]["redirect_uri"]
+        scopes=["openid", "https://www.googleapis.com/auth/userinfo.email"],
+        redirect_uri=redirect_uri
     )
 
-    if "authorization_response" not in st.session_state:
-        auth_url, _ = flow.authorization_url(prompt='consent')
-        st.markdown(f"[🔐 Click here to log in with Google]({auth_url})")
+    if "code" not in st.query_params:
+        auth_url, _ = flow.authorization_url(prompt="consent")
+        st.markdown(f"[🔐 Sign in with Google]({auth_url})")
+        st.stop()
+    else:
+        flow.fetch_token(code=st.query_params["code"])
+        session = flow.authorized_session()
+        user_info = session.get("https://www.googleapis.com/userinfo/v2/me").json()
+        email = user_info["email"]
+
+        st.session_state["user_email"] = email
+
+        for role, emails in st.secrets["roles"].items():
+            if email in emails:
+                st.session_state["role"] = role
+                return email, role
+
+        st.error("You are not assigned a role. Access denied.")
         st.stop()
 
-    flow.fetch_token(authorization_response=st.session_state["authorization_response"])
-    credentials = flow.credentials
-
-    # Use credentials to fetch user info
-    session = requests.Session()
-    session.headers.update({'Authorization': f'Bearer {credentials.token}'})
-    user_info = session.get("https://www.googleapis.com/oauth2/v1/userinfo").json()
-
-    st.session_state["user_email"] = user_info["email"]
-
-    # Example role check (replace with your own logic)
-    for role, emails in st.secrets["roles"].items():
-        if user_info["email"] in emails:
-            st.session_state["role"] = role
-            return user_info["email"], role
-
-    st.error("You are not assigned a role.")
-    st.stop()
-    
 def require_roles(*allowed_roles):
-    """Check if the current user has the required role."""
     if "role" not in st.session_state:
         st.warning("Unauthorized access.")
         st.stop()
@@ -169,13 +153,14 @@ def require_roles(*allowed_roles):
         st.stop()
 
 def logout_button():
-    """Displays a logout button in the sidebar and clears session state."""
     if st.sidebar.button("🚪 Logout"):
         st.session_state.clear()
         st.experimental_rerun()
 
+
+# === UI Utility ===
+
 def display_and_merge_data(df, spreadsheet, merged_sheet_name):
-    """Display data in Streamlit, filter it, and merge start/stop records."""
     if df.empty:
         st.info("No data submitted yet.")
         return
