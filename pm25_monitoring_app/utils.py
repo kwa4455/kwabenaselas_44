@@ -8,6 +8,13 @@ import time
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
 
 
+# Authenticate with Google Sheets API
+def authenticate_google_sheets():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name("path/to/your/service_account.json", scope)
+    client = gspread.authorize(creds)
+    return client
+
 # === Google Sheets Setup ===
 def setup_google_sheets():
     creds_json = st.secrets["GOOGLE_CREDENTIALS"]
