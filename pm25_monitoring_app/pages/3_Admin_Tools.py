@@ -8,7 +8,7 @@ from utils import (
     spreadsheet,
     require_roles
 )
-from constants import MAIN_SHEET
+from constants import MAIN_SHEET,MERGED_SHEET
 
 # --- Page Setup ---
 st.title("🔧 Admin Tools")
@@ -40,7 +40,10 @@ else:
                 st.experimental_rerun()
 
 
-
+# === Display Existing Data & Merge START/STOP ===
+st.header("📊 Submitted Monitoring Records")
+df = load_data_from_sheet(sheet)
+display_and_merge_data(df, spreadsheet, MERGED_SHEET)
 
 # --- Footer ---
 st.markdown("""
