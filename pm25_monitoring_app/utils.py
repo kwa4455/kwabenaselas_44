@@ -8,40 +8,36 @@ import time
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
 
 
-# Authenticate with Google Sheets API
-def authenticate_google_sheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("path/to/your/service_account.json", scope)
-    client = gspread.authorize(creds)
-    return client
-
 # === Google Sheets Setup ===
-def setup_google_sheets():
-    creds_json = st.secrets["GOOGLE_CREDENTIALS"]
-    creds_dict = json.loads(creds_json)
-    scope = [
-        "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-    client = gspread.authorize(creds)
-    return client.open_by_key(st.secrets["SPREADSHEET_ID"])
+creds_json = st.secrets["GOOGLE_CREDENTIALS"]
+creds_dict = json.loads(creds_json)
 
-spreadsheet = setup_google_sheets()
+scope = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive"
+]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client = gspread.authorize(creds)
 
-# Try to get the main sheet, if it doesn't exist create one
+SPREADSHEET_ID = "1jCV-IqALZz7wKqjqc5ISrkA_dv35mX1ZowNqwFHf6mk"
+MAIN_SHEET = 'Observations'
+MERGED_SHEET = 'Merged Records'
+
+spreadsheet = client.open_by_key(SPREADSHEET_ID)
+
+# Ensure Observations worksheet exists
 try:
-    sheet = spreadsheet.worksheet(st.secrets["MAIN_SHEET"])
+    sheet = spreadsheet.worksheet(MAIN_SHEET)
 except gspread.WorksheetNotFound:
-    sheet = spreadsheet.add_worksheet(title=st.secrets["MAIN_SHEET"], rows="100", cols="20")
+    sheet = spreadsheet.add_worksheet(title=MAIN_SHEET, rows="100", cols="20")
     sheet.append_row([
         "Entry Type", "ID", "Site", "Monitoring Officer", "Driver",
         "Date", "Time", "Temperature (°C)", "RH (%)", "Pressure (mbar)",
         "Weather", "Wind", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
         "Submitted At"
     ])
-
 # === Authentication ===
 # Store the list of users and their roles
 users = {
