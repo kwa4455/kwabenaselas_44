@@ -7,22 +7,26 @@ from utils import (
     save_merged_data_to_sheet,
     sheet,
     spreadsheet,
-    filter_dataframe,
-    display_and_merge_data
+    display_and_merge_data,
+    authenticate_with_google,
+    require_roles,
+    logout_button
 )
 from constants import MERGED_SHEET
 
-from utils import authenticate_with_google, require_roles, logout_button
-
+# --- Page Title ---
 st.title("✏️ Editor Tools")
 
+# --- Authentication & Role Check ---
 if "user_email" not in st.session_state:
     authenticate_with_google()
 
-require_roles("admin","collector", "editor")  # Both admins and editors can view
+require_roles("admin", "collector", "editor")
+logout_button()
 
+st.info(f"👤 Logged in as: **{st.session_state['user_email']}** (Role: {st.session_state['role']})")
 
-
+# --- Utility Functions ---
 def safe_float(val, default=0.0):
     try:
         return float(val)
@@ -59,16 +63,16 @@ def handle_merge_logic():
 
     if not merged_df.empty:
         save_merged_data_to_sheet(merged_df, spreadsheet, sheet_name=MERGED_SHEET)
-        st.success("Merged records updated.")
+        st.success("✅ Merged records updated.")
         st.dataframe(merged_df, use_container_width=True)
     else:
-        st.warning("No matching records to merge.")
+        st.warning("⚠ No matching records to merge.")
 
 def edit_submitted_record():
     df = load_data_from_sheet(sheet)
 
     if df.empty:
-        st.warning("No records available to edit.")
+        st.warning("⚠ No records available to edit.")
         return
 
     df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors='coerce')
@@ -96,7 +100,7 @@ def edit_submitted_record():
 
     with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
         if not st.session_state.selected_record:
-            st.info("Please select a record.")
+            st.info("ℹ️ Please select a record from the dropdown above.")
         else:
             try:
                 selected_index = df[df["Record ID"] == st.session_state.selected_record].index[0]
@@ -111,18 +115,18 @@ def edit_submitted_record():
                         for col_index, value in enumerate(updated_data, start=1):
                             sheet.update_cell(row_number, col_index, value)
 
-                        st.success("Record updated successfully!")
+                        st.success("✅ Record updated successfully!")
                         st.session_state.selected_record = None
                         st.session_state.edit_expanded = False
 
                         handle_merge_logic()
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"❌ Error: {e}")
 
-# Run the editor
+# --- Run Editor Logic ---
 edit_submitted_record()
 
-# Footer
+# --- Footer ---
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
     <div style='text-align: center; color: grey; font-size: 0.9em;'>
