@@ -1,4 +1,3 @@
-# pages/3_Admin_Tools.py
 import streamlit as st
 import pandas as pd
 from utils import (
@@ -9,45 +8,39 @@ from utils import (
     spreadsheet,
     require_roles
 )
-from constants import MAIN_SHEET, MERGED_SHEET
+from constants import MAIN_SHEET, MERGED_SHEET, BACKUP_SHEET
 
-
-# Admin Access Check
+# --- Page Setup ---
 st.title("🔧 Admin Tools")
-
-
 require_roles("admin")  # Only admins can proceed
 
-st.success(f"Welcome **{st.session_state['user_email']}**! You are an **{st.session_state['role']}**.")
+st.success(f"Welcome **{st.session_state['username']}**! You are an **{st.session_state['role']}**.")
 
-# === Delete from Submitted Records ===
-st.subheader("Delete Submitted Record")
+# --- Delete from Submitted Records ---
+st.subheader("🗑️ Delete from Submitted Records")
 df_submitted = load_data_from_sheet(sheet)
 
 if df_submitted.empty:
     st.info("No submitted records available.")
 else:
-    df_submitted["Row Number"] = df_submitted.index + 2
+    df_submitted["Row Number"] = df_submitted.index + 2  # Google Sheets is 1-indexed + header
     df_submitted["Record ID"] = df_submitted.apply(
         lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At']}", axis=1
     )
 
-    selected_record = st.selectbox("Select record to delete:", [""] + df_submitted["Record ID"].tolist())
+    selected_record = st.selectbox("Select submitted record to delete:", [""] + df_submitted["Record ID"].tolist())
 
     if selected_record:
-        row_to_delete = df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0]
+        row_to_delete = int(df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0])
         
-        # Deletion Confirmation Step
-        if st.button("🗑️ Delete Submitted Record"):
-            confirm = st.checkbox("Are you sure you want to delete this record?")
-            if confirm:
+        if st.checkbox("✅ Confirm deletion of submitted record"):
+            if st.button("🗑️ Delete Submitted Record"):
                 delete_row(sheet, row_to_delete)
-                st.success("Submitted record deleted successfully.")
-            else:
-                st.warning("Please confirm the deletion.")
+                st.success("✅ Submitted record deleted and backed up successfully.")
+                st.experimental_rerun()
 
-# === Delete from Merged Records ===
-st.subheader("Delete Merged Record")
+# --- Delete from Merged Records ---
+st.subheader("🗑️ Delete from Merged Records")
 df_merged = load_data_from_sheet(sheet, MERGED_SHEET)
 
 if df_merged.empty:
@@ -61,24 +54,31 @@ else:
     selected_merged = st.selectbox("Select merged record to delete:", [""] + df_merged["Merged Record"].tolist())
 
     if selected_merged:
-        index_to_delete = df_merged[df_merged["Merged Record"] == selected_merged]["Index"].values[0]
+        index_to_delete = int(df_merged[df_merged["Merged Record"] == selected_merged]["Index"].values[0])
         
-        # Deletion Confirmation Step
-        if st.button("🗑️ Delete Merged Record"):
-            confirm = st.checkbox("Are you sure you want to delete this merged record?")
-            if confirm:
+        if st.checkbox("✅ Confirm deletion of merged record"):
+            if st.button("🗑️ Delete Merged Record"):
                 delete_merged_record_by_index(index_to_delete)
-                st.success("Merged record deleted successfully.")
-            else:
-                st.warning("Please confirm the deletion.")
-   
-if st.button("Undo Last Deletion"):
-    undo_last_delete(sheet)
-st.success("Last deleted record has been restored!")
+                st.success("✅ Merged record deleted and backed up successfully.")
+                st.experimental_rerun()
 
+# --- View Deleted Records ---
+st.markdown("---")
+st.subheader("📁 View Deleted Records Backup")
 
+if st.checkbox("🔍 Show Deleted Records"):
+    backup_ws = spreadsheet.worksheet(BACKUP_SHEET)
+    backup_data = backup_ws.get_all_records()
+    if backup_data:
+        df_backup = pd.DataFrame(backup_data)
+        st.dataframe(df_backup, use_container_width=True)
+    else:
+        st.info("No records found in backup sheet.")
 
-
-
-
-
+# --- Footer ---
+st.markdown("""
+    <hr style="margin-top: 40px; margin-bottom:10px">
+    <div style='text-align: center; color: grey; font-size: 0.9em;'>
+        © 2025 EPA Ghana · Developed by Clement Mensah Ackaah · Built with ❤️ using Streamlit
+    </div>
+""", unsafe_allow_html=True)
