@@ -12,7 +12,7 @@ from utils import (
 )
 from constants import MERGED_SHEET
 
-from utils.auth import authenticate_with_google, require_roles,logout_button
+from utils import authenticate_with_google, require_roles,logout_button
 
 st.title("✏️ Editor Tools")
 
