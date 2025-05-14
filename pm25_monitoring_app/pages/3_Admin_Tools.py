@@ -11,7 +11,6 @@ from utils import (
 from constants import MAIN_SHEET, MERGED_SHEET
 from utils import authenticate_with_google, require_roles, logout_button
 
-
 # Admin Access Check
 st.title("🔧 Admin Tools")
 
@@ -38,9 +37,15 @@ else:
 
     if selected_record:
         row_to_delete = df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0]
+        
+        # Deletion Confirmation Step
         if st.button("🗑️ Delete Submitted Record"):
-            delete_row(sheet, row_to_delete)
-            st.success("Submitted record deleted successfully.")
+            confirm = st.checkbox("Are you sure you want to delete this record?")
+            if confirm:
+                delete_row(sheet, row_to_delete)
+                st.success("Submitted record deleted successfully.")
+            else:
+                st.warning("Please confirm the deletion.")
 
 # === Delete from Merged Records ===
 st.subheader("Delete Merged Record")
@@ -58,13 +63,19 @@ else:
 
     if selected_merged:
         index_to_delete = df_merged[df_merged["Merged Record"] == selected_merged]["Index"].values[0]
+        
+        # Deletion Confirmation Step
         if st.button("🗑️ Delete Merged Record"):
-            delete_merged_record_by_index(index_to_delete)
-            st.success("Merged record deleted successfully.")
+            confirm = st.checkbox("Are you sure you want to delete this merged record?")
+            if confirm:
+                delete_merged_record_by_index(index_to_delete)
+                st.success("Merged record deleted successfully.")
+            else:
+                st.warning("Please confirm the deletion.")
    
-    if st.button("Undo Last Deletion"):
+if st.button("Undo Last Deletion"):
     undo_last_delete(sheet)
-    st.success("Last deleted record has been restored!")
+st.success("Last deleted record has been restored!")
 
 
 
