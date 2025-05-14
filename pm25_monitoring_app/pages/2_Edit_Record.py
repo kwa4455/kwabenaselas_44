@@ -12,6 +12,17 @@ from utils import (
 )
 from constants import MERGED_SHEET
 
+from utils.auth import authenticate_with_google, require_roles
+
+st.title("✏️ Editor Tools")
+
+if "user_email" not in st.session_state:
+    authenticate_with_google()
+
+require_roles("admin","collector", "editor")  # Both admins and editors can view
+
+
+
 def safe_float(val, default=0.0):
     try:
         return float(val)
