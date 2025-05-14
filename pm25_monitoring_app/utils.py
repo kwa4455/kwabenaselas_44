@@ -39,52 +39,43 @@ except gspread.WorksheetNotFound:
         "Submitted At"
     ])
 # === Authentication ===
-# Store the list of users and their roles
-users = {
-    "admin": {"email": "admin@example.com", "password": "admin123", "role": "admin"},
-    "editor": {"email": "editor@example.com", "password": "editor123", "role": "editor"},
-    "collector": {"email": "collector@example.com", "password": "collector123", "role": "collector"}
+USERS = {
+    "admin": {"password": "admin123", "role": "admin"},
+    "officer": {"password": "officer123", "role": "editor"},
+    "collector": {"password": "collector123", "role": "collector"},
 }
 
-# === Login Function ===
 def login():
-    st.title("Login")
-    email = st.text_input("Email", "")
-    password = st.text_input("Password", "", type="password")
+    if st.session_state.get("logged_in"):
+        return
 
-    if st.button("Log in"):
-        user = authenticate_user(email, password)
-        if user:
-            st.session_state["user_email"] = user["email"]
-            st.session_state["role"] = user["role"]
-            st.success(f"Logged in successfully as {user['role']}")
-            st.experimental_rerun()  # Refresh the app to load the authenticated user's data
+    st.title("🔐 PM₂.₅ Monitoring Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        user = USERS.get(username)
+        if user and user["password"] == password:
+            st.session_state.logged_in = True
+            st.session_state.user_email = username
+            st.session_state.role = user["role"]
+            st.rerun()
         else:
-            st.error("Invalid email or password")
+            st.error("❌ Invalid credentials")
 
-# === Authenticate User ===
-def authenticate_user(email, password):
-    for user, credentials in users.items():
-        if credentials["email"] == email and credentials["password"] == password:
-            return credentials
-    return None
-
-# === Role-based Access Control ===
-def require_roles(*allowed_roles):
-    if "role" not in st.session_state:
-        st.error("You are not logged in. Please log in first.")
-        st.stop()
-
-    user_role = st.session_state["role"]
-    if user_role not in allowed_roles:
-        st.error(f"Access denied. You need one of these roles: {', '.join(allowed_roles)}.")
-        st.stop()
-
-# === Logout Button ===
 def logout_button():
-    if st.button("Logout"):
+    if st.sidebar.button("🚪 Logout"):
         st.session_state.clear()
-        st.experimental_rerun()
+        st.rerun()
+
+def require_roles(*roles):
+    if not st.session_state.get("logged_in"):
+        st.warning("⛔ Please log in to access this page.")
+        st.stop()
+    if st.session_state["role"] not in roles:
+        st.error("🔒 You do not have permission to view this page.")
+        st.stop()
+
 
 # === Data Utilities ===
 def convert_timestamps_to_string(df):
@@ -164,24 +155,3 @@ def display_and_merge_data(df, spreadsheet, merged_sheet_name):
     else:
         st.warning("No matching START and STOP records found to merge.")
 
-# === Main App Logic ===
-def main():
-    if "user_email" not in st.session_state:
-        login()  # Show the login form if the user is not logged in
-    else:
-        st.title(f"Welcome, {st.session_state['user_email']}!")
-        st.write(f"Role: {st.session_state['role']}")
-        
-        # Example of restricting access to certain roles
-        require_roles("admin")  # Only allow admins to access this page
-        st.write("This content is for admins only!")
-
-        # Load the data from Google Sheets and display it
-        df = load_data_from_sheet(sheet)
-        display_and_merge_data(df, spreadsheet, "Merged_Data")
-
-        # Show a logout button
-        logout_button()
-
-if __name__ == "__main__":
-    main()
