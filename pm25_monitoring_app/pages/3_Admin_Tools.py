@@ -4,6 +4,7 @@ from utils import (
     load_data_from_sheet,
     delete_row,
     delete_merged_record_by_index,
+    display_and_merge_data,
     sheet,
     spreadsheet,
     require_roles
