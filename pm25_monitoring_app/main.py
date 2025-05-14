@@ -1,19 +1,29 @@
 import streamlit as st
 from utils import load_data_from_sheet, sheet, spreadsheet,login, logout_button
 
-# --- Page Setup ---
-st.set_page_config(page_title="PM₂.₅ Monitoring Data Entry App", layout="wide")
 
-# --- Page Title ---
-st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring Data Entry App")
+login()  # stops app until user logs in
 
-st.markdown("""
-Welcome to the PM₂.₅ Air Quality Monitoring Data Entry Tool.  
-Use the sidebar to navigate between:
-- 📝 New data entry
-- ✏️ Edit submitted records
-- 📊 Review & merge data
-""")
+# === After login, these will be safe ===
+username = st.session_state["username"]
+role = st.session_state["role"]
+
+
+ === App Setup ===
+st.set_page_config(page_title="PM₂.₅ Monitoring App", layout="wide")
+st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring App")
+st.info(f"👤 Logged in as: **{username}** (Role: {role})")
+
+# === Role-Based Navigation ===
+if role == "admin":
+    options = ["New Data Entry", "Edit Submitted Records", "Review & Merge"]
+elif role == "editor":
+    options = ["Edit Submitted Records", "Review & Merge"]
+elif role == "collector":
+    options = ["New Data Entry"]
+else:
+    st.error("❌ Invalid role.")
+    st.stop()
 
 # --- Custom CSS + Google Fonts ---
 st.markdown("""
@@ -54,16 +64,8 @@ if "df" not in st.session_state:
         st.session_state.sheet = sheet 
         st.session_state.spreadsheet = spreadsheet
 
-# --- Sidebar Navigation ---
-page = st.sidebar.radio(
-    "Navigate",
-    options=["New Data Entry", "Edit Submitted Records", "Review & Merge Data"]
-)
 
-role = st.session_state["role"]
-if role == "admin":
-    st.success("✅ You have access to all pages: Data Entry, Edit, Merge, Admin.")
-elif role == "editor":
-    st.info("✏️ You can view and edit submitted data.")
-elif role == "collector":
-    st.info("📋 You can submit new data entries.")
+st.sidebar.title("📁 Navigation")
+selected_page = st.sidebar.radio("Go to", options)
+
+logout_button()
