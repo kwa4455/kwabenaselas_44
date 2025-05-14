@@ -49,6 +49,39 @@ with st.sidebar:
 
 # --- Load Data Once and Store in Session ---
 if "df" not in st.session_state:
-    st.session_state.df = load_data_from_sheet(sheet)
-    st.session_state.sheet = sheet
-    st.session_state.spreadsheet = spreadsheet
+    with st.spinner("Loading data from Google Sheets..."):
+        st.session_state.df = load_data_from_sheet(sheet)
+        st.session_state.sheet = sheet 
+        st.session_state.spreadsheet = spreadsheet
+
+# --- Sidebar Navigation ---
+page = st.sidebar.radio(
+    "Navigate",
+    options=["New Data Entry", "Edit Submitted Records", "Review & Merge Data"]
+)
+
+# --- New Data Entry Page ---
+if page == "New Data Entry":
+    st.subheader("📝 New Data Entry")
+    st.markdown("Fill out the form to add new air quality monitoring data.")
+    # Implement the form for new data entry (You can define the fields you want to capture)
+
+# --- Edit Submitted Records Page ---
+elif page == "Edit Submitted Records":
+    st.subheader("✏️ Edit Submitted Records")
+    st.markdown("Modify records that have already been submitted.")
+    # Implement the functionality for editing submitted records
+
+# --- Review & Merge Data Page ---
+elif page == "Review & Merge Data":
+    st.subheader("📊 Review & Merge Data")
+    st.markdown("Review submitted records and merge START and STOP records.")
+    # Display the data from session_state and allow the user to filter, view and merge records
+    if "df" in st.session_state:
+        df = st.session_state.df
+        st.dataframe(df)  # Show the records in a table (with filtering and merging options)
+
+# --- Logout Button ---
+if st.button("Logout"):
+    st.session_state.clear()
+    st.experimental_rerun()
