@@ -8,7 +8,7 @@ from utils import (
     sheet,
     spreadsheet,
     display_and_merge_data,
-    require_roles,
+    require_roles
 )
 from constants import MERGED_SHEET
 
