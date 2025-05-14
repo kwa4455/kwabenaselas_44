@@ -12,6 +12,8 @@ from utils import (
 )
 from constants import MERGED_SHEET
 
+require_roles("admin", "editor","collector")
+
 # --- Page Title ---
 st.title("📄 Enter PM₂.₅ Monitoring Data")
 
