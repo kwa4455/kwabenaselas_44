@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import load_data_from_sheet, sheet, spreadsheet
+from utils import load_data_from_sheet, sheet, spreadsheet,login, logout_button
 
 # --- Page Setup ---
 st.set_page_config(page_title="PM₂.₅ Monitoring Data Entry App", layout="wide")
@@ -60,28 +60,10 @@ page = st.sidebar.radio(
     options=["New Data Entry", "Edit Submitted Records", "Review & Merge Data"]
 )
 
-# --- New Data Entry Page ---
-if page == "New Data Entry":
-    st.subheader("📝 New Data Entry")
-    st.markdown("Fill out the form to add new air quality monitoring data.")
-    # Implement the form for new data entry (You can define the fields you want to capture)
-
-# --- Edit Submitted Records Page ---
-elif page == "Edit Submitted Records":
-    st.subheader("✏️ Edit Submitted Records")
-    st.markdown("Modify records that have already been submitted.")
-    # Implement the functionality for editing submitted records
-
-# --- Review & Merge Data Page ---
-elif page == "Review & Merge Data":
-    st.subheader("📊 Review & Merge Data")
-    st.markdown("Review submitted records and merge START and STOP records.")
-    # Display the data from session_state and allow the user to filter, view and merge records
-    if "df" in st.session_state:
-        df = st.session_state.df
-        st.dataframe(df)  # Show the records in a table (with filtering and merging options)
-
-# --- Logout Button ---
-if st.button("Logout"):
-    st.session_state.clear()
-    st.experimental_rerun()
+role = st.session_state["role"]
+if role == "admin":
+    st.success("✅ You have access to all pages: Data Entry, Edit, Merge, Admin.")
+elif role == "editor":
+    st.info("✏️ You can view and edit submitted data.")
+elif role == "collector":
+    st.info("📋 You can submit new data entries.")
