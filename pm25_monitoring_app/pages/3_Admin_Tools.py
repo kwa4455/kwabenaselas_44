@@ -8,7 +8,7 @@ from utils import (
     spreadsheet,
     require_roles
 )
-from constants import MAIN_SHEET, MERGED_SHEET
+from constants import MAIN_SHEET
 
 # --- Page Setup ---
 st.title("🔧 Admin Tools")
@@ -39,28 +39,6 @@ else:
                 st.success("✅ Submitted record deleted and backed up successfully.")
                 st.experimental_rerun()
 
-# --- Delete from Merged Records ---
-st.subheader("🗑️ Delete from Merged Records")
-df_merged = load_data_from_sheet(sheet, MERGED_SHEET)
-
-if df_merged.empty:
-    st.info("No merged records available.")
-else:
-    df_merged["Index"] = df_merged.index
-    df_merged["Merged Record"] = df_merged.apply(
-        lambda x: f"{x['ID']} | {x['Site']} | {x['Start Date']} to {x['Stop Date']}", axis=1
-    )
-
-    selected_merged = st.selectbox("Select merged record to delete:", [""] + df_merged["Merged Record"].tolist())
-
-    if selected_merged:
-        index_to_delete = int(df_merged[df_merged["Merged Record"] == selected_merged]["Index"].values[0])
-        
-        if st.checkbox("✅ Confirm deletion of merged record"):
-            if st.button("🗑️ Delete Merged Record"):
-                delete_merged_record_by_index(index_to_delete)
-                st.success("✅ Merged record deleted and backed up successfully.")
-                st.experimental_rerun()
 
 
 
