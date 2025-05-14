@@ -116,9 +116,8 @@ def authenticate_with_google():
     oauth2 = OAuth2Component(
         client_id=st.secrets["oauth"]["client_id"],
         client_secret=st.secrets["oauth"]["client_secret"],
-        redirect_uri="http://localhost:8501",  # Change this on deployment
-        provider="google",
-        scopes=["https://www.googleapis.com/auth/userinfo.email"]
+        scopes=["https://www.googleapis.com/auth/userinfo.email"],
+        provider="google"
     )
 
     token = oauth2.authorize_button("🔐 Sign in with Google", "login")
@@ -127,7 +126,7 @@ def authenticate_with_google():
         email = user_info["email"]
         st.session_state["user_email"] = email
 
-        # Determine role
+        # Assign role
         for role, emails in st.secrets["roles"].items():
             if email in emails:
                 st.session_state["role"] = role
@@ -138,7 +137,6 @@ def authenticate_with_google():
 
     st.info("Please sign in using your Google account.")
     st.stop()
-
 
 
 def require_roles(*allowed_roles):
