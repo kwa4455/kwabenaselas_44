@@ -110,23 +110,20 @@ def delete_merged_record_by_index(spreadsheet, sheet_name, row_number):
 
 
 
-
-
 def authenticate_with_google():
     oauth2 = OAuth2Component(
         client_id=st.secrets["oauth"]["client_id"],
         client_secret=st.secrets["oauth"]["client_secret"],
-        scopes=["https://www.googleapis.com/auth/userinfo.email"],
         provider="google"
     )
 
     token = oauth2.authorize_button("🔐 Sign in with Google", "login")
+
     if token:
         user_info = oauth2.get_user_info(token)
         email = user_info["email"]
         st.session_state["user_email"] = email
 
-        # Assign role
         for role, emails in st.secrets["roles"].items():
             if email in emails:
                 st.session_state["role"] = role
@@ -137,6 +134,11 @@ def authenticate_with_google():
 
     st.info("Please sign in using your Google account.")
     st.stop()
+
+
+
+
+
 
 
 def require_roles(*allowed_roles):
