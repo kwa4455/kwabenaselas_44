@@ -9,7 +9,6 @@ from utils import (
     spreadsheet,
     display_and_merge_data,
     require_roles,
-    logout_button
 )
 from constants import MERGED_SHEET
 
@@ -17,8 +16,8 @@ from constants import MERGED_SHEET
 st.title("✏️ Editor Tools")
 
 
-require_roles("admin", "collector", "editor")
-logout_button()
+
+require_roles("admin", "editor","collector")
 
 st.info(f"👤 Logged in as: **{st.session_state['user_email']}** (Role: {st.session_state['role']})")
 
