@@ -1,14 +1,18 @@
 import streamlit as st
-from utils import load_data_from_sheet, add_data, merge_start_stop,save_merged_data_to_sheet,sheet,spreadsheet
+from utils import load_data_from_sheet, sheet, spreadsheet
 
+# --- Page Setup ---
 st.set_page_config(page_title="PM₂.₅ Monitoring Data Entry App", layout="wide")
+
 # --- Page Title ---
-st.title("🇬🇭 EPA Ghana |PM₂.₅ Monitoring Data Entry App")
+st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring Data Entry App")
 
 st.markdown("""
-Welcome to the PM₂.₅ Air Quality Monitoring Data Entry Tool. Use the sidebar to navigate between:
+Welcome to the PM₂.₅ Air Quality Monitoring Data Entry Tool.  
+Use the sidebar to navigate between:
 - 📝 New data entry
 - ✏️ Edit submitted records
+- 📊 Review & merge data
 """)
 
 # --- Custom CSS + Google Fonts ---
@@ -34,23 +38,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Sidebar with Developer Info and Logo ---
+# --- Sidebar Info ---
 with st.sidebar:
-    
+    st.markdown("### 📞 For Assistance Contact:")
+    st.markdown("**👤 Clement Mensah Ackaah**  \nEnvironmental Data Analyst")
+    st.markdown("[📧 clement.ackaah@epa.gov.gh](mailto:clement.ackaah@epa.gov.gh)")
+    st.markdown("[📧 clementackaah70@gmail.com](mailto:clementackaah70@gmail.com)")
+    st.markdown("[🌐 Visit EPA Website](https://epa.gov.gh)")
     st.markdown("---")
-    st.markdown("### 📞 For any Information, Please Contact")
-    st.markdown("### 👤 The Developer")
-    st.markdown("**Clement Mensah Ackaah**  \nEnvironmental Data Analyst")
-    st.markdown("[📧 Email 1](mailto:clement.ackaah@epa.gov.gh) | [📧 Email 2](mailto:clementackaah70@gmail.com)")
-    st.markdown("[🌐 Website](https://epa.gov)")
 
-    st.markdown("---")
-    
-
-
-
+# --- Load Data Once and Store in Session ---
 if "df" not in st.session_state:
-    df = load_data_from_sheet(sheet)
-    st.session_state.df = df
+    st.session_state.df = load_data_from_sheet(sheet)
     st.session_state.sheet = sheet
     st.session_state.spreadsheet = spreadsheet
