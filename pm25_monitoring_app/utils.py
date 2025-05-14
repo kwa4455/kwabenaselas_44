@@ -4,6 +4,8 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from google_auth_oauthlib.flow import InstalledAppFlow
+import google.auth.transport.requests
+import requests
 from googleapiclient.discovery import build
 import json
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET
@@ -111,43 +113,51 @@ def delete_merged_record_by_index(spreadsheet, sheet_name, row_number):
 
 # Google OAuth Functionality
 def authenticate_with_google():
-    """Authenticate user with Google OAuth."""
-    # OAuth flow setup
-    client_id = st.secrets["google_oauth"]["client_id"]
-    client_secret = st.secrets["google_oauth"]["client_secret"]
-    redirect_uri = "https://epa-gh-eq-air-monitoring-data-entry.streamlit.app"
+    """Perform OAuth2 authentication using Google's Installed App Flow."""
 
-    # Set up the OAuth flow
-    flow = InstalledAppFlow.from_client_config(
-        {
-            "installed": {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "redirect_uris": [redirect_uri],
-            }
-        },
-        scopes=["https://www.googleapis.com/auth/userinfo.email"],
+    # Construct the client secrets dict in correct format
+    client_config = {
+        "web": {
+            "client_id": st.secrets["google_client_secrets"]["client_id"],
+            "project_id": st.secrets["google_client_secrets"]["project_id"],
+            "auth_uri": st.secrets["google_client_secrets"]["auth_uri"],
+            "token_uri": st.secrets["google_client_secrets"]["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["google_client_secrets"]["auth_provider_x509_cert_url"],
+            "client_secret": st.secrets["google_client_secrets"]["client_secret"],
+            "redirect_uris": [st.secrets["google_client_secrets"]["redirect_uri"]],
+        }
+    }
+
+    flow = Flow.from_client_config(
+        client_config=client_config,
+        scopes=["https://www.googleapis.com/auth/userinfo.email", "openid"],
+        redirect_uri=st.secrets["google_client_secrets"]["redirect_uri"]
     )
 
-    # Run the OAuth flow to get the credentials
-    credentials = flow.run_local_server(port=0)
+    if "authorization_response" not in st.session_state:
+        auth_url, _ = flow.authorization_url(prompt='consent')
+        st.markdown(f"[🔐 Click here to log in with Google]({auth_url})")
+        st.stop()
 
-    # Get user info
-    service = build('oauth2', 'v2', credentials=credentials)
-    user_info = service.userinfo().get().execute()
+    flow.fetch_token(authorization_response=st.session_state["authorization_response"])
+    credentials = flow.credentials
 
-    email = user_info['email']
-    st.session_state['user_email'] = email
+    # Use credentials to fetch user info
+    session = requests.Session()
+    session.headers.update({'Authorization': f'Bearer {credentials.token}'})
+    user_info = session.get("https://www.googleapis.com/oauth2/v1/userinfo").json()
 
-    # Role assignment
+    st.session_state["user_email"] = user_info["email"]
+
+    # Example role check (replace with your own logic)
     for role, emails in st.secrets["roles"].items():
-        if email in emails:
+        if user_info["email"] in emails:
             st.session_state["role"] = role
-            return email, role
+            return user_info["email"], role
 
-    st.error("You are not assigned a role. Access denied.")
+    st.error("You are not assigned a role.")
     st.stop()
-
+    
 def require_roles(*allowed_roles):
     """Check if the current user has the required role."""
     if "role" not in st.session_state:
