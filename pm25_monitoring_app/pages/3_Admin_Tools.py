@@ -8,7 +8,7 @@ from utils import (
     spreadsheet,
     require_roles
 )
-from constants import MAIN_SHEET, MERGED_SHEET, BACKUP_SHEET
+from constants import MAIN_SHEET, MERGED_SHEET
 
 # --- Page Setup ---
 st.title("🔧 Admin Tools")
@@ -62,18 +62,7 @@ else:
                 st.success("✅ Merged record deleted and backed up successfully.")
                 st.experimental_rerun()
 
-# --- View Deleted Records ---
-st.markdown("---")
-st.subheader("📁 View Deleted Records Backup")
 
-if st.checkbox("🔍 Show Deleted Records"):
-    backup_ws = spreadsheet.worksheet(BACKUP_SHEET)
-    backup_data = backup_ws.get_all_records()
-    if backup_data:
-        df_backup = pd.DataFrame(backup_data)
-        st.dataframe(df_backup, use_container_width=True)
-    else:
-        st.info("No records found in backup sheet.")
 
 # --- Footer ---
 st.markdown("""
