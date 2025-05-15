@@ -33,10 +33,11 @@ try:
     sheet = spreadsheet.worksheet(MAIN_SHEET)
 except gspread.WorksheetNotFound:
     sheet = spreadsheet.add_worksheet(title=MAIN_SHEET, rows="100", cols="20")
+    
     sheet.append_row([
         "Entry Type", "ID", "Site", "Monitoring Officer", "Driver",
         "Date", "Time", "Temperature (°C)", "RH (%)", "Pressure (mbar)",
-        "Weather", "Wind", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
+        "Weather", "Wind Speed", "Wind Direction", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
         "Submitted At"
     ])
 USERS = {
@@ -121,17 +122,45 @@ def merge_start_stop(df):
     stop_df = df[df["Entry Type"] == "STOP"].copy()
     merge_keys = ["ID", "Site"]
 
+    # Rename columns to distinguish start/stop
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys else x)
 
+    # Merge the two datasets
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
+    # Compute elapsed time difference if available
     if "Elapsed Time (min)_Start" in merged.columns and "Elapsed Time (min)_Stop" in merged.columns:
         merged["Elapsed Time Diff (min)"] = (
             merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
         )
 
+    # Compute average flow rate if available
+    if "Flow Rate (L/min)_Start" in merged.columns and "Flow Rate (L/min)_Stop" in merged.columns:
+        merged["Average Flow Rate (L/min)"] = (
+            merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
+        ) / 2
+
+    # Optional: Reorder columns to highlight key info
+    wind_columns = [
+        "Wind Speed_Start", "Wind Direction_Start",
+        "Wind Speed_Stop", "Wind Direction_Stop"
+    ]
+    existing_wind_columns = [col for col in wind_columns if col in merged.columns]
+
+    front_cols = ["ID", "Site"]
+    calculated_cols = ["Elapsed Time Diff (min)", "Average Flow Rate (L/min)"]
+    existing_calc_cols = [col for col in calculated_cols if col in merged.columns]
+
+    other_cols = [
+        col for col in merged.columns
+        if col not in front_cols + existing_wind_columns + existing_calc_cols
+    ]
+
+    merged = merged[front_cols + existing_wind_columns + existing_calc_cols + other_cols]
+
     return merged
+
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     df = convert_timestamps_to_string(df)
