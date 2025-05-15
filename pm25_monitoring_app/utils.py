@@ -8,7 +8,8 @@ import time
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET,CALC_SHEET
 
 
-creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
+creds_dict = st.secrets["GOOGLE_CREDENTIALS"]
+
 
 # === Google Sheets authorization ===
 scopes = [
