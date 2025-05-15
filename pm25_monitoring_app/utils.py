@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from datetime import datetime
-from google.oauth2.service_account import Credentials
+from oauth2client.service_account import ServiceAccountCredentials
 import json
 import time
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET,CALC_SHEET
