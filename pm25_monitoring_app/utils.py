@@ -12,12 +12,14 @@ scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapi
 credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 gc = gspread.authorize(credentials)
 
-SPREADSHEET_ID = "1ZryycIkcgBwdXGR-VRaEqwb3D1YE47CCt0kPow08IEA"
+SPREADSHEET_ID = "your_spreadsheet_id_here"
+spreadsheet = gc.open_by_key(SPREADSHEET_ID)
+sheet = spreadsheet.sheet1
+
 MAIN_SHEET = 'Observations'
 MERGED_SHEET = 'Merged Records'
 CALC_SHEET = "PM Calculations"
 
-spreadsheet = client.open_by_key(SPREADSHEET_ID)
 
 # Ensure Observations worksheet exists
 try:
