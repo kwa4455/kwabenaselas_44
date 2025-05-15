@@ -2,11 +2,12 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from utils import require_roles, spreadsheet
-from constants import MERGED_SHEET,CALC_SHEET
+from constants import MERGED_SHEET, CALC_SHEET
 
+# Page Title and Info
 st.title("✏️ PM Calculator")
-
 st.info("Welcome to the PM Calculator form. Please provide monitoring details below.")
+
 # Auth Check
 require_roles("admin", "editor", "collector")
 
@@ -23,7 +24,7 @@ except Exception as e:
     site_names = []
     officer_names = []
 
-# Page Title
+# Section Title
 st.title("🧮 PM₂.₅ Concentration Calculation Tool")
 st.markdown("Enter sample data to calculate PM₂.₅ concentrations in µg/m³.")
 
@@ -43,19 +44,24 @@ default_data = {
 
 df_input = pd.DataFrame(default_data)
 
+# Data Editor with Dropdowns and Validation Hints
 edited_df = st.data_editor(
     df_input,
     num_rows="dynamic",
     key="pm_table",
     use_container_width=True,
     column_config={
-        "Site ID": st.column_config.SelectboxColumn("Site ID", options=site_ids),
-        "Site": st.column_config.SelectboxColumn("Site", options=site_names),
-        "Date": st.column_config.DateColumn("Date")
+        "Site ID": st.column_config.SelectboxColumn("Site ID", options=site_ids, help="Select from loaded IDs"),
+        "Site": st.column_config.SelectboxColumn("Site", options=site_names, help="Select the monitoring site"),
+        "Date": st.column_config.DateColumn("Date"),
+        "Elapsed Time (min)": st.column_config.NumberColumn("Elapsed Time (min)", help="Must be ≥ 1200 for valid results"),
+        "Flow Rate (L/min)": st.column_config.NumberColumn("Flow Rate (L/min)", help="Should be > 0"),
+        "Pre Weight (mg)": st.column_config.NumberColumn("Pre Weight (mg)", help="Initial filter mass"),
+        "Post Weight (mg)": st.column_config.NumberColumn("Post Weight (mg)", help="Mass after sampling"),
     }
 )
 
-# Calculation Logic
+# PM₂.₅ Calculation Function
 def calculate_pm(row):
     try:
         elapsed = float(row["Elapsed Time (min)"])
@@ -63,31 +69,22 @@ def calculate_pm(row):
         pre = float(row["Pre Weight (mg)"])
         post = float(row["Post Weight (mg)"])
         mass = post - pre  # in mg
+
         if elapsed < 1200:
             return "Elapsed < 1200"
         conc = (mass / (elapsed * flow)) * 1_000_000  # mg -> µg/m³
         return round(conc, 2)
-    except:
+    except Exception:
         return "Error"
 
-# Auto-Calculate PM
+# Auto-Calculate PM Concentration
 edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
 
-column_config={
-    "Site ID": st.column_config.SelectboxColumn("Site ID", options=site_ids, help="Select from loaded IDs"),
-    "Site": st.column_config.SelectboxColumn("Site", options=site_names, help="Select the monitoring site"),
-    "Date": st.column_config.DateColumn("Date"),
-    "Elapsed Time (min)": st.column_config.NumberColumn("Elapsed Time (min)", help="Must be ≥ 1200 for valid results"),
-    "Flow Rate (L/min)": st.column_config.NumberColumn("Flow Rate (L/min)", help="Should be > 0"),
-    "Pre Weight (mg)": st.column_config.NumberColumn("Pre Weight (mg)", help="Initial filter mass"),
-    "Post Weight (mg)": st.column_config.NumberColumn("Post Weight (mg)", help="Mass after sampling")
-}
-
-
-# Display Calculated Data
+# Display Calculated Table
 st.subheader("Calculated Results")
 st.dataframe(edited_df, use_container_width=True)
 
+# Save Button and Logic
 if st.button("✅ Save Valid Entries"):
     valid_rows = []
     errors = []
@@ -103,25 +100,25 @@ if st.button("✅ Save Valid Entries"):
             officer = str(row["Officer(s)"]).strip()
 
             if elapsed < 1200:
-                errors.append(f"Row {idx+1}: Elapsed Time < 1200")
+                errors.append(f"Row {idx + 1}: Elapsed Time < 1200")
                 continue
             if flow <= 0:
-                errors.append(f"Row {idx+1}: Flow Rate must be > 0")
+                errors.append(f"Row {idx + 1}: Flow Rate must be > 0")
                 continue
             if post < pre:
-                errors.append(f"Row {idx+1}: Post Weight < Pre Weight")
+                errors.append(f"Row {idx + 1}: Post Weight < Pre Weight")
                 continue
             if not site_id or not site or not officer:
-                errors.append(f"Row {idx+1}: Missing required fields (Site ID, Site, Officer)")
+                errors.append(f"Row {idx + 1}: Missing required fields (Site ID, Site, Officer)")
                 continue
 
             valid_rows.append(row.tolist())
-        except Exception as e:
-            errors.append(f"Row {idx+1}: Error parsing values")
+        except Exception:
+            errors.append(f"Row {idx + 1}: Error parsing values")
 
     if valid_rows:
         try:
-            # Check or create sheet
+            # Check if sheet exists or create
             if CALC_SHEET in [ws.title for ws in spreadsheet.worksheets()]:
                 sheet = spreadsheet.worksheet(CALC_SHEET)
             else:
@@ -130,12 +127,13 @@ if st.button("✅ Save Valid Entries"):
 
             for row in valid_rows:
                 sheet.append_row(row)
+
             st.success(f"✅ {len(valid_rows)} records saved successfully.")
         except Exception as e:
             st.error(f"❌ Failed to save data: {e}")
     else:
         st.warning("⚠ No valid rows to save. See below for validation issues.")
-    
+
     if errors:
         for err in errors:
             st.error(err)
