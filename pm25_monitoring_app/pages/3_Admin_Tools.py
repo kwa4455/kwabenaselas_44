@@ -45,7 +45,8 @@ else:
 st.header("📊 Submitted Monitoring Records")
 df = load_data_from_sheet(sheet)
 display_and_merge_data(df, spreadsheet, MERGED_SHEET)
-
+# Display Calculated Table
+st.subheader("Calculated Results")
 # --- Footer ---
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
