@@ -131,6 +131,29 @@ def edit_submitted_record():
 
 # --- Run Editor Logic ---
 edit_submitted_record()
+# --- Delete from Submitted Records ---
+st.subheader("🗑️ Delete from Submitted Records")
+df_submitted = load_data_from_sheet(sheet)
+
+if df_submitted.empty:
+    st.info("No submitted records available.")
+else:
+    df_submitted["Row Number"] = df_submitted.index + 2  # Google Sheets is 1-indexed + header
+    df_submitted["Record ID"] = df_submitted.apply(
+        lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At']}", axis=1
+    )
+
+    selected_record = st.selectbox("Select submitted record to delete:", [""] + df_submitted["Record ID"].tolist())
+
+    if selected_record:
+        row_to_delete = int(df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0])
+        
+        if st.checkbox("✅ Confirm deletion of submitted record"):
+            if st.button("🗑️ Delete Submitted Record"):
+                delete_row(sheet, row_to_delete)
+                st.success("✅ Submitted record deleted and backed up successfully.")
+                st.experimental_rerun()
+
 
 # --- Footer ---
 st.markdown("""
