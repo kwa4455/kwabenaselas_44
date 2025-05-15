@@ -9,36 +9,13 @@ from utils import (
     spreadsheet,
     require_roles
 )
-from constants import MAIN_SHEET,MERGED_SHEET
+from constants import MAIN_SHEET,MERGED_SHEET, CALC_SHEET
 
 # --- Page Setup ---
 st.title("🔧 Admin Tools")
 require_roles("admin")  # Only admins can proceed
 
 st.success(f"Welcome **{st.session_state['username']}**! You are an **{st.session_state['role']}**.")
-
-# --- Delete from Submitted Records ---
-st.subheader("🗑️ Delete from Submitted Records")
-df_submitted = load_data_from_sheet(sheet)
-
-if df_submitted.empty:
-    st.info("No submitted records available.")
-else:
-    df_submitted["Row Number"] = df_submitted.index + 2  # Google Sheets is 1-indexed + header
-    df_submitted["Record ID"] = df_submitted.apply(
-        lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At']}", axis=1
-    )
-
-    selected_record = st.selectbox("Select submitted record to delete:", [""] + df_submitted["Record ID"].tolist())
-
-    if selected_record:
-        row_to_delete = int(df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0])
-        
-        if st.checkbox("✅ Confirm deletion of submitted record"):
-            if st.button("🗑️ Delete Submitted Record"):
-                delete_row(sheet, row_to_delete)
-                st.success("✅ Submitted record deleted and backed up successfully.")
-                st.experimental_rerun()
 
 
 # === Display Existing Data & Merge START/STOP ===
