@@ -16,10 +16,12 @@ try:
     df_merged = pd.DataFrame(merged_data)
     site_ids = df_merged["ID"].dropna().unique().tolist()
     site_names = df_merged["Site"].dropna().unique().tolist()
+    officer_names = df_merged["Officer"].dropna().unique().tolist()
 except Exception as e:
     st.error("Failed to load merged records data.")
     site_ids = []
     site_names = []
+    officer_names = []
 
 # Page Title
 st.title("🧮 PM₂.₅ Concentration Calculation Tool")
