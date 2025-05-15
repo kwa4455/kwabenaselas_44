@@ -8,15 +8,9 @@ import time
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET,CALC_SHEET
 
 
-# === Google Sheets Setup ===
-creds_json = st.secrets["GOOGLE_CREDENTIALS"]
-creds_dict = json.loads(creds_json)
-
-
-scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-credentials = Credentials.from_service_account_info(creds_dict, scopes=scope)
-spreadsheet = gspread.authorize(credentials).open("YourSpreadsheetName")
-
+scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+gc = gspread.authorize(credentials)
 
 SPREADSHEET_ID = "1ZryycIkcgBwdXGR-VRaEqwb3D1YE47CCt0kPow08IEA"
 MAIN_SHEET = 'Observations'
