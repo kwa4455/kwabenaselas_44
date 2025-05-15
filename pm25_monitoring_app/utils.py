@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from datetime import datetime
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 import json
 import time
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET,CALC_SHEET
@@ -12,14 +12,11 @@ from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET,CALC_SHEET
 creds_json = st.secrets["GOOGLE_CREDENTIALS"]
 creds_dict = json.loads(creds_json)
 
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive"
-]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
+
+scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+credentials = Credentials.from_service_account_info(creds_dict, scopes=scope)
+spreadsheet = gspread.authorize(credentials).open("YourSpreadsheetName")
+
 
 SPREADSHEET_ID = "1ZryycIkcgBwdXGR-VRaEqwb3D1YE47CCt0kPow08IEA"
 MAIN_SHEET = 'Observations'
