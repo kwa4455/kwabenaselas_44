@@ -10,7 +10,7 @@ st.title("🧮 PM₂.₅ Concentration Calculator")
 st.write("Enter sample data to calculate PM₂.₅ concentrations in µg/m³ and save valid entries.")
 
 # --- Role Check ---
-require_roles("admin", "editor", "collector")
+require_roles("admin", "editor")
 
 # --- Load Site Info ---
 try:
