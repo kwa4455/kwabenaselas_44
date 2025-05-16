@@ -12,7 +12,7 @@ st.write("Enter sample data to calculate PM₂.₅ concentrations in µg/m³ and
 # --- Role Check ---
 require_roles("admin", "editor", "collector")
 
-# --- Load Site Info from Merged Records Sheet ---
+# --- Load Site Info ---
 try:
     merged_data = spreadsheet.worksheet(MERGED_SHEET).get_all_records()
     df_merged = pd.DataFrame(merged_data)
@@ -32,7 +32,7 @@ default_data = {
     "Site": [""] * rows,
     "Officer(s)": [""] * rows,
     "Elapsed Time (min)": [1200] * rows,
-    "Flow Rate (L/min)": [5.0] * rows,  # Default flow rate is now 5
+    "Flow Rate (L/min)": [5.0] * rows,
     "Pre Weight (g)": [0.0] * rows,
     "Post Weight (g)": [0.0] * rows
 }
@@ -49,19 +49,19 @@ edited_df = st.data_editor(
         "Date": st.column_config.DateColumn("Date"),
         "Elapsed Time (min)": st.column_config.NumberColumn("Elapsed Time (min)", help="Minimum valid duration is 1200 minutes."),
         "Flow Rate (L/min)": st.column_config.NumberColumn("Flow Rate (L/min)", help="Must be > 0.05"),
-        "Pre Weight (g)": st.column_config.NumberColumn("Pre Weight (g)", help="Mass before sampling in grams"),
-        "Post Weight (g)": st.column_config.NumberColumn("Post Weight (g)", help="Mass after sampling in grams"),
+        "Pre Weight (g)": st.column_config.NumberColumn("Pre Weight (g)", help="Mass before sampling (grams)"),
+        "Post Weight (g)": st.column_config.NumberColumn("Post Weight (g)", help="Mass after sampling (grams)"),
     }
 )
 
 # --- PM₂.₅ Calculation ---
 def calculate_pm(row):
     try:
-        elapsed = float(row["Elapsed Time (min)"])            # in minutes
-        flow = float(row["Flow Rate (L/min)"])                # in L/min
-        pre = float(row["Pre Weight (g)"])                    # in grams
-        post = float(row["Post Weight (g)"])                  # in grams
-        mass = post - pre                                     # grams
+        elapsed = float(row["Elapsed Time (min)"])            # minutes
+        flow = float(row["Flow Rate (L/min)"])                # L/min
+        pre_g = float(row["Pre Weight (g)"])                  # grams
+        post_g = float(row["Post Weight (g)"])                # grams
+        mass_mg = (post_g - pre_g) * 1000                     # g → mg
 
         if elapsed < 1200:
             return "Elapsed < 1200"
@@ -69,7 +69,7 @@ def calculate_pm(row):
             return "Invalid Flow"
 
         volume_m3 = (flow * elapsed) / 1000                   # L → m³
-        conc = (mass * 1_000_000) / volume_m3                 # g → µg, µg/m³
+        conc = (mass_mg * 1000) / volume_m3                   # mg → µg, µg/m³
 
         return round(conc, 2)
     except Exception as e:
@@ -93,13 +93,13 @@ if st.button("✅ Save Valid Entries"):
             flow = float(row["Flow Rate (L/min)"])
             pre = float(row["Pre Weight (g)"])
             post = float(row["Post Weight (g)"])
-            mass = post - pre
+            mass_mg = (post - pre) * 1000
             pm = calculate_pm(row)
+
             site_id = str(row["Site ID"]).strip()
             site = str(row["Site"]).strip()
             officer = str(row["Officer(s)"]).strip()
             date = str(row["Date"]) if row["Date"] else ""
-
 
             if elapsed < 1200:
                 errors.append(f"Row {idx + 1}: Elapsed Time < 1200")
