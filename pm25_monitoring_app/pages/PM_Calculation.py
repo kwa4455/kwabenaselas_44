@@ -59,9 +59,9 @@ def calculate_pm(row):
     try:
         elapsed = float(row["Elapsed Time (min)"])            # in minutes
         flow = float(row["Flow Rate (L/min)"])                # in L/min
-        pre = float(row["Pre Weight (mg)"])                   # in mg
-        post = float(row["Post Weight (mg)"])                 # in mg
-        mass = post - pre                                     # mg
+        pre = float(row["Pre Weight (g)"])                    # in grams
+        post = float(row["Post Weight (g)"])                  # in grams
+        mass = post - pre                                     # in grams
 
         if elapsed < 1200:
             return "Elapsed < 1200"
@@ -69,7 +69,7 @@ def calculate_pm(row):
             return "Invalid Flow"
 
         volume_m3 = (flow * elapsed) / 1000                   # L → m³
-        conc = (mass * 1000) / volume_m3                      # mg → µg, µg/m³
+        conc = (mass * 1_000_000) / volume_m3                 # g → µg, µg/m³
 
         return round(conc, 2)
     except Exception as e:
