@@ -70,10 +70,12 @@ def calculate_pm(row):
 
         if elapsed < 1200:
             return "Elapsed < 1200"
+
         conc = (mass * 1_000_000) / (elapsed * flow)  # mg to µg/m³
         return round(conc, 2)
-    except Exception:
-        return "Error"
+    except Exception as e:
+        return f"Error: {e}"
+
 
 # Auto-Calculate PM Concentration
 edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
