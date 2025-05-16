@@ -24,8 +24,10 @@ if role == "admin":
     pages = ["New Data Entry", "Edit Submitted Records", "Review & Merge"]
 elif role == "editor":
     pages = ["Edit Submitted Records", "Review & Merge"]
+elif role == "viewer":
+    pages = ["Review & Merge"]
 elif role == "collector":
-    pages = ["New Data Entry"]
+    pages = ["New Data Entry", "Edit Submitted Records"]
 else:
     st.error("❌ Invalid role.")
     st.stop()
