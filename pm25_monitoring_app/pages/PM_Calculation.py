@@ -70,7 +70,7 @@ def calculate_pm(row):
 
         if elapsed < 1200:
             return "Elapsed < 1200"
-        conc = (mass / (elapsed * flow)) * 1_000_000  # mg -> µg/m³
+        conc = (mass * 1_000_000) / (elapsed * flow)  # mg to µg/m³
         return round(conc, 2)
     except Exception:
         return "Error"
