@@ -57,21 +57,24 @@ edited_df = st.data_editor(
 # --- PM₂.₅ Calculation ---
 def calculate_pm(row):
     try:
-        elapsed = float(row["Elapsed Time (min)"])
-        flow = float(row["Flow Rate (L/min)"])
-        pre = float(row["Pre Weight (mg)"])
-        post = float(row["Post Weight (mg)"])
-        mass = post - pre  # mg
+        elapsed = float(row["Elapsed Time (min)"])            # in minutes
+        flow = float(row["Flow Rate (L/min)"])                # in L/min
+        pre = float(row["Pre Weight (mg)"])                   # in mg
+        post = float(row["Post Weight (mg)"])                 # in mg
+        mass = post - pre                                     # mg
 
         if elapsed < 1200:
             return "Elapsed < 1200"
         if flow <= 0:
             return "Invalid Flow"
 
-        conc = (mass * 1_000_000) / (elapsed * flow)  # µg/m³
+        volume_m3 = (flow * elapsed) / 1000                   # L → m³
+        conc = (mass * 1000) / volume_m3                      # mg → µg, µg/m³
+
         return round(conc, 2)
     except Exception as e:
         return f"Error: {e}"
+
 
 # --- Apply Calculation ---
 edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
