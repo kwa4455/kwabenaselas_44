@@ -23,7 +23,20 @@ st.header("📊 Submitted Monitoring Records")
 df = load_data_from_sheet(sheet)
 display_and_merge_data(df, spreadsheet, MERGED_SHEET)
 # Display Calculated Table
-st.subheader("Calculated Results")
+# --- Show Saved Entries ---
+st.subheader("📦 Saved PM₂.₅ Entries")
+
+try:
+    calc_ws = spreadsheet.worksheet(CALC_SHEET)
+    records = calc_ws.get_all_records()
+    if records:
+        df_saved = pd.DataFrame(records)
+        st.dataframe(df_saved, use_container_width=True)
+    else:
+        st.info("ℹ No entries have been saved yet.")
+except Exception as e:
+    st.error(f"❌ Failed to load saved data: {e}")
+
 # --- Footer ---
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
