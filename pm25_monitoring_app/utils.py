@@ -44,9 +44,16 @@ sheet = ensure_main_sheet_initialized(spreadsheet, MAIN_SHEET)
 # === User Management ===
 USERS = {
     "clement": {"password": "admin123", "role": "admin", "email": "clement@epa.gov.gh"},
-    "peter": {"password": "editor123", "role": "editor", "email": "peter@epa.gov.gh"},
-    "mawuli": {"password": "collector123", "role": "collector", "email": "mawuli@epa.gov.gh"},
-     "obed": {"password": "viewer123", "role": "viewer", "email": "obed@epa.gov.gh"},
+    "peter": {"password": "peter123", "role": "editor", "email": "peter@epa.gov.gh"},
+    "ben": {"password": "ben123", "role": "editor", "email": "peter@epa.gov.gh"},
+    "moses": {"password": "moses123", "role": "collector", "email": "peter@epa.gov.gh"},
+    "john_G": {"password": "john123", "role": "collector", "email": "peter@epa.gov.gh"},
+    "mawuli": {"password": "mawuli123", "role": "editor", "email": "mawuli@epa.gov.gh"},
+    "obed": {"password": "viewer123", "role": "editor", "email": "obed@epa.gov.gh"},
+    "maxwell": {"password": "maxwell123", "role": "viewer", "email": "obed@epa.gov.gh"},
+    "selina": {"password": "selinal123", "role": "viewer", "email": "obed@epa.gov.gh"},
+    "john": {"password": "john124", "role": "viewer", "email": "obed@epa.gov.gh"},
+     "ludwick": {"password": "ludwick124", "role": "viewer", "email": "obed@epa.gov.gh"},
 }
 
 def login():
