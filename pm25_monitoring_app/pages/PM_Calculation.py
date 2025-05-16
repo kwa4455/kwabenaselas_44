@@ -33,8 +33,8 @@ default_data = {
     "Officer(s)": [""] * rows,
     "Elapsed Time (min)": [1200] * rows,
     "Flow Rate (L/min)": [0.05] * rows,
-    "Pre Weight (mg)": [0.0] * rows,
-    "Post Weight (mg)": [0.0] * rows
+    "Pre Weight (mg)": [0.0000] * rows,
+    "Post Weight (mg)": [0.0000] * rows
 }
 df_input = pd.DataFrame(default_data)
 
