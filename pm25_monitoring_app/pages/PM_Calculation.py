@@ -32,7 +32,7 @@ default_data = {
     "Site": [""] * rows,
     "Officer(s)": [""] * rows,
     "Elapsed Time (min)": [1200] * rows,
-    "Flow Rate (L/min)": [5.0] * rows,  # Updated default to 5.0
+    "Flow Rate (L/min)": [0.05] * rows,
     "Pre Weight (mg)": [0.0] * rows,
     "Post Weight (mg)": [0.0] * rows
 }
@@ -54,7 +54,7 @@ edited_df = st.data_editor(
     }
 )
 
-# --- PM₂.₅ Calculation ---
+# --- PM₂.₅ Calculation Function ---
 def calculate_pm(row):
     try:
         elapsed = float(row["Elapsed Time (min)"])            # in minutes
@@ -75,14 +75,14 @@ def calculate_pm(row):
     except Exception as e:
         return f"Error: {e}"
 
-# --- Apply Calculation ---
+# --- Apply Calculation to DataFrame ---
 edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
 
-# --- Display Table ---
+# --- Display Results Table ---
 st.subheader("📋 Calculated Results")
 st.dataframe(edited_df, use_container_width=True)
 
-# --- Save Button ---
+# --- Save to Google Sheet ---
 if st.button("✅ Save Valid Entries"):
     valid_rows = []
     errors = []
@@ -93,12 +93,14 @@ if st.button("✅ Save Valid Entries"):
             flow = float(row["Flow Rate (L/min)"])
             pre = float(row["Pre Weight (mg)"])
             post = float(row["Post Weight (mg)"])
+            mass = post - pre
             pm = calculate_pm(row)
             site_id = str(row["Site ID"]).strip()
             site = str(row["Site"]).strip()
             officer = str(row["Officer(s)"]).strip()
             date = row["Date"]
 
+            # --- Validation ---
             if elapsed < 1200:
                 errors.append(f"Row {idx + 1}: Elapsed Time < 1200")
                 continue
@@ -120,7 +122,7 @@ if st.button("✅ Save Valid Entries"):
 
     if valid_rows:
         try:
-            # Ensure sheet exists
+            # Create sheet if missing
             sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
             if CALC_SHEET not in sheet_titles:
                 calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols="20")
@@ -130,6 +132,7 @@ if st.button("✅ Save Valid Entries"):
             else:
                 calc_ws = spreadsheet.worksheet(CALC_SHEET)
 
+            # Append valid rows
             for row in valid_rows:
                 calc_ws.append_row(row)
 
