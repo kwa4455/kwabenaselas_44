@@ -6,7 +6,7 @@ from constants import MERGED_SHEET, CALC_SHEET
 
 # Page Title and Info
 st.title("✏️ PM Calculator")
-st.info("Welcome to the PM Calculator form. Please provide monitoring details below.")
+st.write("Calculate PM concentrations and generate reports.")
 
 # Auth Check
 require_roles("admin", "editor", "collector")
