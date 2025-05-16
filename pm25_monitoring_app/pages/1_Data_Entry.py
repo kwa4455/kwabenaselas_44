@@ -23,8 +23,6 @@ st.info("Welcome to the data entry form. Please provide monitoring details below
 
 require_roles("admin", "editor", "collector")
 
-st.title("📄 Enter PM₂.₅ Monitoring Data")
-st.info("Welcome to the data entry form. Please provide monitoring details below.")
 
 # --- Dropdown Options ---
 ids = ["", '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
