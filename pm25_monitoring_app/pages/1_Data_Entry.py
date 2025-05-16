@@ -107,9 +107,7 @@ elif entry_type == "STOP":
                 st.error("⚠ Please complete all required fields before submitting.")
 
 # === Display Existing Data & Merge START/STOP ===
-st.header("📊 Submitted Monitoring Records")
-df = load_data_from_sheet(sheet)
-display_and_merge_data(df, spreadsheet, MERGED_SHEET)
+
 
 # --- Footer ---
 st.markdown("""
