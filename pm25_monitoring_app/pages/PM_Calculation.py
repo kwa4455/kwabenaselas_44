@@ -32,7 +32,7 @@ default_data = {
     "Site": [""] * rows,
     "Officer(s)": [""] * rows,
     "Elapsed Time (min)": [1200] * rows,
-    "Flow Rate (L/min)": [0.05] * rows,
+    "Flow Rate (L/min)": [5.0] * rows,  # Updated default to 5.0
     "Pre Weight (mg)": [0.0] * rows,
     "Post Weight (mg)": [0.0] * rows
 }
@@ -75,7 +75,6 @@ def calculate_pm(row):
     except Exception as e:
         return f"Error: {e}"
 
-
 # --- Apply Calculation ---
 edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
 
@@ -94,7 +93,6 @@ if st.button("✅ Save Valid Entries"):
             flow = float(row["Flow Rate (L/min)"])
             pre = float(row["Pre Weight (mg)"])
             post = float(row["Post Weight (mg)"])
-            mass = post - pre
             pm = calculate_pm(row)
             site_id = str(row["Site ID"]).strip()
             site = str(row["Site"]).strip()
