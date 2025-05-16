@@ -32,9 +32,9 @@ default_data = {
     "Site": [""] * rows,
     "Officer(s)": [""] * rows,
     "Elapsed Time (min)": [1200] * rows,
-    "Flow Rate (L/min)": [0.05] * rows,
-    "Pre Weight (mg)": [0.0000] * rows,
-    "Post Weight (mg)": [0.0000] * rows
+    "Flow Rate (L/min)": [5.0] * rows,  # Default flow rate is now 5
+    "Pre Weight (g)": [0.0] * rows,
+    "Post Weight (g)": [0.0] * rows
 }
 df_input = pd.DataFrame(default_data)
 
@@ -49,19 +49,19 @@ edited_df = st.data_editor(
         "Date": st.column_config.DateColumn("Date"),
         "Elapsed Time (min)": st.column_config.NumberColumn("Elapsed Time (min)", help="Minimum valid duration is 1200 minutes."),
         "Flow Rate (L/min)": st.column_config.NumberColumn("Flow Rate (L/min)", help="Must be > 0.05"),
-        "Pre Weight (mg)": st.column_config.NumberColumn("Pre Weight (mg)", help="Mass before sampling"),
-        "Post Weight (mg)": st.column_config.NumberColumn("Post Weight (mg)", help="Mass after sampling"),
+        "Pre Weight (g)": st.column_config.NumberColumn("Pre Weight (g)", help="Mass before sampling in grams"),
+        "Post Weight (g)": st.column_config.NumberColumn("Post Weight (g)", help="Mass after sampling in grams"),
     }
 )
 
-# --- PM₂.₅ Calculation Function ---
+# --- PM₂.₅ Calculation ---
 def calculate_pm(row):
     try:
         elapsed = float(row["Elapsed Time (min)"])            # in minutes
         flow = float(row["Flow Rate (L/min)"])                # in L/min
         pre = float(row["Pre Weight (g)"])                    # in grams
         post = float(row["Post Weight (g)"])                  # in grams
-        mass = post - pre                                     # in grams
+        mass = post - pre                                     # grams
 
         if elapsed < 1200:
             return "Elapsed < 1200"
@@ -75,14 +75,14 @@ def calculate_pm(row):
     except Exception as e:
         return f"Error: {e}"
 
-# --- Apply Calculation to DataFrame ---
+# --- Apply Calculation ---
 edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
 
-# --- Display Results Table ---
+# --- Display Table ---
 st.subheader("📋 Calculated Results")
 st.dataframe(edited_df, use_container_width=True)
 
-# --- Save to Google Sheet ---
+# --- Save Button ---
 if st.button("✅ Save Valid Entries"):
     valid_rows = []
     errors = []
@@ -91,8 +91,8 @@ if st.button("✅ Save Valid Entries"):
         try:
             elapsed = float(row["Elapsed Time (min)"])
             flow = float(row["Flow Rate (L/min)"])
-            pre = float(row["Pre Weight (mg)"])
-            post = float(row["Post Weight (mg)"])
+            pre = float(row["Pre Weight (g)"])
+            post = float(row["Post Weight (g)"])
             mass = post - pre
             pm = calculate_pm(row)
             site_id = str(row["Site ID"]).strip()
@@ -100,7 +100,6 @@ if st.button("✅ Save Valid Entries"):
             officer = str(row["Officer(s)"]).strip()
             date = row["Date"]
 
-            # --- Validation ---
             if elapsed < 1200:
                 errors.append(f"Row {idx + 1}: Elapsed Time < 1200")
                 continue
@@ -122,17 +121,16 @@ if st.button("✅ Save Valid Entries"):
 
     if valid_rows:
         try:
-            # Create sheet if missing
+            # Ensure sheet exists
             sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
             if CALC_SHEET not in sheet_titles:
                 calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols="20")
                 header = ["Date", "Site ID", "Site", "Officer(s)", "Elapsed Time (min)", "Flow Rate (L/min)",
-                          "Pre Weight (mg)", "Post Weight (mg)", "PM₂.₅ (µg/m³)"]
+                          "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"]
                 calc_ws.append_row(header)
             else:
                 calc_ws = spreadsheet.worksheet(CALC_SHEET)
 
-            # Append valid rows
             for row in valid_rows:
                 calc_ws.append_row(row)
 
