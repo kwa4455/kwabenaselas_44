@@ -53,7 +53,7 @@ USERS = {
     "maxwell": {"password": "maxwell123", "role": "viewer", "email": "obed@epa.gov.gh"},
     "selina": {"password": "selinal123", "role": "viewer", "email": "obed@epa.gov.gh"},
     "john": {"password": "john124", "role": "viewer", "email": "obed@epa.gov.gh"},
-     "ludwick": {"password": "ludwick124", "role": "viewer", "email": "obed@epa.gov.gh"},
+     "ludwick": {"password": "ludwick124", "role": "viewer", "email": "obed@epa.gov.gh"}
 }
 
 def login():
