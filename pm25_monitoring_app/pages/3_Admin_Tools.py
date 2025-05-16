@@ -13,7 +13,7 @@ from constants import MAIN_SHEET,MERGED_SHEET, CALC_SHEET
 
 # --- Page Setup ---
 st.title("🔧 Admin Tools")
-require_roles("admin")  # Only admins can proceed
+require_roles("admin","viewer")  # Only admins can proceed
 
 st.success(f"Welcome **{st.session_state['username']}**! You are an **{st.session_state['role']}**.")
 
