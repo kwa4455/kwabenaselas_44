@@ -83,7 +83,7 @@ def require_roles(*allowed_roles):
 def logout_button():
     if st.sidebar.button("🚪 Logout"):
         st.session_state.clear()
-        st.experimental_rerun()
+        st.rerun()
 
 # === Data Utilities ===
 
