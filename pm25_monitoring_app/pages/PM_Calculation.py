@@ -98,7 +98,8 @@ if st.button("✅ Save Valid Entries"):
             site_id = str(row["Site ID"]).strip()
             site = str(row["Site"]).strip()
             officer = str(row["Officer(s)"]).strip()
-            date = row["Date"]
+            date = str(row["Date"]) if row["Date"] else ""
+
 
             if elapsed < 1200:
                 errors.append(f"Row {idx + 1}: Elapsed Time < 1200")
