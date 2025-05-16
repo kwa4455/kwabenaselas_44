@@ -14,6 +14,7 @@ from constants import MERGED_SHEET
 
 # --- Page Title ---
 st.title("✏️ Editor Tools")
+st.write("This page will display records and allow authorized users to delete or update them.")
 
 
 
