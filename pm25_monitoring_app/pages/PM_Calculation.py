@@ -35,7 +35,7 @@ default_data = {
     "Site": [""] * rows,
     "Officer(s)": [""] * rows,
     "Elapsed Time (min)": [1200] * rows,
-    "Flow Rate (L/min)": [5.0] * rows,
+    "Flow Rate (L/min)": [0.05] * rows,
     "Pre Weight (mg)": [0.0] * rows,
     "Post Weight (mg)": [0.0] * rows
 }
@@ -102,8 +102,8 @@ if st.button("✅ Save Valid Entries"):
             if elapsed < 1200:
                 errors.append(f"Row {idx + 1}: Elapsed Time < 1200")
                 continue
-            if flow <= 0:
-                errors.append(f"Row {idx + 1}: Flow Rate must be > 0")
+            if flow <= 0.05:
+                errors.append(f"Row {idx + 1}: Flow Rate must be > 0.05")
                 continue
             if post < pre:
                 errors.append(f"Row {idx + 1}: Post Weight < Pre Weight")
