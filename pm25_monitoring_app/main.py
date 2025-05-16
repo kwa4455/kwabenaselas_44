@@ -21,13 +21,13 @@ if "df" not in st.session_state:
 
 # Show navigation based on role
 if role == "admin":
-    pages = ["New Data Entry", "Edit Submitted Records", "Review & Merge"]
+    pages = ["Data Entry", "Edit Records", "Review"]
 elif role == "editor":
-    pages = ["Edit Submitted Records", "Review & Merge"]
+    pages = ["Edit Records", "Review "]
 elif role == "viewer":
     pages = ["Review & Merge"]
 elif role == "collector":
-    pages = ["New Data Entry", "Edit Submitted Records"]
+    pages = ["Data Entry", "Edit Records"]
 else:
     st.error("❌ Invalid role.")
     st.stop()
