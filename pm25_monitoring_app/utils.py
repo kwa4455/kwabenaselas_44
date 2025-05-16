@@ -64,7 +64,7 @@ def login():
                 st.session_state.username = username
                 st.session_state.role = user["role"]
                 st.session_state.user_email = user.get("email", f"{username}@epa.gov.gh")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("❌ Invalid credentials")
 
