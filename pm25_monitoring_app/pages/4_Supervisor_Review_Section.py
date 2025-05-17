@@ -16,6 +16,22 @@ from constants import MERGED_SHEET,CALC_SHEET
 
 require_roles("admin", "viewer")
 
+import streamlit as st
+
+# Set browser tab title and icon
+st.set_page_config(page_title="Audit Records", page_icon="🕵️")
+
+# Centered title using HTML
+st.markdown(
+    """
+    <h2 style='text-align: center;'>🕵️ Audit Records Dashboard</h2>
+    """,
+    unsafe_allow_html=True
+)
+
+# Description
+st.write("This page will display records and allow Supervisors to inspect and audit records.")
+
 
 # === Display Existing Data & Merge START/STOP ===
 st.header("📊 Submitted Monitoring Records")
