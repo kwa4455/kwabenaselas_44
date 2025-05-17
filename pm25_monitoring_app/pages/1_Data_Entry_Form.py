@@ -21,7 +21,7 @@ st.set_page_config(page_title="Data Entry", page_icon="📋")
 st.markdown(
     """
     <div style='text-align: center;'>
-        <h2>📋 PM2.5 Monitoring Data Entry</h2>
+        <h2>📋 Field Monitoring Data Entry</h2>
         <p style='color: grey;'>Use this page to input daily observations, instrument readings, and site information.</p>
     </div>
     <hr>
