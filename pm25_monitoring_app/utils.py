@@ -135,6 +135,8 @@ def undo_last_delete(sheet):
 
 
 
+import pandas as pd
+
 def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
     stop_df = df[df["Entry Type"] == "STOP"].copy()
@@ -151,17 +153,17 @@ def merge_start_stop(df):
     merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Start"), errors="coerce")
     merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Stop"), errors="coerce")
 
-    # Elapsed Time Difference (multiplied by 2)
+    # Elapsed Time Difference (×2 as requested)
     merged["Elapsed Time Diff (min)"] = (
         merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
     ) * 2
 
-    # Average Flow Rate only if both values are present
+    # Average flow rate only if both values exist
     merged["Average Flow Rate (L/min)"] = merged[
         ["Flow Rate (L/min)_Start", "Flow Rate (L/min)_Stop"]
-    ].mean(axis=1, skipna=False)  # skipna=False → NaN if any are missing
+    ].mean(axis=1, skipna=False)  # Will be NaN if either value is NaN
 
-    # Final desired column order
+    # Final column order
     desired_columns = [
         "ID", "Site",
         "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date _Start", "Time_Start",
@@ -175,13 +177,12 @@ def merge_start_stop(df):
         "Elapsed Time Diff (min)", "Average Flow Rate (L/min)"
     ]
 
-    # Filter to available columns
     final_columns = [col for col in desired_columns if col in merged.columns]
 
-    # Replace NaN with None for JSON serialization
+    # Ensure JSON-safe output
     cleaned = merged[final_columns].where(pd.notnull(merged[final_columns]), None)
 
-    return cleaned
+    return cleaned.to_dict(orient="records")
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     df = convert_timestamps_to_string(df)
