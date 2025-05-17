@@ -26,17 +26,17 @@ except Exception as e:
     st.stop()
 
 # --- Date Filter ---
-if "Date _Start" in filtered_df.columns:
+if "Date_Start" in filtered_df.columns:
     try:
         # Convert to datetime
-        filtered_df["Date _Start"] = pd.to_datetime(filtered_df["Date _Start"], errors="coerce")
+        filtered_df["Date_Start"] = pd.to_datetime(filtered_df["Date_Start"], errors="coerce")
 
         # Drop rows with invalid or missing dates
-        filtered_df = filtered_df.dropna(subset=["Date _Start"])
+        filtered_df = filtered_df.dropna(subset=["Date_Start"])
 
         # Get min and max dates
-        min_date = filtered_df["Date _Start"].min().date()
-        max_date = filtered_df["Date _Start"].max().date()
+        min_date = filtered_df["Date_Start"].min().date()
+        max_date = filtered_df["Date_Start"].max().date()
 
         # Let user select date range
         st.subheader("📅 Filter by Start Date")
@@ -44,12 +44,12 @@ if "Date _Start" in filtered_df.columns:
 
         if isinstance(date_range, tuple) and len(date_range) == 2:
             start_date, end_date = date_range
-            mask = (filtered_df["Date _Start"].dt.date >= start_date) & (filtered_df["Date _Start"].dt.date <= end_date)
+            mask = (filtered_df["Date_Start"].dt.date >= start_date) & (filtered_df["Date_Start"].dt.date <= end_date)
             filtered_df = filtered_df.loc[mask]
     except Exception as e:
         st.warning(f"⚠ Could not filter by date: {e}")
 else:
-    st.warning("⚠ 'Date _Start' column not found — skipping date filter.")
+    st.warning("⚠ 'Date_Start' column not found — skipping date filter.")
 
 # --- Site Filter ---
 if "Site" in df_merged.columns:
