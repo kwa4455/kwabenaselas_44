@@ -164,6 +164,10 @@ def merge_start_stop(df):
     if "Flow Rate (L/min)_Start" in merged.columns and "Flow Rate (L/min)_Stop" in merged.columns:
         merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged["Flow Rate (L/min)_Start"], errors="coerce")
         merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged["Flow Rate (L/min)_Stop"], errors="coerce")
+        # Check after conversion
+        print("[DEBUG] Converted START Flow Rates:\n", merged["Flow Rate (L/min)_Start"].head())
+        print("[DEBUG] Converted STOP Flow Rates:\n", merged["Flow Rate (L/min)_Stop"].head())
+
         merged["Flow Rate (L/min)"] = (
             merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
         ) / 2
@@ -188,6 +192,7 @@ def merge_start_stop(df):
     other_cols = [col for col in merged.columns if col not in front_cols + existing_wind + existing_calc]
 
     return merged[front_cols + existing_wind + existing_calc + other_cols]
+
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     df = convert_timestamps_to_string(df)
