@@ -90,7 +90,7 @@ st.markdown("""
 
 # --- Sidebar Navigation ---
 st.sidebar.title("📁 Navigation")
-st.sidebar.page_link("Main.py", label="Main", icon="🏠")
+st.sidebar.page_link("main.py", label="Main", icon="🏠")
 st.sidebar.page_link("pages/1_Data_Entry.py", label="Data Entry", icon="📝")
 st.sidebar.page_link("pages/2_Edit_Records.py", label="Edit Records", icon="✏️")
 st.sidebar.page_link("pages/3_PM25_Calculation.py", label="PM₂.₅ Calculation", icon="📊")
