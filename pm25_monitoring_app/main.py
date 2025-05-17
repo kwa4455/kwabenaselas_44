@@ -1,20 +1,21 @@
 import streamlit as st
 from utils import login, load_data_from_sheet, sheet, spreadsheet, logout_button
 
+# Setup
 st.set_page_config(page_title="PM₂.₅ Monitoring App", layout="wide")
 login()
 
 username = st.session_state["username"]
 role = st.session_state["role"]
 
-# Load data if not already loaded
+# Load data once
 if "df" not in st.session_state:
     with st.spinner("Loading data..."):
         st.session_state.df = load_data_from_sheet(sheet)
         st.session_state.sheet = sheet
         st.session_state.spreadsheet = spreadsheet
-        
-# --- HEADER & CSS ---
+
+# --- HEADER ---
 st.markdown("""
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
@@ -49,9 +50,11 @@ st.markdown("""
         color: white;
         box-shadow: 2px 2px 8px #aaa;
         transition: transform 0.2s;
+        text-align: center;
     }
     .card:hover {
         transform: scale(1.02);
+        cursor: pointer;
     }
     .card-icon {
         font-size: 2.5rem;
@@ -77,47 +80,52 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- TITLE ---
+# --- PAGE TITLE ---
 st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring App")
 st.info(f"👤 Logged in as: **{username}** (Role: {role})")
 
-# --- SIDEBAR ---
+# --- SIDEBAR NAVIGATION ---
 st.sidebar.title("📁 Navigation")
 st.sidebar.page_link("main.py", label="Home", icon="🏠")
 if role in ["admin", "collector"]:
     st.sidebar.page_link("pages/1_Data_Entry.py", label="Data Entry", icon="📝")
 if role in ["admin", "editor", "collector"]:
-    st.sidebar.page_link("pages/2_Edit_Records.py", label="Edit Records", icon="✏️")
+    st.sidebar.page_link("pages/2_Edit_Record.py", label="Edit Records", icon="✏️")
 st.sidebar.page_link("pages/3_PM25_Calculation.py", label="PM₂.₅ Calculation", icon="📊")
 if role == "admin":
     st.sidebar.page_link("pages/4_Admin_Tools.py", label="Admin Tools", icon="🛠️")
 
-# --- CARD RENDERING (uses st.page_link) ---
-st.markdown('<div class="grid-container">', unsafe_allow_html=True)
-
+# --- CARD FUNCTION ---
 def card(icon_class, title, desc, page_path, bg_color):
-    with st.container():
-        st.markdown(f"""
+    st.page_link(
+        page_path,
+        label=f"""
         <div class="card" style="background-color: {bg_color};">
             <div class="card-icon"><i class="{icon_class}"></i></div>
             <div class="card-title">{title}</div>
             <div class="card-desc">{desc}</div>
+            <div style="margin-top: 1rem; font-weight: bold;">Go →</div>
         </div>
-        """, unsafe_allow_html=True)
-        st.page_link(page_path, label="Go →")
+        """,
+        use_container_width=True,
+        unsafe_allow_html=True
+    )
 
-# Render cards by role
+# --- CARD GRID ---
+st.markdown('<div class="grid-container">', unsafe_allow_html=True)
+
 if role in ["admin", "collector"]:
-    card("fas fa-plus-circle", "Data Entry", "Add new data entries", "pages/1_Data_Entry.py", "#4CAF50")
-if role in ["admin", "editor", "collector"]:
-    card("fas fa-edit", "Edit Records", "Modify or delete records", "pages/2_Edit_Records.py", "#2196F3")
+    card("fas fa-plus-circle", "Data Entry", "Add new monitoring data entries", "pages/1_Data_Entry.py", "#4CAF50")
 
-card("fas fa-chart-line", "PM₂.₅ Calculation", "Compute concentration values", "pages/3_PM25_Calculation.py", "#FF9800")
+if role in ["admin", "editor", "collector"]:
+    card("fas fa-edit", "Edit Records", "Review, edit or delete records", "pages/2_Edit_Records.py", "#2196F3")
+
+card("fas fa-chart-line", "PM₂.₅ Calculation", "Calculate pollutant concentrations", "pages/3_PM25_Calculation.py", "#FF9800")
 
 if role == "admin":
-    card("fas fa-cogs", "Admin Tools", "System utilities and admin controls", "pages/4_Admin_Tools.py", "#9C27B0")
+    card("fas fa-cogs", "Admin Tools", "View admin-only tools and settings", "pages/4_Admin_Tools.py", "#9C27B0")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- Logout ---
+# --- LOGOUT ---
 logout_button()
