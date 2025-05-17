@@ -6,7 +6,7 @@ from utils import (
     add_data,
     merge_start_stop,
     save_merged_data_to_sheet,
-    filter_dataframe
+    filter_dataframe,
     display_and_merge_data,
     sheet,
     spreadsheet,
