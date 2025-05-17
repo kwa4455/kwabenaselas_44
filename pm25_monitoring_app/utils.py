@@ -140,6 +140,7 @@ def merge_start_stop(df):
     stop_df = df[df["Entry Type"] == "STOP"].copy()
     merge_keys = ["ID", "Site"]
     
+    # Rename columns for merging
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys else x)
     
@@ -150,7 +151,7 @@ def merge_start_stop(df):
         merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged["Elapsed Time (min)_Start"], errors="coerce")
         merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged["Elapsed Time (min)_Stop"], errors="coerce")
         merged["Elapsed Time Diff (sec)"] = (
-        merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
+            merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
         ) * 60
 
     # Compute Average Flow Rate
@@ -172,7 +173,7 @@ def merge_start_stop(df):
         "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop",
         "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop",
         "Observation_Stop", "Submitted At_Stop",
-        "Elapsed Time Diff (min)", "Average Flow Rate (L/min)"
+        "Elapsed Time Diff (sec)", "Average Flow Rate (L/min)"
     ]
 
     # Return only the columns that exist in the merged DataFrame in the specified order
