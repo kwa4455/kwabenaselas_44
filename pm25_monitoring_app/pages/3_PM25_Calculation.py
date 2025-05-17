@@ -23,7 +23,7 @@ except Exception as e:
     st.error(f"❌ Failed to load merged sheet: {e}")
     st.stop()
 
-# --- Site Filter (Optional) ---
+# --- Site Filter ---
 if "Site" in df_merged.columns:
     try:
         available_sites = sorted(df_merged["Site"].dropna().unique())
@@ -95,16 +95,14 @@ st.dataframe(edited_df, use_container_width=True)
 # --- Save Valid Entries ---
 if st.button("✅ Save Valid Entries"):
 
-    # Define final required column order
     final_header = [
         "ID", "Site", "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date_Start", "Time_Start",
         "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start", "Wind Speed_Start",
         "Wind Direction_Start", "Elapsed Time (min)_Start", " Flow Rate (L/min)_Start", "Observation_Start",
-        "Submitted At_Start", "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
+        "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
         "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop", "Wind Speed_Stop",
         "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop", "Observation_Stop",
-        "Submitted At_Stop", "Elapsed Time Diff (min)", "Average Flow Rate (L/min)",
-        "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"
+        "Elapsed Time Diff (min)", "Average Flow Rate (L/min)", "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"
     ]
 
     valid_rows = []
@@ -118,12 +116,11 @@ if st.button("✅ Save Valid Entries"):
                 errors.append(f"Row {idx + 1}: {pm}")
                 continue
 
-            # Check for minimal required fields
             if not all(str(row.get(col, "")).strip() for col in ["ID", "Site", "Monitoring Officer_Start"]):
                 errors.append(f"Row {idx + 1}: Missing required fields (ID, Site, Officer)")
                 continue
 
-            # Build row based on final header
+            # Ensure values are pulled in the same order as final_header
             data_row = [row.get(col, "") for col in final_header]
             valid_rows.append(data_row)
 
@@ -132,7 +129,6 @@ if st.button("✅ Save Valid Entries"):
 
     if valid_rows:
         try:
-            # Ensure worksheet exists
             sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
             if CALC_SHEET not in sheet_titles:
                 calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols="40")
