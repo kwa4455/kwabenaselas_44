@@ -133,27 +133,22 @@ def delete_merged_record_by_index(index_to_delete):
 def undo_last_delete(sheet):
     st.warning("⚠️ Undo not supported. Check backup sheet manually.")
 
+
 def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
     stop_df = df[df["Entry Type"] == "STOP"].copy()
     merge_keys = ["ID", "Site"]
 
-    # Rename columns to distinguish start/stop
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys else x)
 
-    # Merge the two datasets
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    # Convert elapsed time columns to numeric before subtraction
     if "Elapsed Time (min)_Start" in merged.columns and "Elapsed Time (min)_Stop" in merged.columns:
         merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged["Elapsed Time (min)_Start"], errors="coerce")
         merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged["Elapsed Time (min)_Stop"], errors="coerce")
-        merged["Elapsed Time Diff (min)"] = (
-            merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
-        )
+        merged["Elapsed Time Diff (min)"] = merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
 
-    # Convert flow rate columns to numeric before computing average
     if "Flow Rate (L/min)_Start" in merged.columns and "Flow Rate (L/min)_Stop" in merged.columns:
         merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged["Flow Rate (L/min)_Start"], errors="coerce")
         merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged["Flow Rate (L/min)_Stop"], errors="coerce")
@@ -161,7 +156,6 @@ def merge_start_stop(df):
             merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
         ) / 2
 
-    # Reorder columns for display
     wind_cols = [
         "Wind Speed_Start", "Wind Direction_Start",
         "Wind Speed_Stop", "Wind Direction_Stop"
