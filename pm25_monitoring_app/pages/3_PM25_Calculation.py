@@ -112,6 +112,7 @@ final_header = [
 ]
 
 # --- Save Valid Entries ---
+# --- Save Valid Entries ---
 if st.button("✅ Save Valid Entries"):
     valid_rows = []
     errors = []
@@ -131,10 +132,16 @@ if st.button("✅ Save Valid Entries"):
                 continue
 
             # Prepare the row, ensuring all missing fields are replaced with empty strings
-            data_row = [
-                str(row.get(col, "")).strip() if pd.notna(row.get(col, "")) else "" for col in final_header
-            ]
-            
+            data_row = []
+
+            for col in final_header:
+                value = row.get(col, "").strip() if pd.notna(row.get(col, "")) else ""
+                
+                # If it's a Date or Time column and is empty, you can use a placeholder or None
+                if 'Date' in col or 'Time' in col:
+                    value = value if value else None  # Set to None if empty, or you can set a default date
+                data_row.append(value)
+
             # Log data_row to debug row content and size before saving
             st.write(f"Row {idx + 1} content: {data_row}")
             st.write(f"Row {idx + 1} length: {len(data_row)} | Header length: {len(final_header)}")
