@@ -102,73 +102,35 @@ st.download_button(
 
 
 
-# --- Save Valid Entries ---
-# --- Save Valid Entries ---
-if st.button("✅ Save Valid Entries"):
-    valid_rows = []
+# --- Save Edited DataFrame to Google Sheets ---
+if st.button("✅ Save Edited DataFrame"):
     errors = []
 
-    for idx, row in edited_df.iterrows():
-        try:
-            pm = row["PM₂.₅ (µg/m³)"]
+    try:
+        # Ensure edited_df columns match the final_header order
+        edited_df = edited_df[final_header]  # Reorder columns to match final_header
 
-            if isinstance(pm, str):
-                errors.append(f"Row {idx + 1}: {pm}")
-                continue
+        # Convert the DataFrame to a list of lists (excluding the index)
+        rows_to_save = edited_df.values.tolist()
 
-            # Ensure required fields are not empty (e.g., ID, Site, Officer)
-            required_fields = ["ID", "Site", "Monitoring Officer_Start"]
-            if not all(str(row.get(col, "")).strip() for col in required_fields):
-                errors.append(f"Row {idx + 1}: Missing required fields (ID, Site, Officer)")
-                continue
+        # Log the first row of the data for debugging
+        st.write(f"First row to save: {rows_to_save[0]}")  # Check the first row format
 
-            # Prepare the row, ensuring all missing fields are replaced with empty strings
-            data_row = []
+        # Append rows to Google Sheets
+        sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
+        if CALC_SHEET not in sheet_titles:
+            calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols=str(len(final_header)))
+            calc_ws.append_row(final_header)
+        else:
+            calc_ws = spreadsheet.worksheet(CALC_SHEET)
 
-            for col in final_header:
-                value = row.get(col, "").strip() if pd.notna(row.get(col, "")) else ""
-                
-                # If it's a Date or Time column and is empty, you can use a placeholder or None
-                if 'Date' in col or 'Time' in col:
-                    value = value if value else None  # Set to None if empty, or you can set a default date
-                data_row.append(value)
+        # Append rows in batch to Google Sheets
+        calc_ws.append_rows(rows_to_save, value_input_option="USER_ENTERED")
 
-            # Log data_row to debug row content and size before saving
-            st.write(f"Row {idx + 1} content: {data_row}")
-            st.write(f"Row {idx + 1} length: {len(data_row)} | Header length: {len(final_header)}")
+        st.success(f"✅ Saved {len(rows_to_save)} rows successfully.")
+    except Exception as e:
+        st.error(f"❌ Error saving data: {e}")
 
-            # Check if the row matches the final_header length
-            if len(data_row) != len(final_header):
-                errors.append(f"Row {idx + 1}: Column mismatch ({len(data_row)} vs {len(final_header)})")
-                continue
-
-            valid_rows.append(data_row)
-
-        except Exception as e:
-            errors.append(f"Row {idx + 1}: Error parsing row - {e}")
-
-    if valid_rows:
-        try:
-            sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
-            if CALC_SHEET not in sheet_titles:
-                calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols=str(len(final_header)))
-                calc_ws.append_row(final_header)
-            else:
-                calc_ws = spreadsheet.worksheet(CALC_SHEET)
-
-            # Append rows in batch to Google Sheets
-            calc_ws.append_rows(valid_rows, value_input_option="USER_ENTERED")
-
-            st.success(f"✅ Saved {len(valid_rows)} valid entries.")
-        except Exception as e:
-            st.error(f"❌ Google Sheet save error: {e}")
-    else:
-        st.warning("⚠ No valid rows to save.")
-
-    if errors:
-        st.error("Some rows were invalid:")
-        for err in errors:
-            st.text(f"- {err}")
 
 # --- Show Saved Entries ---
 if st.checkbox("📖 Show Saved Entries in Sheet"):
