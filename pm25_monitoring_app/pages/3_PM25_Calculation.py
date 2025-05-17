@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 from utils import require_roles, spreadsheet
 from constants import MERGED_SHEET, CALC_SHEET
 
@@ -23,21 +23,65 @@ except Exception as e:
     st.error(f"❌ Failed to load merged sheet: {e}")
     st.stop()
 
+# --- Date & Site Filters ---
+st.subheader("🔍 Filter Data to Edit")
+
+if "Date" in df_merged.columns:
+    try:
+        df_merged["Date"] = pd.to_datetime(df_merged["Date"]).dt.date
+        available_dates = df_merged["Date"].dropna().sort_values()
+
+        # Defaults: use latest available or today
+        default_start = available_dates.min() if not available_dates.empty else date.today()
+        default_end = available_dates.max() if not available_dates.empty else date.today()
+
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            date_range = st.date_input("📅 Select Date Range", value=(default_start, default_end))
+        with col2:
+            reset = st.button("🔄 Reset Filters")
+
+        if reset:
+            filtered_df = df_merged.copy()
+        else:
+            if isinstance(date_range, tuple) and len(date_range) == 2:
+                start_date, end_date = date_range
+                filtered_df = df_merged[
+                    (df_merged["Date"] >= start_date) & (df_merged["Date"] <= end_date)
+                ]
+            else:
+                filtered_df = df_merged.copy()
+    except Exception as e:
+        st.warning(f"⚠ Date parsing failed: {e}")
+        filtered_df = df_merged.copy()
+else:
+    st.warning("⚠ 'Date' column not found — skipping date filter.")
+    filtered_df = df_merged.copy()
+
+# Site filter
+if "Site" in filtered_df.columns:
+    available_sites = sorted(filtered_df["Site"].dropna().unique())
+    selected_sites = st.multiselect("📍 Select Site(s)", options=available_sites, default=available_sites)
+    if selected_sites:
+        filtered_df = filtered_df[filtered_df["Site"].isin(selected_sites)]
+else:
+    st.warning("⚠ 'Site' column not found — skipping site filter.")
+
 # --- Add Pre/Post Weight Columns ---
-df_merged["Pre Weight (g)"] = 0.0
-df_merged["Post Weight (g)"] = 0.0
+filtered_df["Pre Weight (g)"] = 0.0
+filtered_df["Post Weight (g)"] = 0.0
 
 # --- Data Editor ---
 st.subheader("📊 Enter Weights")
 edited_df = st.data_editor(
-    df_merged,
+    filtered_df,
     num_rows="dynamic",
     use_container_width=True,
     column_config={
         "Pre Weight (g)": st.column_config.NumberColumn("Pre Weight (g)", help="Mass before sampling (grams)"),
         "Post Weight (g)": st.column_config.NumberColumn("Post Weight (g)", help="Mass after sampling (grams)")
     },
-    disabled=[col for col in df_merged.columns if col not in ["Pre Weight (g)", "Post Weight (g)"]],
+    disabled=[col for col in filtered_df.columns if col not in ["Pre Weight (g)", "Post Weight (g)"]],
 )
 
 # --- PM₂.₅ Calculation ---
@@ -87,7 +131,7 @@ if st.button("✅ Save Valid Entries"):
                 errors.append(f"Row {idx + 1}: {pm}")
                 continue
 
-            date = str(datetime.today().date())
+            date_str = str(datetime.today().date())
             site_id = str(row.get("ID", "")).strip()
             site = str(row.get("Site", "")).strip()
             officer = str(row.get("Monitoring Officer_Start", "")).strip()
@@ -97,7 +141,7 @@ if st.button("✅ Save Valid Entries"):
                 continue
 
             valid_rows.append([
-                date, site_id, site, officer, elapsed, flow, pre, post, pm
+                date_str, site_id, site, officer, elapsed, flow, pre, post, pm
             ])
         except Exception as e:
             errors.append(f"Row {idx + 1}: Error parsing row - {e}")
