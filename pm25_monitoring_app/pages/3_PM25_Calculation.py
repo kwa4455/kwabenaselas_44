@@ -4,10 +4,23 @@ from datetime import datetime
 from utils import require_roles, spreadsheet
 from constants import MERGED_SHEET, CALC_SHEET
 
-# --- Page Setup ---
-st.set_page_config(page_title="PM₂.₅ Calculator", page_icon="🧶")
-st.title("🧶 PM₂.₅ Concentration Calculator")
+
+st.set_page_config(page_title="Audit Records", page_icon="🕵️")
+
+# Centered title and subtitle
+st.markdown(
+    """
+    <div style='text-align: center;'>
+        <h2> 🧶 PM₂.₅ Concentration Calculator </h2>
+        <p style='color: grey;'>Enter Pre and Post Weights to calculate PM₂.₅ concentrations in µg/m³ .</p>
+    </div>
+    <hr>
+    """,
+    unsafe_allow_html=True
+)
+
 st.write("Enter Pre and Post Weights to calculate PM₂.₅ concentrations in µg/m³.")
+
 
 # --- Role Check ---
 require_roles("admin", "editor")
