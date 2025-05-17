@@ -120,26 +120,30 @@ def add_data(row):
     sheet.append_row(row)
 
 
-
 def backup_deleted_row(row_data, original_sheet_name, row_number):
     """
     Backup a deleted row to the 'Deleted Records' sheet with a timestamp and source info.
+    Creates the sheet if it doesn't exist.
     """
     from datetime import datetime
 
-    # Ensure 'Deleted Records' sheet exists
     try:
         backup_sheet = spreadsheet.worksheet("Deleted Records")
-    except:
+    except Exception:
+        # Create the sheet if it doesn't exist
         backup_sheet = spreadsheet.add_worksheet(title="Deleted Records", rows="1000", cols="50")
-        backup_sheet.append_row(["Data"] + ["Deleted At", "Source"])
+        header = [f"Column {i+1}" for i in range(len(row_data))] + ["Deleted At", "Source"]
+        backup_sheet.append_row(header)
 
     # Add metadata
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     metadata = [timestamp, f"{original_sheet_name} - Row {row_number}"]
     row_data_with_meta = row_data + metadata
 
+    # Append backup row
     backup_sheet.append_row(row_data_with_meta)
+
+
 
 
 
