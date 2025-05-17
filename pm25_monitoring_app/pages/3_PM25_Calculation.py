@@ -104,27 +104,22 @@ st.download_button(
 
 # --- Save Edited DataFrame to Google Sheets ---
 if st.button("✅ Save Edited DataFrame"):
-    errors = []
-
     try:
-        # Ensure edited_df columns match the final_header order
-        edited_df = edited_df[final_header]  # Reorder columns to match final_header
-
         # Convert the DataFrame to a list of lists (excluding the index)
         rows_to_save = edited_df.values.tolist()
 
         # Log the first row of the data for debugging
         st.write(f"First row to save: {rows_to_save[0]}")  # Check the first row format
 
-        # Append rows to Google Sheets
+        # Check if the Google Sheet exists or needs to be created
         sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
         if CALC_SHEET not in sheet_titles:
-            calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols=str(len(final_header)))
-            calc_ws.append_row(final_header)
+            calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols=str(len(edited_df.columns)))
+            calc_ws.append_row(edited_df.columns.tolist())  # Add header row
         else:
             calc_ws = spreadsheet.worksheet(CALC_SHEET)
 
-        # Append rows in batch to Google Sheets
+        # Append rows to the Google Sheet
         calc_ws.append_rows(rows_to_save, value_input_option="USER_ENTERED")
 
         st.success(f"✅ Saved {len(rows_to_save)} rows successfully.")
