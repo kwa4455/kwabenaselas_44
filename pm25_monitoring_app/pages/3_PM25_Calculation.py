@@ -103,19 +103,19 @@ st.download_button(
     mime='text/csv'
 )
 
+# --- Final Header Definition (GLOBAL SCOPE) ---
+final_header = [
+    "ID", "Site", "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date_Start", "Time_Start",
+    "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start", "Wind Speed_Start",
+    "Wind Direction_Start", "Elapsed Time (min)_Start", " Flow Rate (L/min)_Start", "Observation_Start",
+    "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
+    "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop", "Wind Speed_Stop",
+    "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop", "Observation_Stop",
+    "Elapsed Time Diff (min)", "Average Flow Rate (L/min)", "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"
+]
+
 # --- Save Valid Entries ---
 if st.button("✅ Save Valid Entries"):
-
-    final_header = [
-        "ID", "Site", "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date_Start", "Time_Start",
-        "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start", "Wind Speed_Start",
-        "Wind Direction_Start", "Elapsed Time (min)_Start", " Flow Rate (L/min)_Start", "Observation_Start",
-        "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
-        "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop", "Wind Speed_Stop",
-        "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop", "Observation_Stop",
-        "Elapsed Time Diff (min)", "Average Flow Rate (L/min)", "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"
-    ]
-
     valid_rows = []
     errors = []
 
@@ -161,13 +161,12 @@ if st.button("✅ Save Valid Entries"):
         for e in errors:
             st.text(f"- {e}")
 
-
+# --- Show Saved Entries ---
 if st.checkbox("📖 Show Saved Entries in Sheet"):
     try:
-        # Use expected headers to avoid blank/double column issues
         saved_data = spreadsheet.worksheet(CALC_SHEET).get_all_records(
-            head=1,  # To specify the first row is the header
-            expected_headers=final_header  # Ensure correct header mapping
+            head=1,
+            expected_headers=final_header
         )
         df_saved = pd.DataFrame(saved_data)
         st.dataframe(df_saved, use_container_width=True)
