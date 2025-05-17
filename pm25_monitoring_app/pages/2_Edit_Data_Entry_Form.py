@@ -196,6 +196,14 @@ else:
                 st.rerun()
 
 
+st.markdown("---")
+if st.button("↩️ Undo Last Deleted Record"):
+    result = undo_last_delete()
+    if "✅" in result:
+        st.success(result)
+        st.rerun()  # Refresh to reflect restored row
+    else:
+        st.error(result)
 
 # --- Footer ---
 st.markdown("""
