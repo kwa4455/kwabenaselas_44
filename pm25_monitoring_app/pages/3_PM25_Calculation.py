@@ -109,7 +109,7 @@ final_header = [
     "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start", "Wind Speed_Start",
     "Wind Direction_Start", "Elapsed Time (min)_Start", " Flow Rate (L/min)_Start", "Observation_Start",
     "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
-    "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop", "Wind Speed_Stop",
+    "Temperature (°C)_Stop", "RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop", "Wind Speed_Stop",
     "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop", "Observation_Stop",
     "Elapsed Time Diff (min)", "Average Flow Rate (L/min)", "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"
 ]
