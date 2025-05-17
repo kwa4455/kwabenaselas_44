@@ -13,7 +13,7 @@ if "df" not in st.session_state:
         st.session_state.df = load_data_from_sheet(sheet)
         st.session_state.sheet = sheet
         st.session_state.spreadsheet = spreadsheet
-
+        
 # --- HEADER & CSS ---
 st.markdown("""
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
