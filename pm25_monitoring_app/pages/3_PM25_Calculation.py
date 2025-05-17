@@ -107,7 +107,7 @@ st.download_button(
 final_header = [
     "ID", "Site", "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date_Start", "Time_Start",
     "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start", "Wind Speed_Start",
-    "Wind Direction_Start", "Elapsed Time (min)_Start", " Flow Rate (L/min)_Start", "Observation_Start",
+    "Wind Direction_Start", "Elapsed Time (min)_Start", "Flow Rate (L/min)_Start", "Observation_Start",
     "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
     "Temperature (°C)_Stop", "RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop", "Wind Speed_Stop",
     "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop", "Observation_Stop",
