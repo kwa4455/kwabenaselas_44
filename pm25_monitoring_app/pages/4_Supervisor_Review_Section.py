@@ -19,12 +19,12 @@ require_roles("admin", "viewer")
 import streamlit as st
 
 # Set browser tab title and icon
-st.set_page_config(page_title="Audit Records", page_icon="🕵️")
+st.set_page_config(page_title="Supervisor Review Section", page_icon="🕵️")
 
 # Centered title using HTML
 st.markdown(
     """
-    <h2 style='text-align: center;'>🕵️ Audit Records Dashboard</h2>
+    <h2 style='text-align: center;'>🕵️ Supervisor Review Section </h2>
     """,
     unsafe_allow_html=True
 )
