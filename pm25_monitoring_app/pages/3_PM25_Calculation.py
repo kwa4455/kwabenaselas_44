@@ -16,6 +16,8 @@ require_roles("admin", "editor")
 try:
     merged_data = spreadsheet.worksheet(MERGED_SHEET).get_all_records()
     df_merged = pd.DataFrame(merged_data)
+    df_merged.columns = df_merged.columns.str.strip()  # 🔧 Sanitize column names
+
     if not {"Elapsed Time Diff (min)", "Average Flow Rate (L/min)"}.issubset(df_merged.columns):
         st.error("❌ Required columns 'Elapsed Time Diff (min)' or 'Average Flow Rate (L/min)' not found.")
         st.stop()
@@ -92,6 +94,15 @@ edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
 st.subheader("📊 Calculated Results")
 st.dataframe(edited_df, use_container_width=True)
 
+# --- CSV Export ---
+csv = edited_df.to_csv(index=False).encode('utf-8')
+st.download_button(
+    label="⬇️ Download Results as CSV",
+    data=csv,
+    file_name='pm25_results.csv',
+    mime='text/csv'
+)
+
 # --- Save Valid Entries ---
 if st.button("✅ Save Valid Entries"):
 
@@ -149,3 +160,12 @@ if st.button("✅ Save Valid Entries"):
         st.error("Some rows were invalid:")
         for e in errors:
             st.text(f"- {e}")
+
+# --- View Log of Previously Saved Entries ---
+if st.checkbox("📖 Show Saved Entries in Sheet"):
+    try:
+        saved_data = spreadsheet.worksheet(CALC_SHEET).get_all_records()
+        df_saved = pd.DataFrame(saved_data)
+        st.dataframe(df_saved, use_container_width=True)
+    except Exception as e:
+        st.warning(f"⚠ Could not load saved entries: {e}")
