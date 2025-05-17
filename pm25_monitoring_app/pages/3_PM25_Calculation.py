@@ -23,14 +23,11 @@ except Exception as e:
     st.error(f"❌ Failed to load merged sheet: {e}")
     st.stop()
 
-# --- Site Filter (Single Select) ---
+# --- Site Filter (Optional) ---
 if "Site" in df_merged.columns:
     try:
-        # Sort by Date_Start descending to get the latest
         available_sites = sorted(df_merged["Site"].dropna().unique())
         site_options = ["All Sites"] + available_sites
-
-        # Default to most recent site in data (first row after sorting)
         most_recent_site = df_merged["Site"].dropna().iloc[0] if not df_merged.empty else "All Sites"
 
         selected_site = st.selectbox(
@@ -65,7 +62,7 @@ edited_df = st.data_editor(
     disabled=[col for col in filtered_df.columns if col not in ["Pre Weight (g)", "Post Weight (g)"]],
 )
 
-# --- PM₂.₅ Calculation ---
+# --- PM₂.₅ Calculation Function ---
 def calculate_pm(row):
     try:
         elapsed = float(row["Elapsed Time Diff (min)"])
@@ -88,60 +85,58 @@ def calculate_pm(row):
     except:
         return "Error"
 
-# --- Apply Calculation ---
+# --- Apply PM₂.₅ Calculation ---
 edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
 
-# --- Show Table ---
+# --- Show Calculated Table ---
 st.subheader("📊 Calculated Results")
 st.dataframe(edited_df, use_container_width=True)
 
 # --- Save Valid Entries ---
 if st.button("✅ Save Valid Entries"):
+
+    # Define final required column order
+    final_header = [
+        "ID", "Site", "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date_Start", "Time_Start",
+        "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start", "Wind Speed_Start",
+        "Wind Direction_Start", "Elapsed Time (min)_Start", " Flow Rate (L/min)_Start", "Observation_Start",
+        "Submitted At_Start", "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
+        "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop", "Wind Speed_Stop",
+        "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop", "Observation_Stop",
+        "Submitted At_Stop", "Elapsed Time Diff (min)", "Average Flow Rate (L/min)",
+        "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"
+    ]
+
     valid_rows = []
     errors = []
 
     for idx, row in edited_df.iterrows():
         try:
-            elapsed = float(row["Elapsed Time Diff (min)"])
-            flow = float(row["Average Flow Rate (L/min)"])
-            pre = float(row["Pre Weight (g)"])
-            post = float(row["Post Weight (g)"])
-            pm = calculate_pm(row)
+            pm = row["PM₂.₅ (µg/m³)"]
 
             if isinstance(pm, str):
                 errors.append(f"Row {idx + 1}: {pm}")
                 continue
 
-            # Use Date_Start if available, otherwise today
-            date_value = row.get("Date_Start", datetime.today().date())
-            try:
-                date_str = str(pd.to_datetime(date_value).date())
-            except:
-                date_str = str(datetime.today().date())
-
-            site_id = str(row.get("ID", "")).strip()
-            site = str(row.get("Site", "")).strip()
-            officer = str(row.get("Monitoring Officer_Start", "")).strip()
-
-            if not all([site_id, site, officer]):
+            # Check for minimal required fields
+            if not all(str(row.get(col, "")).strip() for col in ["ID", "Site", "Monitoring Officer_Start"]):
                 errors.append(f"Row {idx + 1}: Missing required fields (ID, Site, Officer)")
                 continue
 
-            valid_rows.append([
-                date_str, site_id, site, officer, elapsed, flow, pre, post, pm
-            ])
+            # Build row based on final header
+            data_row = [row.get(col, "") for col in final_header]
+            valid_rows.append(data_row)
+
         except Exception as e:
             errors.append(f"Row {idx + 1}: Error parsing row - {e}")
 
     if valid_rows:
         try:
-            # Ensure sheet exists
+            # Ensure worksheet exists
             sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
             if CALC_SHEET not in sheet_titles:
-                calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols="20")
-                header = ["Date", "Site ID", "Site", "Officer(s)", "Elapsed Time (min)", "Flow Rate (L/min)",
-                          "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"]
-                calc_ws.append_row(header)
+                calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols="40")
+                calc_ws.append_row(final_header)
             else:
                 calc_ws = spreadsheet.worksheet(CALC_SHEET)
 
