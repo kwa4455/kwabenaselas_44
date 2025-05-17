@@ -144,7 +144,7 @@ def merge_start_stop(df):
 
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    # Convert to numeric for calculations
+    # Ensure numeric types for calculation
     merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged.get("Elapsed Time (min)_Start"), errors="coerce")
     merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged.get("Elapsed Time (min)_Stop"), errors="coerce")
     merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Start"), errors="coerce")
@@ -156,7 +156,7 @@ def merge_start_stop(df):
         merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
     ) / 2
 
-    # Final desired column order
+    # Desired column order
     desired_columns = [
         "ID", "Site",
         "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date _Start", "Time_Start",
@@ -167,10 +167,10 @@ def merge_start_stop(df):
         "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop",
         "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop",
         "Observation_Stop", "Submitted At_Stop",
-        "Elapsed Time Diff (min)", "Average Flow Rate (L/min)"
+        "Elapsed Time Diff (min)"
     ]
 
-    # Keep only available columns (handles missing columns gracefully)
+    # Keep only available columns in the desired order
     final_columns = [col for col in desired_columns if col in merged.columns]
     return merged[final_columns]
 
