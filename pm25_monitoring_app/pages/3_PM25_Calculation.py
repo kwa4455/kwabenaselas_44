@@ -26,10 +26,12 @@ except Exception as e:
 # --- Date & Site Filters ---
 st.subheader("🔍 Filter Data to Edit")
 
-if "Date" in df_merged.columns:
+date_col = "Date_Start"
+
+if date_col in df_merged.columns:
     try:
-        df_merged["Date"] = pd.to_datetime(df_merged["Date"]).dt.date
-        available_dates = df_merged["Date"].dropna().sort_values()
+        df_merged[date_col] = pd.to_datetime(df_merged[date_col]).dt.date
+        available_dates = df_merged[date_col].dropna().sort_values()
 
         # Defaults: use latest available or today
         default_start = available_dates.min() if not available_dates.empty else date.today()
@@ -47,7 +49,7 @@ if "Date" in df_merged.columns:
             if isinstance(date_range, tuple) and len(date_range) == 2:
                 start_date, end_date = date_range
                 filtered_df = df_merged[
-                    (df_merged["Date"] >= start_date) & (df_merged["Date"] <= end_date)
+                    (df_merged[date_col] >= start_date) & (df_merged[date_col] <= end_date)
                 ]
             else:
                 filtered_df = df_merged.copy()
@@ -55,17 +57,35 @@ if "Date" in df_merged.columns:
         st.warning(f"⚠ Date parsing failed: {e}")
         filtered_df = df_merged.copy()
 else:
-    st.warning("⚠ 'Date' column not found — skipping date filter.")
+    st.warning(f"⚠ '{date_col}' column not found — skipping date filter.")
     filtered_df = df_merged.copy()
 
-# Site filter
-if "Site" in filtered_df.columns:
-    available_sites = sorted(filtered_df["Site"].dropna().unique())
-    selected_sites = st.multiselect("📍 Select Site(s)", options=available_sites, default=available_sites)
-    if selected_sites:
-        filtered_df = filtered_df[filtered_df["Site"].isin(selected_sites)]
+# Site filter (single select with "All Sites" and auto-select most recent)
+if "Site" in filtered_df.columns and "Date_Start" in filtered_df.columns:
+    try:
+        # Make sure dates are parsed properly
+        filtered_df["Date_Start"] = pd.to_datetime(filtered_df["Date_Start"]).dt.date
+
+        # Sort by Date_Start descending to get the latest
+        sorted_df = filtered_df.sort_values(by="Date_Start", ascending=False)
+
+        available_sites = sorted(filtered_df["Site"].dropna().unique())
+        site_options = ["All Sites"] + available_sites
+
+        # Default to most recent site in data (first row after sorting)
+        most_recent_site = sorted_df["Site"].dropna().iloc[0] if not sorted_df.empty else "All Sites"
+
+        selected_site = st.selectbox(
+            "📍 Select Site", options=site_options, index=site_options.index(most_recent_site)
+        )
+
+        if selected_site != "All Sites":
+            filtered_df = filtered_df[filtered_df["Site"] == selected_site]
+    except Exception as e:
+        st.warning(f"⚠ Could not auto-select most recent site: {e}")
+        filtered_df = df_merged.copy()
 else:
-    st.warning("⚠ 'Site' column not found — skipping site filter.")
+    st.warning("⚠ 'Site' or 'Date_Start' column not found — skipping site filter.")
 
 # --- Add Pre/Post Weight Columns ---
 filtered_df["Pre Weight (g)"] = 0.0
@@ -131,7 +151,13 @@ if st.button("✅ Save Valid Entries"):
                 errors.append(f"Row {idx + 1}: {pm}")
                 continue
 
-            date_str = str(datetime.today().date())
+            # Use Date_Start if available, otherwise today
+            date_value = row.get("Date_Start", datetime.today().date())
+            try:
+                date_str = str(pd.to_datetime(date_value).date())
+            except:
+                date_str = str(datetime.today().date())
+
             site_id = str(row.get("ID", "")).strip()
             site = str(row.get("Site", "")).strip()
             officer = str(row.get("Monitoring Officer_Start", "")).strip()
