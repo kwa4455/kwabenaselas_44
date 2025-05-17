@@ -16,9 +16,11 @@ require_roles("admin", "editor")
 try:
     merged_data = spreadsheet.worksheet(MERGED_SHEET).get_all_records()
     df_merged = pd.DataFrame(merged_data)
-    
+
     # Clean column names by stripping any extra spaces
     df_merged.columns = df_merged.columns.str.strip()
+
+    st.write("Columns in Data:", df_merged.columns)  # Debugging line to show all columns
 
     if not {"Elapsed Time Diff (min)", "Average Flow Rate (L/min)"}.issubset(df_merged.columns):
         st.error("❌ Required columns 'Elapsed Time Diff (min)' or 'Average Flow Rate (L/min)' not found.")
@@ -28,9 +30,6 @@ except Exception as e:
     st.error(f"❌ Failed to load merged sheet: {e}")
     st.stop()
 
-# --- Display Columns for Debugging ---
-st.write("Columns in Data:", df_merged.columns)
-
 # --- Date & Site Filters ---
 st.subheader("🔍 Filter Data to Edit")
 
@@ -39,7 +38,12 @@ date_col = "Date_Start"
 # Check if 'Date_Start' column exists
 if date_col in df_merged.columns:
     try:
-        df_merged[date_col] = pd.to_datetime(df_merged[date_col]).dt.date
+        # Parse the 'Date_Start' column to datetime
+        df_merged[date_col] = pd.to_datetime(df_merged[date_col], errors='coerce').dt.date
+        
+        # Debugging: Show how 'Date_Start' is being parsed
+        st.write("Parsed Date_Start:", df_merged[date_col].head())  # Display the first few parsed dates
+
         available_dates = df_merged[date_col].dropna().sort_values()
 
         # Defaults: use latest available or today
@@ -76,7 +80,7 @@ site_col = "Site"
 if site_col in filtered_df.columns:
     try:
         # Make sure dates are parsed properly
-        filtered_df["Date_Start"] = pd.to_datetime(filtered_df["Date_Start"]).dt.date
+        filtered_df["Date_Start"] = pd.to_datetime(filtered_df["Date_Start"], errors='coerce').dt.date
 
         # Sort by Date_Start descending to get the latest
         sorted_df = filtered_df.sort_values(by="Date_Start", ascending=False)
