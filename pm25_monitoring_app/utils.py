@@ -167,7 +167,7 @@ def merge_start_stop(df):
         "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop",
         "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop",
         "Observation_Stop", "Submitted At_Stop",
-        "Elapsed Time Diff (min)"
+        "Elapsed Time Diff (min)","Average Flow Rate (L/min)"
     ]
 
     # Keep only available columns in the desired order
