@@ -1,131 +1,92 @@
 import streamlit as st
 from utils import login, load_data_from_sheet, sheet, spreadsheet, logout_button
 
-# Setup
-st.set_page_config(page_title="PM₂.₅ Monitoring App", layout="wide")
+# Set page configuration
+st.set_page_config(
+    page_title="PM₂.₅ Monitoring App",
+    layout="wide",
+    page_icon="🌍"
+)
+
+# Inject custom CSS styling
+st.markdown("""
+    <style>
+    /* Fonts and layout */
+    html, body, [class*="css"]  {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f6f9fc;
+    }
+
+    /* App title */
+    .main > div:first-child h1 {
+        color: #1f77b4;
+        font-size: 2.8rem;
+    }
+
+    /* Info banner */
+    .stAlert {
+        background-color: #e8f4fd;
+        border-left: 6px solid #1f77b4;
+        padding: 1rem;
+    }
+
+    /* Sidebar */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(to bottom, #006400, #228B22);
+        color: white;
+    }
+    section[data-testid="stSidebar"] .st-radio > div {
+        background-color: white;
+        color: black;
+        border-radius: 10px;
+        padding: 0.3rem;
+    }
+
+    /* Success message */
+    .stSuccess {
+        background-color: #e6ffe6;
+        border-left: 6px solid #33cc33;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Login or stop if not authenticated
 login()
 
+# Access session state
 username = st.session_state["username"]
 role = st.session_state["role"]
 
+# App Header
+st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring App")
+st.info(f"👤 Logged in as: **{username}** (Role: {role})")
+
 # Load data once
 if "df" not in st.session_state:
-    with st.spinner("Loading data..."):
+    with st.spinner("🔄 Loading data..."):
         st.session_state.df = load_data_from_sheet(sheet)
         st.session_state.sheet = sheet
         st.session_state.spreadsheet = spreadsheet
 
-# --- HEADER ---
-st.markdown("""
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+# Role-based navigation
+if role == "admin":
+    pages = ["📥 Data Entry", "✏️ Edit Records", "🗂️ Review"]
+elif role == "editor":
+    pages = ["✏️ Edit Records", "🗂️ Review"]
+elif role == "viewer":
+    pages = ["🔍 Review & Merge"]
+elif role == "collector":
+    pages = ["📥 Data Entry", "✏️ Edit Records"]
+else:
+    st.error("❌ Invalid role.")
+    st.stop()
 
-<style>
-    .header-bar {
-        background-color: #2c7c70;
-        padding: 1rem 2rem;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 1.2rem;
-        border-radius: 0 0 8px 8px;
-    }
-    .header-title {
-        font-weight: bold;
-    }
-    .header-links a {
-        color: white;
-        margin-left: 20px;
-        text-decoration: none;
-    }
-    .grid-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-    }
-    .card {
-        padding: 1.5rem;
-        border-radius: 15px;
-        color: white;
-        box-shadow: 2px 2px 8px #aaa;
-        transition: transform 0.2s;
-        text-align: center;
-    }
-    .card:hover {
-        transform: scale(1.02);
-        cursor: pointer;
-    }
-    .card-icon {
-        font-size: 2.5rem;
-    }
-    .card-title {
-        font-size: 1.2rem;
-        font-weight: bold;
-        margin-top: 1rem;
-    }
-    .card-desc {
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
-    }
-</style>
-
-<div class="header-bar">
-    <div class="header-title">PM₂.₅ Monitoring Dashboard</div>
-    <div class="header-links">
-        <a href="#">Login</a>
-        <a href="#">Register</a>
-        <a href="#">Forgot Password?</a>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# --- PAGE TITLE ---
-st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring App")
-st.info(f"👤 Logged in as: **{username}** (Role: {role})")
-
-# --- SIDEBAR NAVIGATION ---
+# Sidebar navigation
 st.sidebar.title("📁 Navigation")
-st.sidebar.page_link("main.py", label="Home", icon="🏠")
-if role in ["admin", "collector"]:
-    st.sidebar.page_link("pages/1_Data_Entry.py", label="Data Entry", icon="📝")
-if role in ["admin", "editor", "collector"]:
-    st.sidebar.page_link("pages/2_Edit_Record.py", label="Edit Records", icon="✏️")
-st.sidebar.page_link("pages/3_PM25_Calculation.py", label="PM₂.₅ Calculation", icon="📊")
-if role == "admin":
-    st.sidebar.page_link("pages/4_Admin_Tools.py", label="Admin Tools", icon="🛠️")
+selected_page = st.sidebar.radio("Go to", pages)
 
-# --- CARD FUNCTION ---
-def card(icon_class, title, desc, page_path, bg_color):
-    st.page_link(
-        page_path,
-        label=f"""
-        <div class="card" style="background-color: {bg_color};">
-            <div class="card-icon"><i class="{icon_class}"></i></div>
-            <div class="card-title">{title}</div>
-            <div class="card-desc">{desc}</div>
-            <div style="margin-top: 1rem; font-weight: bold;">Go →</div>
-        </div>
-        """,
-        use_container_width=True,
-        unsafe_allow_html=True
-    )
-
-# --- CARD GRID ---
-st.markdown('<div class="grid-container">', unsafe_allow_html=True)
-
-if role in ["admin", "collector"]:
-    card("fas fa-plus-circle", "Data Entry", "Add new monitoring data entries", "pages/1_Data_Entry.py", "#4CAF50")
-
-if role in ["admin", "editor", "collector"]:
-    card("fas fa-edit", "Edit Records", "Review, edit or delete records", "pages/2_Edit_Records.py", "#2196F3")
-
-card("fas fa-chart-line", "PM₂.₅ Calculation", "Calculate pollutant concentrations", "pages/3_PM25_Calculation.py", "#FF9800")
-
-if role == "admin":
-    card("fas fa-cogs", "Admin Tools", "View admin-only tools and settings", "pages/4_Admin_Tools.py", "#9C27B0")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# --- LOGOUT ---
+# Show logout button
 logout_button()
+
+# Guide the user
+st.success(f"✅ Use the sidebar to access: **{selected_page}**")
