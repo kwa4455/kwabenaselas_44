@@ -6,6 +6,7 @@ from utils import (
     add_data,
     merge_start_stop,
     save_merged_data_to_sheet,
+    make_unique_headers,
     display_and_merge_data,
     sheet,
     spreadsheet,
