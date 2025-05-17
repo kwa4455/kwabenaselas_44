@@ -18,7 +18,7 @@ require_roles("admin", "viewer")
 
 
 
-st.set_page_config(page_title="Audit Records", page_icon="🕵️")
+st.set_page_config(page_title="Supervisor Review Section", page_icon="🕵️")
 
 # Centered title and subtitle
 st.markdown(
