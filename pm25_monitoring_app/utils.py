@@ -119,10 +119,26 @@ def add_data(row):
     row.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     sheet.append_row(row)
 
+
+def backup_deleted_row(row_data, sheet_name, row_number):
+    """
+    Backups a deleted row to a backup sheet.
+    """
+    backup_sheet = spreadsheet.worksheet("Deleted Records")
+    from datetime import datetime
+
+    # Optionally add timestamp and source row
+    row_data.append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    row_data.append(f"From row {row_number} in {sheet_name}")
+    
+    backup_sheet.append_row(row_data)
+
+
 def delete_row(sheet, row_number):
-    row_data = sheet.row_values(row_number)
-    backup_deleted_row(row_data, "Main Sheet", row_number)
+    # row_data = sheet.row_values(row_number)
+    # backup_deleted_row(row_data, "Main Sheet", row_number)
     sheet.delete_rows(row_number)
+
 
 def delete_merged_record_by_index(index_to_delete):
     worksheet = sheet.spreadsheet.worksheet(MERGED_SHEET)
