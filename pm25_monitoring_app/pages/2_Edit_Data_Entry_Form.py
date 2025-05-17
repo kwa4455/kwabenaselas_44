@@ -102,22 +102,6 @@ def render_record_edit_form(record_data):
         elapsed_time, flow_rate, observation
     ]
 
-def make_unique_headers(headers):
-    """
-    Ensure headers are unique by appending '.1', '.2', etc. to duplicates.
-    """
-    seen = {}
-    unique_headers = []
-    for h in headers:
-        if h == '':
-            h = 'Unnamed'
-        if h in seen:
-            seen[h] += 1
-            unique_headers.append(f"{h}.{seen[h]}")
-        else:
-            seen[h] = 0
-            unique_headers.append(h)
-    return unique_headers
 
 
 def handle_merge_logic():
