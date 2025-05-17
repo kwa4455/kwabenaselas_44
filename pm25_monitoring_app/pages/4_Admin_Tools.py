@@ -53,12 +53,21 @@ with st.expander("🕵️ View Deleted Records"):
     try:
         deleted_sheet = spreadsheet.worksheet("Deleted Records")
         deleted_data = deleted_sheet.get_all_values()
+
         if len(deleted_data) > 1:
-            df_deleted = pd.DataFrame(deleted_data[1:], columns=deleted_data[0])
+            headers = deleted_data[0]
+            rows = deleted_data[1:]
+
+            # Make column names unique to avoid pandas errors
+            import pandas as pd
+            unique_headers = pd.io.parsers.ParserBase({'names': headers})._maybe_dedup_names(headers)
+            df_deleted = pd.DataFrame(rows, columns=unique_headers)
+
             st.dataframe(df_deleted, use_container_width=True)
         else:
             st.info("No deleted records yet.")
     except Exception as e:
         st.error(f"❌ Could not load Deleted Records: {e}")
+
 
 
