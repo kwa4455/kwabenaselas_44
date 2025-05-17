@@ -48,3 +48,17 @@ try:
         st.info("ℹ No saved entries yet.")
 except Exception as e:
     st.error(f"❌ Failed to load saved entries: {e}")
+
+with st.expander("🕵️ View Deleted Records"):
+    try:
+        deleted_sheet = spreadsheet.worksheet("Deleted Records")
+        deleted_data = deleted_sheet.get_all_values()
+        if len(deleted_data) > 1:
+            df_deleted = pd.DataFrame(deleted_data[1:], columns=deleted_data[0])
+            st.dataframe(df_deleted, use_container_width=True)
+        else:
+            st.info("No deleted records found.")
+    except Exception as e:
+        st.warning("Deleted Records sheet not found or not accessible.")
+
+
