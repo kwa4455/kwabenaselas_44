@@ -161,10 +161,14 @@ if st.button("✅ Save Valid Entries"):
         for e in errors:
             st.text(f"- {e}")
 
-# --- View Log of Previously Saved Entries ---
+
 if st.checkbox("📖 Show Saved Entries in Sheet"):
     try:
-        saved_data = spreadsheet.worksheet(CALC_SHEET).get_all_records()
+        # Use expected headers to avoid blank/double column issues
+        saved_data = spreadsheet.worksheet(CALC_SHEET).get_all_records(
+            head=1,  # To specify the first row is the header
+            expected_headers=final_header  # Ensure correct header mapping
+        )
         df_saved = pd.DataFrame(saved_data)
         st.dataframe(df_saved, use_container_width=True)
     except Exception as e:
