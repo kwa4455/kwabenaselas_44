@@ -195,10 +195,6 @@ else:
                 st.success("✅ Submitted record deleted and backed up successfully.")
                 st.rerun()
 
-if st.button("🧪 Test Backup Function"):
-    test_row = ["Test Entry", "Site 123", "Officer Joe"]  # Simulated row data
-    backup_deleted_row(test_row, "Test Sheet", 99)
-    st.success("✅ Test row backed up.")
 
 
 # --- Footer ---
