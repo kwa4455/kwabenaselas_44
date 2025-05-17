@@ -145,11 +145,13 @@ def merge_start_stop(df):
     
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    # Compute Elapsed Time difference
+    # Compute Elapsed Time difference in seconds
     if "Elapsed Time (min)_Start" in merged and "Elapsed Time (min)_Stop" in merged:
         merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged["Elapsed Time (min)_Start"], errors="coerce")
         merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged["Elapsed Time (min)_Stop"], errors="coerce")
-        merged["Elapsed Time Diff (min)"] = merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
+        merged["Elapsed Time Diff (sec)"] = (
+        merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
+        ) * 60
 
     # Compute Average Flow Rate
     if " Flow Rate (L/min)_Start" in merged and " Flow Rate (L/min)_Stop" in merged:
