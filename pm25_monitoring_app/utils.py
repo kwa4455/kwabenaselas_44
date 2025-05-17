@@ -134,6 +134,8 @@ def undo_last_delete(sheet):
     st.warning("⚠️ Undo not supported. Check backup sheet manually.")
 
 
+import pandas as pd
+
 def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
     stop_df = df[df["Entry Type"] == "STOP"].copy()
@@ -144,7 +146,7 @@ def merge_start_stop(df):
 
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    # Ensure numeric types for calculation
+    # Convert to numeric for calculations
     merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged.get("Elapsed Time (min)_Start"), errors="coerce")
     merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged.get("Elapsed Time (min)_Stop"), errors="coerce")
     merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Start"), errors="coerce")
@@ -153,10 +155,10 @@ def merge_start_stop(df):
     # Calculations
     merged["Elapsed Time Diff (min)"] = merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
     merged["Average Flow Rate (L/min)"] = (
-        merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
+        merged["Flow Rate (L/min)_Start"].fillna(0) + merged["Flow Rate (L/min)_Stop"].fillna(0)
     ) / 2
 
-    # Desired column order
+    # Final desired column order
     desired_columns = [
         "ID", "Site",
         "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date _Start", "Time_Start",
@@ -167,12 +169,16 @@ def merge_start_stop(df):
         "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop",
         "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop",
         "Observation_Stop", "Submitted At_Stop",
-        "Elapsed Time Diff (min)","Average Flow Rate (L/min)"
+        "Elapsed Time Diff (min)", "Average Flow Rate (L/min)"
     ]
 
-    # Keep only available columns in the desired order
+    # Keep only available columns
     final_columns = [col for col in desired_columns if col in merged.columns]
-    return merged[final_columns]
+
+    # Replace NaN with None for JSON-safe export
+    cleaned = merged[final_columns].where(pd.notnull(merged[final_columns]), None)
+
+    return cleaned
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     df = convert_timestamps_to_string(df)
