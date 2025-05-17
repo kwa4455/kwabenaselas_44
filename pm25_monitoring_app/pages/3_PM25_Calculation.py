@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime
 from utils import require_roles, spreadsheet
 from constants import MERGED_SHEET, CALC_SHEET
 
@@ -16,92 +16,36 @@ require_roles("admin", "editor")
 try:
     merged_data = spreadsheet.worksheet(MERGED_SHEET).get_all_records()
     df_merged = pd.DataFrame(merged_data)
-
-    # Clean column names by stripping any extra spaces
-    df_merged.columns = df_merged.columns.str.strip()
-
-    st.write("Columns in Data:", df_merged.columns)  # Debugging line to show all columns
-
     if not {"Elapsed Time Diff (min)", "Average Flow Rate (L/min)"}.issubset(df_merged.columns):
         st.error("❌ Required columns 'Elapsed Time Diff (min)' or 'Average Flow Rate (L/min)' not found.")
         st.stop()
-
 except Exception as e:
     st.error(f"❌ Failed to load merged sheet: {e}")
     st.stop()
 
-# --- Date & Site Filters ---
-st.subheader("🔍 Filter Data to Edit")
-
-date_col = "Date_Start"
-
-# Check if 'Date_Start' column exists
-if date_col in df_merged.columns:
+# --- Site Filter (Single Select) ---
+if "Site" in df_merged.columns:
     try:
-        # Parse the 'Date_Start' column to datetime
-        df_merged[date_col] = pd.to_datetime(df_merged[date_col], errors='coerce').dt.date
-        
-        # Debugging: Show how 'Date_Start' is being parsed
-        st.write("Parsed Date_Start:", df_merged[date_col].head())  # Display the first few parsed dates
-
-        available_dates = df_merged[date_col].dropna().sort_values()
-
-        # Defaults: use latest available or today
-        default_start = available_dates.min() if not available_dates.empty else date.today()
-        default_end = available_dates.max() if not available_dates.empty else date.today()
-
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            date_range = st.date_input("📅 Select Date Range", value=(default_start, default_end))
-        with col2:
-            reset = st.button("🔄 Reset Filters")
-
-        if reset:
-            filtered_df = df_merged.copy()
-        else:
-            if isinstance(date_range, tuple) and len(date_range) == 2:
-                start_date, end_date = date_range
-                filtered_df = df_merged[
-                    (df_merged[date_col] >= start_date) & (df_merged[date_col] <= end_date)
-                ]
-            else:
-                filtered_df = df_merged.copy()
-    except Exception as e:
-        st.warning(f"⚠ Date parsing failed: {e}")
-        filtered_df = df_merged.copy()
-else:
-    st.warning(f"⚠ '{date_col}' column not found — skipping date filter.")
-    filtered_df = df_merged.copy()
-
-# Site filter (single select with "All Sites" and auto-select most recent)
-site_col = "Site"
-
-# Check if 'Site' column exists
-if site_col in filtered_df.columns:
-    try:
-        # Make sure dates are parsed properly
-        filtered_df["Date_Start"] = pd.to_datetime(filtered_df["Date_Start"], errors='coerce').dt.date
-
         # Sort by Date_Start descending to get the latest
-        sorted_df = filtered_df.sort_values(by="Date_Start", ascending=False)
-
-        available_sites = sorted(filtered_df[site_col].dropna().unique())
+        available_sites = sorted(df_merged["Site"].dropna().unique())
         site_options = ["All Sites"] + available_sites
 
         # Default to most recent site in data (first row after sorting)
-        most_recent_site = sorted_df[site_col].dropna().iloc[0] if not sorted_df.empty else "All Sites"
+        most_recent_site = df_merged["Site"].dropna().iloc[0] if not df_merged.empty else "All Sites"
 
         selected_site = st.selectbox(
             "📍 Select Site", options=site_options, index=site_options.index(most_recent_site)
         )
 
         if selected_site != "All Sites":
-            filtered_df = filtered_df[filtered_df[site_col] == selected_site]
+            filtered_df = df_merged[df_merged["Site"] == selected_site]
+        else:
+            filtered_df = df_merged.copy()
     except Exception as e:
         st.warning(f"⚠ Could not auto-select most recent site: {e}")
         filtered_df = df_merged.copy()
 else:
-    st.warning(f"⚠ '{site_col}' column not found — skipping site filter.")
+    st.warning("⚠ 'Site' column not found — skipping site filter.")
     filtered_df = df_merged.copy()
 
 # --- Add Pre/Post Weight Columns ---
