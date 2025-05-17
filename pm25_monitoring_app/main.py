@@ -97,7 +97,7 @@ st.sidebar.page_link("main.py", label="Main", icon="🏠")
 if role in ["admin", "collector"]:
     st.sidebar.page_link("pages/1_Data_Entry.py", label="Data Entry", icon="📝")
 if role in ["admin", "editor", "collector"]:
-    st.sidebar.page_link("pages/2_Edit_Records.py", label="Edit Records", icon="✏️")
+    st.sidebar.page_link("pages/2_Edit_Record.py", label="Edit Records", icon="✏️")
 st.sidebar.page_link("pages/3_PM25_Calculation.py", label="PM₂.₅ Calculation", icon="📊")
 if role == "admin":
     st.sidebar.page_link("pages/4_Admin_Tools.py", label="Admin Tools", icon="🛠️")
