@@ -134,48 +134,45 @@ def undo_last_delete(sheet):
     st.warning("⚠️ Undo not supported. Check backup sheet manually.")
 
 
+import pandas as pd
 
 def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
     stop_df = df[df["Entry Type"] == "STOP"].copy()
     merge_keys = ["ID", "Site"]
 
-    # Rename columns to differentiate start and stop entries
+    # Rename non-key columns
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys else x)
 
-    # Merge start and stop entries
+    # Merge START and STOP records
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    # Calculate elapsed time difference in seconds
-    if "Elapsed Time (min)_Start" in merged and "Elapsed Time (min)_Stop" in merged:
-        merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged["Elapsed Time (min)_Start"], errors="coerce")
-        merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged["Elapsed Time (min)_Stop"], errors="coerce")
-        merged["Elapsed Time (sec)"] = (merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]) * 60
+    # Compute elapsed time (in minutes) from Start and Stop timestamps
+    if "Start Time_Start" in merged.columns and "Start Time_Stop" in merged.columns:
+        merged["Start Time_Start"] = pd.to_datetime(merged["Start Time_Start"], errors="coerce")
+        merged["Start Time_Stop"] = pd.to_datetime(merged["Start Time_Stop"], errors="coerce")
+        merged["Elapsed Time (min)"] = (merged["Start Time_Stop"] - merged["Start Time_Start"]).dt.total_seconds() / 60
 
-    # Calculate average flow rate
-    if "Flow Rate (L/min)_Start" in merged and "Flow Rate (L/min)_Stop" in merged:
+    # Compute average flow rate
+    if "Flow Rate (L/min)_Start" in merged.columns and "Flow Rate (L/min)_Stop" in merged.columns:
         merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged["Flow Rate (L/min)_Start"], errors="coerce")
         merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged["Flow Rate (L/min)_Stop"], errors="coerce")
-        merged["Average Flow Rate (L/min)"] = (
+        merged["Flow Rate (L/min)"] = (
             merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
         ) / 2
+    else:
+        merged["Flow Rate (L/min)"] = None  # Ensures column always exists
 
-    # Wind data columns
+    # Prepare column order
     wind_cols = [
         "Wind Speed_Start", "Wind Direction_Start",
         "Wind Speed_Stop", "Wind Direction_Stop"
     ]
     existing_wind = [col for col in wind_cols if col in merged.columns]
-
-    # Columns to include at the front
     front_cols = ["ID", "Site"]
-
-    # Calculation result columns
-    calc_cols = ["Elapsed Time (sec)", "Average Flow Rate (L/min)"]
+    calc_cols = ["Elapsed Time (min)", "Flow Rate (L/min)"]
     existing_calc = [col for col in calc_cols if col in merged.columns]
-
-    # All other columns (start/stop details)
     other_cols = [col for col in merged.columns if col not in front_cols + existing_wind + existing_calc]
 
     return merged[front_cols + existing_wind + existing_calc + other_cols]
