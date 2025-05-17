@@ -134,7 +134,6 @@ def undo_last_delete(sheet):
     st.warning("⚠️ Undo not supported. Check backup sheet manually.")
 
 
-import pandas as pd
 
 def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
@@ -147,29 +146,42 @@ def merge_start_stop(df):
 
     # Merge START and STOP records
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
+    print(f"[INFO] Merged {len(merged)} START/STOP record pairs.")
 
-    # Compute elapsed time (in minutes) from Start and Stop timestamps
+    # Elapsed Time calculation
     if "Start Time_Start" in merged.columns and "Start Time_Stop" in merged.columns:
         merged["Start Time_Start"] = pd.to_datetime(merged["Start Time_Start"], errors="coerce")
         merged["Start Time_Stop"] = pd.to_datetime(merged["Start Time_Stop"], errors="coerce")
         merged["Elapsed Time (min)"] = (merged["Start Time_Stop"] - merged["Start Time_Start"]).dt.total_seconds() / 60
 
-    # Compute average flow rate
+        # Warn if NaT exists
+        if merged["Elapsed Time (min)"].isna().any():
+            print("[WARNING] Some 'Start Time' or 'Stop Time' values could not be parsed into timestamps.")
+    else:
+        print("[WARNING] 'Start Time' columns not found. Skipping Elapsed Time calculation.")
+
+    # Flow Rate calculation
     if "Flow Rate (L/min)_Start" in merged.columns and "Flow Rate (L/min)_Stop" in merged.columns:
         merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged["Flow Rate (L/min)_Start"], errors="coerce")
         merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged["Flow Rate (L/min)_Stop"], errors="coerce")
         merged["Flow Rate (L/min)"] = (
             merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
         ) / 2
-    else:
-        merged["Flow Rate (L/min)"] = None  # Ensures column always exists
 
-    # Prepare column order
+        if merged["Flow Rate (L/min)"].isna().all():
+            print("[WARNING] All flow rate values are missing or invalid. Output column will contain only NaNs.")
+    else:
+        print("[WARNING] 'Flow Rate (L/min)' columns not found in START/STOP entries.")
+        merged["Flow Rate (L/min)"] = None
+
+    # Wind-related columns
     wind_cols = [
         "Wind Speed_Start", "Wind Direction_Start",
         "Wind Speed_Stop", "Wind Direction_Stop"
     ]
     existing_wind = [col for col in wind_cols if col in merged.columns]
+
+    # Final output ordering
     front_cols = ["ID", "Site"]
     calc_cols = ["Elapsed Time (min)", "Flow Rate (L/min)"]
     existing_calc = [col for col in calc_cols if col in merged.columns]
