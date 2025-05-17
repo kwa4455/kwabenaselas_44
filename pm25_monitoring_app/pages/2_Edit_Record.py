@@ -33,27 +33,63 @@ def render_record_edit_form(record_data):
     weather_options = ["Clear", "Cloudy", "Rainy", "Foggy", "Windy", "Hazy", "Dusty", "Other"]
     wind_dir_options = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "Variable", "Calm"]
 
-    entry_type = st.selectbox("Entry Type", ["START", "STOP"], index=["START", "STOP"].index(record_data["Entry Type"]))
-    site_id = st.text_input("ID", value=record_data["ID"])
-    site = st.text_input("Site", value=record_data["Site"])
-    monitoring_officer = st.text_input("Monitoring Officer", value=record_data["Monitoring Officer"])
-    driver = st.text_input("Driver", value=record_data["Driver"])
-    date = st.date_input("Date", value=pd.to_datetime(record_data["Date"]))
-    time = st.time_input("Time", value=pd.to_datetime(record_data["Time"]).time())
-    temperature = st.number_input("Temperature (°C)", value=safe_float(record_data["Temperature (°C)"]), step=0.1)
-    rh = st.number_input("Relative Humidity (%)", value=safe_float(record_data["RH (%)"]), step=0.1)
-    pressure = st.number_input("Pressure (mbar)", value=safe_float(record_data["Pressure (mbar)"]), step=0.1)
+    # Safe defaults
+    def get_str(key, default=""):
+        return str(record_data.get(key, default))
 
-    # Weather as dropdown
-    weather = st.selectbox("Weather", weather_options, index=weather_options.index(record_data["Weather"]) if record_data["Weather"] in weather_options else len(weather_options) - 1)
+    def get_float(key, default=0.0):
+        try:
+            return float(record_data.get(key, default))
+        except (ValueError, TypeError):
+            return default
 
-    # Wind Speed and Direction as separate inputs
-    wind_speed = st.number_input("Wind Speed (m/s)", value=safe_float(record_data.get("Wind Speed (m/s)", 0.0)), step=0.1)
-    wind_direction = st.selectbox("Wind Direction", wind_dir_options, index=wind_dir_options.index(record_data.get("Wind Direction", "Variable")) if record_data.get("Wind Direction", "Variable") in wind_dir_options else wind_dir_options.index("Variable"))
+    def get_date(key):
+        try:
+            return pd.to_datetime(record_data.get(key)).date()
+        except Exception:
+            return pd.Timestamp.now().date()
 
-    elapsed_time = st.number_input("Elapsed Time (min)", value=safe_float(record_data["Elapsed Time (min)"]), step=1.0)
-    flow_rate = st.number_input("Flow Rate (L/min)", value=safe_float(record_data["Flow Rate (L/min)"]), step=0.1)
-    observation = st.text_area("Observation", value=record_data.get("Observation", ""))
+    def get_time(key):
+        try:
+            return pd.to_datetime(record_data.get(key)).time()
+        except Exception:
+            return pd.Timestamp.now().time()
+
+    entry_type = st.selectbox(
+        "Entry Type",
+        ["START", "STOP"],
+        index=["START", "STOP"].index(get_str("Entry Type", "START"))
+    )
+
+    site_id = st.text_input("ID", value=get_str("ID"))
+    site = st.text_input("Site", value=get_str("Site"))
+    monitoring_officer = st.text_input("Monitoring Officer", value=get_str("Monitoring Officer"))
+    driver = st.text_input("Driver", value=get_str("Driver"))
+    date = st.date_input("Date", value=get_date("Date"))
+    time = st.time_input("Time", value=get_time("Time"))
+    temperature = st.number_input("Temperature (°C)", value=get_float("Temperature (°C)"), step=0.1)
+    rh = st.number_input("Relative Humidity (%)", value=get_float("RH (%)"), step=0.1)
+    pressure = st.number_input("Pressure (mbar)", value=get_float("Pressure (mbar)"), step=0.1)
+
+    weather_value = get_str("Weather", "Other")
+    weather = st.selectbox(
+        "Weather", 
+        weather_options,
+        index=weather_options.index(weather_value) if weather_value in weather_options else len(weather_options) - 1
+    )
+
+    wind_speed = st.number_input("Wind Speed (m/s)", value=get_float("Wind Speed (m/s)"), step=0.1)
+
+    wind_dir_value = get_str("Wind Direction", "Variable")
+    wind_direction = st.selectbox(
+        "Wind Direction",
+        wind_dir_options,
+        index=wind_dir_options.index(wind_dir_value) if wind_dir_value in wind_dir_options else wind_dir_options.index("Variable")
+    )
+
+    elapsed_time = st.number_input("Elapsed Time (min)", value=get_float("Elapsed Time (min)"), step=1.0)
+    flow_rate = st.number_input("Flow Rate (L/min)", value=get_float("Flow Rate (L/min)"), step=0.1)
+    observation = st.text_area("Observation", value=get_str("Observation"))
 
     return [
         entry_type, site_id, site, monitoring_officer, driver,
@@ -62,6 +98,7 @@ def render_record_edit_form(record_data):
         wind_speed, wind_direction,
         elapsed_time, flow_rate, observation
     ]
+
 
 
 def handle_merge_logic():
