@@ -144,29 +144,35 @@ def merge_start_stop(df):
 
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    if "Elapsed Time (min)_Start" in merged.columns and "Elapsed Time (min)_Stop" in merged.columns:
-        merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged["Elapsed Time (min)_Start"], errors="coerce")
-        merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged["Elapsed Time (min)_Stop"], errors="coerce")
-        merged["Elapsed Time Diff (min)"] = merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
+    # Ensure numeric types for calculation
+    merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged.get("Elapsed Time (min)_Start"), errors="coerce")
+    merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged.get("Elapsed Time (min)_Stop"), errors="coerce")
+    merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Start"), errors="coerce")
+    merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Stop"), errors="coerce")
 
-    if "Flow Rate (L/min)_Start" in merged.columns and "Flow Rate (L/min)_Stop" in merged.columns:
-        merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged["Flow Rate (L/min)_Start"], errors="coerce")
-        merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged["Flow Rate (L/min)_Stop"], errors="coerce")
-        merged["Average Flow Rate (L/min)"] = (
-            merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
-        ) / 2
+    # Calculations
+    merged["Elapsed Time Diff (min)"] = merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
+    merged["Average Flow Rate (L/min)"] = (
+        merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
+    ) / 2
 
-    wind_cols = [
-        "Wind Speed_Start", "Wind Direction_Start",
-        "Wind Speed_Stop", "Wind Direction_Stop"
+    # Desired column order
+    desired_columns = [
+        "ID", "Site",
+        "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date _Start", "Time_Start",
+        "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start",
+        "Wind Speed_Start", "Wind Direction_Start", "Elapsed Time (min)_Start", " Flow Rate (L/min)_Start",
+        "Observation_Start", "Submitted At_Start",
+        "Entry Type_Stop", "Monitoring Officer_Stop", "Driver_Stop", "Date _Stop", "Time_Stop",
+        "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop",
+        "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop",
+        "Observation_Stop", "Submitted At_Stop",
+        "Elapsed Time Diff (min)"
     ]
-    existing_wind = [col for col in wind_cols if col in merged.columns]
-    front_cols = ["ID", "Site"]
-    calc_cols = ["Elapsed Time Diff (min)", "Average Flow Rate (L/min)"]
-    existing_calc = [col for col in calc_cols if col in merged.columns]
-    other_cols = [col for col in merged.columns if col not in front_cols + existing_wind + existing_calc]
 
-    return merged[front_cols + existing_wind + existing_calc + other_cols]
+    # Keep only available columns in the desired order
+    final_columns = [col for col in desired_columns if col in merged.columns]
+    return merged[final_columns]
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     df = convert_timestamps_to_string(df)
