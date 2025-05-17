@@ -152,7 +152,7 @@ def merge_start_stop(df):
     merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Stop"), errors="coerce")
 
     # Calculations
-    merged["Elapsed Time (min)"] = (merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]).dt.total_seconds() / 60
+    merged["Elapsed Time (min)"] = (merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"])* 60
     merged["Average Flow Rate (L/min)"] = (
         merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
     ) / 2
