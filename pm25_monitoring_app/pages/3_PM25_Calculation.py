@@ -23,11 +23,15 @@ except Exception as e:
     st.error(f"❌ Failed to load merged sheet: {e}")
     st.stop()
 
+# --- Display Columns for Debugging ---
+st.write("Columns in Data:", df_merged.columns)
+
 # --- Date & Site Filters ---
 st.subheader("🔍 Filter Data to Edit")
 
 date_col = "Date_Start"
 
+# Check if 'Date_Start' column exists
 if date_col in df_merged.columns:
     try:
         df_merged[date_col] = pd.to_datetime(df_merged[date_col]).dt.date
@@ -61,7 +65,10 @@ else:
     filtered_df = df_merged.copy()
 
 # Site filter (single select with "All Sites" and auto-select most recent)
-if "Site" in filtered_df.columns and "Date_Start" in filtered_df.columns:
+site_col = "Site"
+
+# Check if 'Site' column exists
+if site_col in filtered_df.columns:
     try:
         # Make sure dates are parsed properly
         filtered_df["Date_Start"] = pd.to_datetime(filtered_df["Date_Start"]).dt.date
@@ -69,23 +76,24 @@ if "Site" in filtered_df.columns and "Date_Start" in filtered_df.columns:
         # Sort by Date_Start descending to get the latest
         sorted_df = filtered_df.sort_values(by="Date_Start", ascending=False)
 
-        available_sites = sorted(filtered_df["Site"].dropna().unique())
+        available_sites = sorted(filtered_df[site_col].dropna().unique())
         site_options = ["All Sites"] + available_sites
 
         # Default to most recent site in data (first row after sorting)
-        most_recent_site = sorted_df["Site"].dropna().iloc[0] if not sorted_df.empty else "All Sites"
+        most_recent_site = sorted_df[site_col].dropna().iloc[0] if not sorted_df.empty else "All Sites"
 
         selected_site = st.selectbox(
             "📍 Select Site", options=site_options, index=site_options.index(most_recent_site)
         )
 
         if selected_site != "All Sites":
-            filtered_df = filtered_df[filtered_df["Site"] == selected_site]
+            filtered_df = filtered_df[filtered_df[site_col] == selected_site]
     except Exception as e:
         st.warning(f"⚠ Could not auto-select most recent site: {e}")
         filtered_df = df_merged.copy()
 else:
-    st.warning("⚠ 'Site' or 'Date_Start' column not found — skipping site filter.")
+    st.warning(f"⚠ '{site_col}' column not found — skipping site filter.")
+    filtered_df = df_merged.copy()
 
 # --- Add Pre/Post Weight Columns ---
 filtered_df["Pre Weight (g)"] = 0.0
