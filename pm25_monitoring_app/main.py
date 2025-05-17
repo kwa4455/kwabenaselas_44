@@ -1,13 +1,11 @@
 import streamlit as st
 from utils import login, load_data_from_sheet, sheet, spreadsheet, logout_button
 
-# Page configuration
+# Page config and login
 st.set_page_config(page_title="PM₂.₅ Monitoring App", layout="wide")
-
-# Login or stop if not authenticated
 login()
 
-# Access session state
+# Access session info
 username = st.session_state["username"]
 role = st.session_state["role"]
 
@@ -55,6 +53,7 @@ st.markdown("""
     }
     .card:hover {
         box-shadow: 4px 4px 12px #bbb;
+        transform: scale(1.02);
     }
     .card-icon {
         font-size: 2rem;
@@ -88,53 +87,47 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# --- Title and Info ---
+st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring App")
+st.info(f"👤 Logged in as: **{username}** (Role: {role})")
+
 # --- Sidebar Navigation ---
 st.sidebar.title("📁 Navigation")
 st.sidebar.page_link("main.py", label="Main", icon="🏠")
-st.sidebar.page_link("pages/1_Data_Entry.py", label="Data Entry", icon="📝")
-st.sidebar.page_link("pages/2_Edit_Record.py", label="Edit Records", icon="✏️")
+if role in ["admin", "collector"]:
+    st.sidebar.page_link("pages/1_Data_Entry.py", label="Data Entry", icon="📝")
+if role in ["admin", "editor", "collector"]:
+    st.sidebar.page_link("pages/2_Edit_Records.py", label="Edit Records", icon="✏️")
 st.sidebar.page_link("pages/3_PM25_Calculation.py", label="PM₂.₅ Calculation", icon="📊")
 if role == "admin":
     st.sidebar.page_link("pages/4_Admin_Tools.py", label="Admin Tools", icon="🛠️")
 
-# --- Role-specific Pages (if needed) ---
-if role not in ["admin", "editor", "viewer", "collector"]:
-    st.error("❌ Invalid role.")
-    st.stop()
+# --- Main Card UI ---
+st.markdown('<div class="grid-container">', unsafe_allow_html=True)
 
-# --- Welcome Message ---
-st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring App")
-st.info(f"👤 Logged in as: **{username}** (Role: {role})")
+# Card Generator
+def render_card(icon, title, desc, page_path):
+    st.markdown(f"""
+    <div class="card">
+        <div class="card-icon">{icon}</div>
+        <div class="card-title">{title}</div>
+        <div class="card-desc">{desc}</div>
+        <a href="{page_path}" target="_self">Go →</a>
+    </div>
+    """, unsafe_allow_html=True)
 
-# --- Main Cards UI ---
-st.markdown("""
-<div class="grid-container">
-    <div class="card">
-        <div class="card-icon">✅</div>
-        <div class="card-title">Data Entry</div>
-        <div class="card-desc">Add new data entry</div>
-        <a href="pages/1_Data_Entry.py" target="_self">Go →</a>
-    </div>
-    <div class="card">
-        <div class="card-icon">✏️</div>
-        <div class="card-title">Edit Records</div>
-        <div class="card-desc">Modify or delete records</div>
-        <a href="pages/2_Edit_Records.py" target="_self">Go →</a>
-    </div>
-    <div class="card">
-        <div class="card-icon">📊</div>
-        <div class="card-title">PM₂.₅ Calculation</div>
-        <div class="card-desc">Calculate PM₂.₅ concentrations</div>
-        <a href="pages/3_PM25_Calculation.py" target="_self">Go →</a>
-    </div>
-    <div class="card">
-        <div class="card-icon">🛠️</div>
-        <div class="card-title">Admin Tools</div>
-        <div class="card-desc">Access admin utilities</div>
-        <a href="pages/4_Admin_Tools.py" target="_self">Go →</a>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+if role in ["admin", "collector"]:
+    render_card("✅", "Data Entry", "Add new data entry", "pages/1_Data_Entry.py")
+
+if role in ["admin", "editor", "collector"]:
+    render_card("✏️", "Edit Records", "Modify or delete records", "pages/2_Edit_Records.py")
+
+render_card("📊", "PM₂.₅ Calculation", "Calculate PM₂.₅ concentrations", "pages/3_PM25_Calculation.py")
+
+if role == "admin":
+    render_card("🛠️", "Admin Tools", "Access admin utilities", "pages/4_Admin_Tools.py")
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Logout Button ---
 logout_button()
