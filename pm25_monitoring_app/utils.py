@@ -134,7 +134,6 @@ def undo_last_delete(sheet):
     st.warning("⚠️ Undo not supported. Check backup sheet manually.")
 
 
-import pandas as pd
 
 def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
@@ -146,17 +145,21 @@ def merge_start_stop(df):
 
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    # Convert to numeric for calculations
+    # Convert to numeric
     merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged.get("Elapsed Time (min)_Start"), errors="coerce")
     merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged.get("Elapsed Time (min)_Stop"), errors="coerce")
     merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Start"), errors="coerce")
     merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Stop"), errors="coerce")
 
-    # Calculations
-    merged["Elapsed Time Diff (min)"] = merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
-    merged["Average Flow Rate (L/min)"] = (
-        merged["Flow Rate (L/min)_Start"].fillna(0) + merged["Flow Rate (L/min)_Stop"].fillna(0)
-    ) / 2
+    # Elapsed Time Difference (multiplied by 2)
+    merged["Elapsed Time Diff (min)"] = (
+        merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
+    ) * 2
+
+    # Average Flow Rate only if both values are present
+    merged["Average Flow Rate (L/min)"] = merged[
+        ["Flow Rate (L/min)_Start", "Flow Rate (L/min)_Stop"]
+    ].mean(axis=1, skipna=False)  # skipna=False → NaN if any are missing
 
     # Final desired column order
     desired_columns = [
@@ -172,10 +175,10 @@ def merge_start_stop(df):
         "Elapsed Time Diff (min)", "Average Flow Rate (L/min)"
     ]
 
-    # Keep only available columns
+    # Filter to available columns
     final_columns = [col for col in desired_columns if col in merged.columns]
 
-    # Replace NaN with None for JSON-safe export
+    # Replace NaN with None for JSON serialization
     cleaned = merged[final_columns].where(pd.notnull(merged[final_columns]), None)
 
     return cleaned
