@@ -30,7 +30,7 @@ try:
     df_calc = pd.DataFrame(calc_data)
 
     if not df_calc.empty:
-        df_calc["Date"] = pd.to_datetime(df_calc["Date"], errors="coerce").dt.date
+        df_calc["Date"] = pd.to_datetime(df_calc["Date _Start"], errors="coerce").dt.date
         df_calc["PM₂.₅ (µg/m³)"] = pd.to_numeric(df_calc["PM₂.₅ (µg/m³)"], errors="coerce")
 
         with st.expander("🔍 Filter Saved Entries"):
@@ -39,7 +39,7 @@ try:
 
         filtered_df = df_calc.copy()
         if selected_date:
-            filtered_df = filtered_df[filtered_df["Date"] == selected_date]
+            filtered_df = filtered_df[filtered_df["Date _Start"] == selected_date]
         if selected_site != "All":
             filtered_df = filtered_df[filtered_df["Site"] == selected_site]
 
