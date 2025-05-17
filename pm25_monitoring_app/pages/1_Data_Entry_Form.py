@@ -16,10 +16,18 @@ from constants import MERGED_SHEET
 
 
 
-# --- Page Title ---
-st.title("📄 Enter PM₂.₅ Monitoring Data")
+st.set_page_config(page_title="Data Entry", page_icon="📋")
 
-st.info("Welcome to the data entry form. Please provide monitoring details below.")
+st.markdown(
+    """
+    <div style='text-align: center;'>
+        <h2>📋 PM2.5 Monitoring Data Entry</h2>
+        <p style='color: grey;'>Use this page to input daily observations, instrument readings, and site information.</p>
+    </div>
+    <hr>
+    """,
+    unsafe_allow_html=True
+)
 
 
 require_roles("admin", "editor", "collector")
