@@ -57,8 +57,8 @@ with st.expander("🕵️ View Deleted Records"):
             df_deleted = pd.DataFrame(deleted_data[1:], columns=deleted_data[0])
             st.dataframe(df_deleted, use_container_width=True)
         else:
-            st.info("No deleted records found.")
+            st.info("No deleted records yet.")
     except Exception as e:
-        st.warning("Deleted Records sheet not found or not accessible.")
+        st.error(f"❌ Could not load Deleted Records: {e}")
 
 
