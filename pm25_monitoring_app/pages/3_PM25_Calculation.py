@@ -16,9 +16,14 @@ require_roles("admin", "editor")
 try:
     merged_data = spreadsheet.worksheet(MERGED_SHEET).get_all_records()
     df_merged = pd.DataFrame(merged_data)
+    
+    # Clean column names by stripping any extra spaces
+    df_merged.columns = df_merged.columns.str.strip()
+
     if not {"Elapsed Time Diff (min)", "Average Flow Rate (L/min)"}.issubset(df_merged.columns):
         st.error("❌ Required columns 'Elapsed Time Diff (min)' or 'Average Flow Rate (L/min)' not found.")
         st.stop()
+
 except Exception as e:
     st.error(f"❌ Failed to load merged sheet: {e}")
     st.stop()
