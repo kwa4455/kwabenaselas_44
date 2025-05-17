@@ -30,23 +30,20 @@ try:
     df_calc = pd.DataFrame(calc_data)
 
     if not df_calc.empty:
-        # Convert Date column
         df_calc["Date"] = pd.to_datetime(df_calc["Date"], errors="coerce").dt.date
+        df_calc["PM₂.₅ (µg/m³)"] = pd.to_numeric(df_calc["PM₂.₅ (µg/m³)"], errors="coerce")
 
-        # --- Sidebar Filters ---
         with st.expander("🔍 Filter Saved Entries"):
             selected_date = st.date_input("📅 Filter by Date", value=None)
-            selected_site = st.selectbox("📌 Filter by Site", options=["All"] + sorted(df_calc["Site"].unique().tolist()))
+            selected_site = st.selectbox("📌 Filter by Site", options=["All"] + sorted(df_calc["Site"].unique()))
 
-        # --- Apply Filters ---
         filtered_df = df_calc.copy()
         if selected_date:
             filtered_df = filtered_df[filtered_df["Date"] == selected_date]
-        if selected_site and selected_site != "All":
+        if selected_site != "All":
             filtered_df = filtered_df[filtered_df["Site"] == selected_site]
 
         st.dataframe(filtered_df, use_container_width=True)
-
     else:
         st.info("ℹ No saved entries yet.")
 except Exception as e:
