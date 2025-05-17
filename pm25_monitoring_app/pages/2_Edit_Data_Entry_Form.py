@@ -8,6 +8,7 @@ from utils import (
     delete_row,
     delete_merged_record_by_index,
     backup_deleted_row,
+    undo_last_delete
     sheet,
     spreadsheet,
     display_and_merge_data,
