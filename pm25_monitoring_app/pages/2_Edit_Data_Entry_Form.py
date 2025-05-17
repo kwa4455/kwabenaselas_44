@@ -7,7 +7,7 @@ from utils import (
     save_merged_data_to_sheet,
     delete_row,
     delete_merged_record_by_index,
-    undo_last_delete,
+    backup_deleted_row,
     sheet,
     spreadsheet,
     display_and_merge_data,
