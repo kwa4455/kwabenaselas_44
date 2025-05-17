@@ -111,6 +111,7 @@ final_header = [
     "Elapsed Time Diff (min)", "Average Flow Rate (L/min)", "Pre Weight (g)", "Post Weight (g)", "PM₂.₅ (µg/m³)"
 ]
 
+# --- Save Valid Entries ---
 if st.button("✅ Save Valid Entries"):
     valid_rows = []
     errors = []
@@ -123,12 +124,26 @@ if st.button("✅ Save Valid Entries"):
                 errors.append(f"Row {idx + 1}: {pm}")
                 continue
 
+            # Ensure required fields are not empty (e.g., ID, Site, Officer)
             required_fields = ["ID", "Site", "Monitoring Officer_Start"]
             if not all(str(row.get(col, "")).strip() for col in required_fields):
                 errors.append(f"Row {idx + 1}: Missing required fields (ID, Site, Officer)")
                 continue
 
-            data_row = [row.get(col, "") for col in final_header]
+            # Prepare the row, ensuring all missing fields are replaced with empty strings
+            data_row = [
+                str(row.get(col, "")).strip() if pd.notna(row.get(col, "")) else "" for col in final_header
+            ]
+            
+            # Log data_row to debug row content and size before saving
+            st.write(f"Row {idx + 1} content: {data_row}")
+            st.write(f"Row {idx + 1} length: {len(data_row)} | Header length: {len(final_header)}")
+
+            # Check if the row matches the final_header length
+            if len(data_row) != len(final_header):
+                errors.append(f"Row {idx + 1}: Column mismatch ({len(data_row)} vs {len(final_header)})")
+                continue
+
             valid_rows.append(data_row)
 
         except Exception as e:
@@ -138,17 +153,17 @@ if st.button("✅ Save Valid Entries"):
         try:
             sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
             if CALC_SHEET not in sheet_titles:
-                calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols="40")
+                calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols=str(len(final_header)))
                 calc_ws.append_row(final_header)
             else:
                 calc_ws = spreadsheet.worksheet(CALC_SHEET)
 
-            for row in valid_rows:
-                calc_ws.append_row(row)
+            # Append rows in batch to Google Sheets
+            calc_ws.append_rows(valid_rows, value_input_option="USER_ENTERED")
 
             st.success(f"✅ Saved {len(valid_rows)} valid entries.")
         except Exception as e:
-            st.error(f"❌ Failed to save data: {e}")
+            st.error(f"❌ Google Sheet save error: {e}")
     else:
         st.warning("⚠ No valid rows to save.")
 
