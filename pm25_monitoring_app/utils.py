@@ -179,8 +179,35 @@ def delete_merged_record_by_index(index_to_delete):
     backup_deleted_row(row_data, "Merged Sheet", index_to_delete + 2)
     worksheet.delete_rows(index_to_delete + 2)
 
-def undo_last_delete(sheet):
-    st.warning("⚠️ Undo not supported. Check backup sheet manually.")
+def undo_last_delete():
+    """
+    Restores the last deleted row from 'Deleted Records' to the main sheet.
+    Assumes deleted rows were backed up using `backup_deleted_row`.
+    """
+    try:
+        backup_sheet = spreadsheet.worksheet("Deleted Records")
+        deleted_rows = backup_sheet.get_all_values()
+
+        if len(deleted_rows) <= 1:
+            return "❌ No deleted records available to undo."
+
+        headers = deleted_rows[0]
+        last_row = deleted_rows[-1]
+
+        # Remove metadata (last 2 columns)
+        restored_data = last_row[:-2]
+
+        # Append to the main sheet
+        sheet.append_row(restored_data)
+
+        # Delete the last row from Deleted Records sheet
+        backup_sheet.delete_rows(len(deleted_rows))
+
+        return "✅ Last deleted record has been restored to the main sheet."
+
+    except Exception as e:
+        return f"❌ Undo failed: {e}"
+
 
 
 
