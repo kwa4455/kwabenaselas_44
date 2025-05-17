@@ -139,26 +139,28 @@ def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
     stop_df = df[df["Entry Type"] == "STOP"].copy()
     merge_keys = ["ID", "Site"]
-
+    
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys else x)
-
+    
     merged = pd.merge(start_df, stop_df, on=merge_keys, how="inner")
 
-    # Ensure numeric types for calculation
-    merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged.get("Elapsed Time (min)_Start"), errors="coerce")
-    merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged.get("Elapsed Time (min)_Stop"), errors="coerce")
-    merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Start"), errors="coerce")
-    merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged.get("Flow Rate (L/min)_Stop"), errors="coerce")
+    # Compute Elapsed Time difference
+    if "Elapsed Time (min)_Start" in merged and "Elapsed Time (min)_Stop" in merged:
+        merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged["Elapsed Time (min)_Start"], errors="coerce")
+        merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged["Elapsed Time (min)_Stop"], errors="coerce")
+        merged["Elapsed Time Diff (min)"] = merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
 
-    # Calculations
-    merged["Elapsed Time (min)"] = (merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"])* 60
-    merged["Average Flow Rate (L/min)"] = (
-        merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
-    ) / 2
+    # Compute Average Flow Rate
+    if " Flow Rate (L/min)_Start" in merged and " Flow Rate (L/min)_Stop" in merged:
+        merged[" Flow Rate (L/min)_Start"] = pd.to_numeric(merged[" Flow Rate (L/min)_Start"], errors="coerce")
+        merged[" Flow Rate (L/min)_Stop"] = pd.to_numeric(merged[" Flow Rate (L/min)_Stop"], errors="coerce")
+        merged["Average Flow Rate (L/min)"] = (
+            merged[" Flow Rate (L/min)_Start"] + merged[" Flow Rate (L/min)_Stop"]
+        ) / 2
 
-    # Desired column order
-    desired_columns = [
+    # Define desired column order
+    desired_order = [
         "ID", "Site",
         "Entry Type_Start", "Monitoring Officer_Start", "Driver_Start", "Date _Start", "Time_Start",
         "Temperature (°C)_Start", " RH (%)_Start", "Pressure (mbar)_Start", "Weather _Start",
@@ -168,12 +170,13 @@ def merge_start_stop(df):
         "Temperature (°C)_Stop", " RH (%)_Stop", "Pressure (mbar)_Stop", "Weather _Stop",
         "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", " Flow Rate (L/min)_Stop",
         "Observation_Stop", "Submitted At_Stop",
-        "Elapsed Time Diff (min)"
+        "Elapsed Time Diff (min)", "Average Flow Rate (L/min)"
     ]
 
-    # Keep only available columns in the desired order
-    final_columns = [col for col in desired_columns if col in merged.columns]
-    return merged[final_columns]
+    # Return only the columns that exist in the merged DataFrame in the specified order
+    existing_cols = [col for col in desired_order if col in merged.columns]
+    return merged[existing_cols]
+
 
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
