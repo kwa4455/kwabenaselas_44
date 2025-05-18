@@ -33,7 +33,7 @@ require_roles("admin", "editor", "collector")
 # --- Dropdown Options ---
 ids = ["", '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 sites = ["", 'Kaneshie First Light', 'Tetteh Quarshie', 'Achimota', 'La',
-         'Mallam Market', 'Graphic Road', 'Weija', 'Tantra Hill', 'Amasaman']
+         'Mallam Market', 'Graphic Road', 'Weija','Kasoa', 'Tantra Hill', 'Amasaman']
 officers = ['Obed', 'Clement', 'Peter', 'Ben', 'Mawuli']
 wind_directions = ["", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 weather_conditions = ["", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
