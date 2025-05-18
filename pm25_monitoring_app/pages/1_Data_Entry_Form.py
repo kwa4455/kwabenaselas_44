@@ -39,9 +39,9 @@ site_id_map = {
     '5': 'Mallam Market',
     '6': 'Graphic Road',
     '7': 'Weija',
-    '8': 'Tantra Hill',
-    '9': 'Amasaman',
-    '10': 'Other'
+    '8': 'Kasoa'
+    '9': 'Tantra Hill',
+    '10': 'Amasaman'
 }
 officers = ['Obed', 'Clement', 'Peter', 'Ben', 'Mawuli']
 wind_directions = ["", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
