@@ -17,6 +17,12 @@ from constants import MERGED_SHEET
 # --- Page Config ---
 st.set_page_config(page_title="Data Entry", page_icon="📋")
 
+# --- Initialize session state keys ---
+for key in ["entry_ready", "entry_type", "id_selected", "site_selected", "officer_selected", "driver_name"]:
+    if key not in st.session_state:
+        st.session_state[key] = None
+
+# --- Page Header ---
 st.markdown(
     """
     <div style='text-align: center;'>
@@ -40,30 +46,29 @@ weather_conditions = ["", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", 
 
 id_to_site = dict(zip(ids, sites))
 
-# --- Entry Type Selection ---
-entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"])
+# --- Entry Form ---
+if not st.session_state.get("entry_ready"):
+    entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"])
+    if entry_type:
+        id_selected = st.selectbox("📌 Select Site ID", ids)
+        site_selected = id_to_site.get(id_selected, "")
 
-if entry_type:
-    # Place ID selection outside the form so the site updates dynamically
-    id_selected = st.selectbox("📌 Select Site ID", ids)
-    site_selected = id_to_site.get(id_selected, "")
+        with st.form("setup_form"):
+            site_display = st.text_input("🛰️ Site", value=site_selected, disabled=True)
+            officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
+            driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
-    with st.form("setup_form"):
-        site_display = st.text_input("🛰️ Site", value=site_selected, disabled=True)
-        officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
-        driver_name = st.text_input("🧑‍🌾 Driver's Name")
+            proceed = st.form_submit_button("➡️ Proceed")
 
-        proceed = st.form_submit_button("➡️ Proceed")
-
-    if proceed and all([id_selected, site_selected, officer_selected, driver_name]):
-        st.session_state.entry_ready = True
-        st.session_state.entry_type = entry_type
-        st.session_state.id_selected = id_selected
-        st.session_state.site_selected = site_selected
-        st.session_state.officer_selected = officer_selected
-        st.session_state.driver_name = driver_name
-    elif proceed:
-        st.error("⚠ Please complete all required fields to proceed.")
+        if proceed and all([id_selected, site_selected, officer_selected, driver_name]):
+            st.session_state.entry_ready = True
+            st.session_state.entry_type = entry_type
+            st.session_state.id_selected = id_selected
+            st.session_state.site_selected = site_selected
+            st.session_state.officer_selected = officer_selected
+            st.session_state.driver_name = driver_name
+        elif proceed:
+            st.error("⚠ Please complete all required fields to proceed.")
 
 # --- START SECTION ---
 if st.session_state.get("entry_ready") and st.session_state.get("entry_type") == "START":
@@ -148,6 +153,13 @@ elif st.session_state.get("entry_ready") and st.session_state.get("entry_type") 
                 ]
                 add_data(stop_row)
                 st.success("✅ Stop day data submitted successfully!")
+
+# --- Reset Option ---
+if st.session_state.get("entry_ready"):
+    if st.button("🔄 Reset Entry Form"):
+        for key in ["entry_ready", "entry_type", "id_selected", "site_selected", "officer_selected", "driver_name"]:
+            st.session_state[key] = None
+        st.experimental_rerun()
 
 # --- Footer ---
 st.markdown("""
