@@ -88,7 +88,7 @@ username = st.session_state["username"]
 role = st.session_state["role"]
 
 # App Header
-st.title("🇬🇭 EPA Ghana | PM₂.₅ Monitoring App")
+st.title("🇬🇭 EPA Ghana | Air Quality Field Data Entry App")
 st.info(f"👤 Logged in as: **{username}** (Role: {role})")
 
 # Load data once into session state
