@@ -1,5 +1,16 @@
 import streamlit as st
 from utils import login, load_data_from_sheet, sheet, spreadsheet, logout_button
+from streamlit_js_eval import streamlit_js_eval
+
+# Get screen width on load
+width_data = streamlit_js_eval(js_expressions="screen.width", key="SCR_WIDTH")
+
+# Set flag
+if width_data:
+    st.session_state["is_mobile"] = width_data <= 768
+else:
+    st.session_state["is_mobile"] = False
+
 
 # Set page config
 st.set_page_config(
@@ -100,6 +111,16 @@ elif role == "collector":
 else:
     st.error("❌ Invalid role.")
     st.stop()
+if st.session_state["is_mobile"]:
+    st.info("📱 Mobile view detected. Adapting layout.")
+    st.text_input("Station Name")
+    st.date_input("Date")
+else:
+    col1, col2 = st.columns(2)
+    with col1:
+        st.text_input("Station Name")
+    with col2:
+        st.date_input("Date")
 
 # Sidebar Navigation
 st.sidebar.title("📁 Navigation")
