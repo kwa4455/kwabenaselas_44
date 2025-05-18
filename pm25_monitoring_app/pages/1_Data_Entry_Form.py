@@ -41,7 +41,7 @@ officers = ['Obed', 'Clement', 'Peter', 'Ben', 'Mawuli']
 wind_directions = ["", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 weather_conditions = ["", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
 
-entry_type = st.selectbox("Select Entry Type", ["", "START", "STOP"])
+entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"])
 
 if entry_type:
     id_selected = st.selectbox("Select Site ID", ids)
