@@ -110,16 +110,7 @@ elif role == "collector":
 else:
     st.error("❌ Invalid role.")
     st.stop()
-if st.session_state["is_mobile"]:
-    st.info("📱 Mobile view detected. Adapting layout.")
-    st.text_input("Station Name")
-    st.date_input("Date")
-else:
-    col1, col2 = st.columns(2)
-    with col1:
-        st.text_input("Station Name")
-    with col2:
-        st.date_input("Date")
+
 
 # Sidebar Navigation
 st.sidebar.title("📁 Navigation")
