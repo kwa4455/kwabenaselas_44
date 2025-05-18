@@ -138,23 +138,36 @@ st.download_button(
     mime="text/csv"
 )
 
-# --- Save Edited DataFrame to Google Sheets ---
 if st.button("✅ Save Edited DataFrame"):
     try:
-        rows_to_save = edited_df.values.tolist()
-        st.write(f"First row to save: {rows_to_save[0]}")  # Debugging
+        # Make a copy to avoid modifying original DataFrame
+        safe_df = edited_df.copy()
 
+        # Convert only datetime columns to strings
+        for col in safe_df.select_dtypes(include=["datetime64[ns]", "datetime64", "object"]):
+            if pd.api.types.is_datetime64_any_dtype(safe_df[col]):
+                safe_df[col] = safe_df[col].dt.strftime("%Y-%m-%d %H:%M:%S")
+
+        # Convert to list of lists for Google Sheets
+        rows_to_save = safe_df.values.tolist()
+
+        # Debug: Show first row
+        st.write(f"First row to save: {rows_to_save[0]}")
+
+        # Ensure worksheet exists
         sheet_titles = [ws.title for ws in spreadsheet.worksheets()]
         if CALC_SHEET not in sheet_titles:
-            calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols=str(len(edited_df.columns)))
-            calc_ws.append_row(edited_df.columns.tolist())
+            calc_ws = spreadsheet.add_worksheet(title=CALC_SHEET, rows="1000", cols=str(len(safe_df.columns)))
+            calc_ws.append_row(safe_df.columns.tolist())  # Header
         else:
             calc_ws = spreadsheet.worksheet(CALC_SHEET)
 
+        # Append rows
         calc_ws.append_rows(rows_to_save, value_input_option="USER_ENTERED")
         st.success(f"✅ Saved {len(rows_to_save)} rows successfully.")
     except Exception as e:
         st.error(f"❌ Error saving data: {e}")
+
 
 # --- Show Saved Entries ---
 if st.checkbox("📖 Show Saved Entries in Sheet"):
