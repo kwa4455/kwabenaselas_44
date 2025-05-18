@@ -56,7 +56,7 @@ if entry_type == "START":
         start_time = st.time_input("⏱️ Start Time", value=datetime.now().time())
         start_obs = st.text_area("🧿 First Day Observation")
 
-        st.markdown("#### 🌡 Initial Atmospheric Conditions")
+        st.markdown("#### 🌧️ Initial Atmospheric Conditions")
         start_temp = st.number_input("🌡️ Temperature (°C)", step=0.1)
         start_rh = st.number_input("🌬️ Relative Humidity (%)", step=0.1)
         start_pressure = st.number_input("🧭 Pressure (mbar)", step=0.1)
@@ -89,17 +89,17 @@ elif entry_type == "STOP":
         stop_time = st.time_input("Stop Time", value=datetime.now().time())
         stop_obs = st.text_area("🧿 Final Day Observation")
 
-        st.markdown("#### 🌡 Final Atmospheric Conditions")
-        stop_temp = st.number_input("Final Temperature (°C)", step=0.1)
+        st.markdown("#### 🌧️ Final Atmospheric Conditions")
+        stop_temp = st.number_input("🌡️ Final Temperature (°C)", step=0.1)
         stop_rh = st.number_input("🌬️ Final Relative Humidity (%)", step=0.1)
-        stop_pressure = st.number_input("Final Pressure (mbar)", step=0.1)
-        stop_weather = st.selectbox("Final Weather", weather_conditions)
-        stop_wind_speed = st.text_input("Final Wind Speed (e.g. 12 km/h)")
-        stop_wind_direction = st.selectbox("Final Wind Direction", wind_directions)
+        stop_pressure = st.number_input("🧭 Final Pressure (mbar)", step=0.1)
+        stop_weather = st.selectbox("🌦️ Final Weather", weather_conditions)
+        stop_wind_speed = st.text_input("💨 Final Wind Speed (e.g. 12 km/h)")
+        stop_wind_direction = st.selectbox("🌪️ Final Wind Direction", wind_directions)
 
         st.markdown("#### ⚙ Final Sampler Information")
-        stop_elapsed = st.number_input("Final Elapsed Time (min)", step=1)
-        stop_flow = st.number_input("Final Flow Rate (L/min)", step=0.1)
+        stop_elapsed = st.number_input("⏰ Final Elapsed Time (min)", step=1)
+        stop_flow = st.number_input("🧯Final Flow Rate (L/min)", step=0.1)
 
         if st.button("✅ Submit Stop Day Data"):
             if all([id_selected, site_selected, officer_selected, driver_name]):
