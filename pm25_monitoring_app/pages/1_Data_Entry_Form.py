@@ -39,21 +39,21 @@ weather_conditions = ["", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", 
 
 id_to_site = dict(zip(ids, sites))
 
-# --- Entry Type and Setup Form ---
+# --- Entry Type Selection ---
 entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"])
 
 if entry_type:
-    with st.form("setup_form"):
-        id_selected = st.selectbox("📌 Select Site ID", ids)
-        site_selected = id_to_site.get(id_selected, "")
-        site_display = st.text_input("🛰️ Site Name (auto-filled)", value=site_selected, disabled=True)
+    # Place ID selection outside the form so the site updates dynamically
+    id_selected = st.selectbox("📌 Select Site ID", ids)
+    site_selected = id_to_site.get(id_selected, "")
 
+    with st.form("setup_form"):
+        site_display = st.text_input("🛰️ Site", value=site_selected, disabled=True)
         officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
         driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
         proceed = st.form_submit_button("➡️ Proceed")
 
-    # Save form values into session state
     if proceed and all([id_selected, site_selected, officer_selected, driver_name]):
         st.session_state.entry_ready = True
         st.session_state.entry_type = entry_type
@@ -64,7 +64,7 @@ if entry_type:
     elif proceed:
         st.error("⚠ Please complete all required fields to proceed.")
 
-# --- START Section ---
+# --- START SECTION ---
 if st.session_state.get("entry_ready") and st.session_state.get("entry_type") == "START":
     with st.expander("🟢 Start Day Monitoring", expanded=True):
         start_date = st.date_input("📆 Start Date", value=datetime.today())
@@ -105,7 +105,7 @@ if st.session_state.get("entry_ready") and st.session_state.get("entry_type") ==
             add_data(start_row)
             st.success("✅ Start day data submitted successfully!")
 
-# --- STOP Section ---
+# --- STOP SECTION ---
 elif st.session_state.get("entry_ready") and st.session_state.get("entry_type") == "STOP":
     with st.expander("🔴 Stop Day Monitoring", expanded=True):
         stop_date = st.date_input("📆 Stop Date", value=datetime.today())
