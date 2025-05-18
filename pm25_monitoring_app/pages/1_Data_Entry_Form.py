@@ -7,6 +7,7 @@ from utils import (
     merge_start_stop,
     save_merged_data_to_sheet,
     sheet,
+    validate_inputs,
     spreadsheet,
     display_and_merge_data,
     require_roles
@@ -84,26 +85,27 @@ if st.session_state.get("entry_ready") and st.session_state.get("entry_type") ==
         start_flow = st.number_input("🧯 Initial Flow Rate (L/min)", step=0.1)
 
         if st.button("✅ Submit Start Day Data"):
-            start_row = [
-                "START",
-                st.session_state.id_selected,
-                st.session_state.site_selected,
-                ", ".join(st.session_state.officer_selected),
-                st.session_state.driver_name,
-                start_date.strftime("%Y-%m-%d"),
-                start_time.strftime("%H:%M:%S"),
-                start_temp,
-                start_rh,
-                start_pressure,
-                start_weather,
-                start_wind_speed,
-                start_wind_direction,
-                start_elapsed,
-                start_flow,
-                start_obs
-            ]
-            add_data(start_row)
-            st.success("✅ Start day data submitted successfully!")
+            if validate_inputs(start_temp, start_rh, start_pressure, start_wind_speed):
+                start_row = [
+                    "START",
+                    st.session_state.id_selected,
+                    st.session_state.site_selected,
+                    ", ".join(st.session_state.officer_selected),
+                    st.session_state.driver_name,
+                    start_date.strftime("%Y-%m-%d"),
+                    start_time.strftime("%H:%M:%S"),
+                    start_temp,
+                    start_rh,
+                    start_pressure,
+                    start_weather,
+                    start_wind_speed,
+                    start_wind_direction,
+                    start_elapsed,
+                    start_flow,
+                    start_obs
+                ]
+                add_data(start_row)
+                st.success("✅ Start day data submitted successfully!")
 
 # --- STOP SECTION ---
 elif st.session_state.get("entry_ready") and st.session_state.get("entry_type") == "STOP":
@@ -125,26 +127,27 @@ elif st.session_state.get("entry_ready") and st.session_state.get("entry_type") 
         stop_flow = st.number_input("🧯 Final Flow Rate (L/min)", step=0.1)
 
         if st.button("✅ Submit Stop Day Data"):
-            stop_row = [
-                "STOP",
-                st.session_state.id_selected,
-                st.session_state.site_selected,
-                ", ".join(st.session_state.officer_selected),
-                st.session_state.driver_name,
-                stop_date.strftime("%Y-%m-%d"),
-                stop_time.strftime("%H:%M:%S"),
-                stop_temp,
-                stop_rh,
-                stop_pressure,
-                stop_weather,
-                stop_wind_speed,
-                stop_wind_direction,
-                stop_elapsed,
-                stop_flow,
-                stop_obs
-            ]
-            add_data(stop_row)
-            st.success("✅ Stop day data submitted successfully!")
+            if validate_inputs(stop_temp, stop_rh, stop_pressure, stop_wind_speed):
+                stop_row = [
+                    "STOP",
+                    st.session_state.id_selected,
+                    st.session_state.site_selected,
+                    ", ".join(st.session_state.officer_selected),
+                    st.session_state.driver_name,
+                    stop_date.strftime("%Y-%m-%d"),
+                    stop_time.strftime("%H:%M:%S"),
+                    stop_temp,
+                    stop_rh,
+                    stop_pressure,
+                    stop_weather,
+                    stop_wind_speed,
+                    stop_wind_direction,
+                    stop_elapsed,
+                    stop_flow,
+                    stop_obs
+                ]
+                add_data(stop_row)
+                st.success("✅ Stop day data submitted successfully!")
 
 # --- Footer ---
 st.markdown("""
