@@ -45,6 +45,7 @@ if "Site" in df_merged.columns:
         site_options = ["All Sites"] + available_sites
         most_recent_site = df_merged["Site"].dropna().iloc[0] if not df_merged.empty else "All Sites"
 
+        st.subheader("🗺️ Filter by Site")
         selected_site = st.selectbox("📍 Select Site", options=site_options, index=site_options.index(most_recent_site))
         filtered_df = df_merged[df_merged["Site"] == selected_site] if selected_site != "All Sites" else df_merged.copy()
     except Exception as e:
