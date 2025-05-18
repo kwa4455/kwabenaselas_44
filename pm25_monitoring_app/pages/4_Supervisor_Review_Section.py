@@ -24,7 +24,7 @@ st.set_page_config(page_title="Supervisor Review Section", page_icon="🕵️")
 st.markdown(
     """
     <div style='text-align: center;'>
-        <h2>🕵️ Audit Records Dashboard</h2>
+        <h2>🕵️ Supervisor Review Section </h2>
         <p style='color: grey;'>For Supervisors to review, inspect, and audit monitoring records</p>
     </div>
     <hr>
