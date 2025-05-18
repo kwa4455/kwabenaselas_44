@@ -146,7 +146,20 @@ def backup_deleted_row(row_data, original_sheet_name, row_number):
     source = f"{original_sheet_name} - Row {row_number}"
     backup_sheet.append_row(row_data + [timestamp, source])
 
-
+def validate_inputs(temp, rh, pressure, wind_speed):
+    if not (-40 <= temp <= 60):
+        st.error("❗ Temperature must be between -40°C and 60°C")
+        return False
+    if not (0 <= rh <= 100):
+        st.error("❗ Relative Humidity must be between 0% and 100%")
+        return False
+    if not (800 <= pressure <= 1100):
+        st.error("❗ Pressure must be between 800 mbar and 1100 mbar")
+        return False
+    if not wind_speed.isnumeric() or float(wind_speed) <= 0:
+        st.error("❗ Wind Speed must be a positive number")
+        return False
+    return True
 
 def make_unique_headers(headers):
     """
