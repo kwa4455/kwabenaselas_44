@@ -39,7 +39,7 @@ site_id_map = {
     '5': 'Mallam Market',
     '6': 'Graphic Road',
     '7': 'Weija',
-    '8': 'Kasoa'
+    '8': 'Kasoa',
     '9': 'Tantra Hill',
     '10': 'Amasaman'
 }
