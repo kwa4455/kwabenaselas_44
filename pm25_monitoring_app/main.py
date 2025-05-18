@@ -2,15 +2,6 @@ import streamlit as st
 from utils import login, load_data_from_sheet, sheet, spreadsheet, logout_button
 from streamlit_js_eval import streamlit_js_eval
 
-# Get screen width on load
-width_data = streamlit_js_eval(js_expressions="screen.width", key="SCR_WIDTH")
-
-# Set flag
-if width_data:
-    st.session_state["is_mobile"] = width_data <= 768
-else:
-    st.session_state["is_mobile"] = False
-
 
 # Set page config
 st.set_page_config(
@@ -19,6 +10,14 @@ st.set_page_config(
     page_icon="🌍"
 )
 
+# Get screen width on load
+width_data = streamlit_js_eval(js_expressions="screen.width", key="SCR_WIDTH")
+
+# Set flag
+if width_data:
+    st.session_state["is_mobile"] = width_data <= 768
+else:
+    st.session_state["is_mobile"] = False
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
 st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
