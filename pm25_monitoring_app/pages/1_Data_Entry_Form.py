@@ -41,11 +41,17 @@ officers = ['Obed', 'Clement', 'Peter', 'Ben', 'Mawuli']
 wind_directions = ["", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 weather_conditions = ["", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
 
+id_to_site = dict(zip(ids, sites))
+
 entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"])
 
 if entry_type:
     id_selected = st.selectbox("📌 Select Site ID", ids)
-    site_selected = st.selectbox("🛰️ Select Site", sites)
+    
+    site_selected = id_to_site.get(id_selected, "")
+    if site_selected:
+        st.info(f"🛰️ Selected Site: **{site_selected}**")
+    
     officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
     driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
