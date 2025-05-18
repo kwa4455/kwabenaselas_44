@@ -62,11 +62,11 @@ if entry_type == "START":
         start_pressure = st.number_input("🧭 Pressure (mbar)", step=0.1)
         start_weather = st.selectbox("🌦️ Weather", weather_conditions)
         start_wind_speed = st.text_input("💨 Wind Speed (e.g. 10 km/h)")
-        start_wind_direction = st.selectbox("Wind Direction", wind_directions)
+        start_wind_direction = st.selectbox("🌪️ Wind Direction", wind_directions)
 
         st.markdown("#### ⚙ Initial Sampler Information")
-        start_elapsed = st.number_input("Initial Elapsed Time (min)", step=1)
-        start_flow = st.number_input("Initial Flow Rate (L/min)", step=0.1)
+        start_elapsed = st.number_input("⏰ Initial Elapsed Time (min)", step=1)
+        start_flow = st.number_input("🧯 Initial Flow Rate (L/min)", step=0.1)
 
         if st.button("✅ Submit Start Day Data"):
             if all([id_selected, site_selected, officer_selected, driver_name]):
