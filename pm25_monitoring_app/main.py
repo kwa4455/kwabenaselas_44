@@ -5,7 +5,7 @@ from streamlit_js_eval import streamlit_js_eval
 
 # Set page config
 st.set_page_config(
-    page_title="PM₂.₅ Monitoring App",
+    page_title="Air Quality Field Data Entry App",
     layout="wide",
     page_icon="🌍"
 )
