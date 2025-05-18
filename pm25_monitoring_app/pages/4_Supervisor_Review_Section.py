@@ -39,6 +39,7 @@ st.write("This page will display records and allow Supervisors to inspect and au
 # === Display Existing Data & Merge START/STOP ===
 st.header("📊 Submitted Monitoring Records")
 df = load_data_from_sheet(sheet)
+st.header("🔢 Merged Data Records")
 display_and_merge_data(df, spreadsheet, MERGED_SHEET)
 
 
