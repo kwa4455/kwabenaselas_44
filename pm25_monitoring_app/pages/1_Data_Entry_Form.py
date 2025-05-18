@@ -41,32 +41,32 @@ officers = ['Obed', 'Clement', 'Peter', 'Ben', 'Mawuli']
 wind_directions = ["", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 weather_conditions = ["", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
 
-entry_type = st.selectbox("📝Select Entry Type", ["", "START", "STOP"])
+entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"])
 
 if entry_type:
-    id_selected = st.selectbox("📌Select Site ID", ids)
-    site_selected = st.selectbox("🛰️Select Site", sites)
-    officer_selected = st.multiselect("🧑‍🔬Monitoring Officer(s)", officers)
-    driver_name = st.text_input("🧑‍🌾Driver's Name")
+    id_selected = st.selectbox("📌 Select Site ID", ids)
+    site_selected = st.selectbox("🛰️ Select Site", sites)
+    officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
+    driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
 # === START Section ===
 if entry_type == "START":
     with st.expander("🟢 Start Day Monitoring", expanded=True):
-        start_date = st.date_input("📆Start Date", value=datetime.today())
-        start_time = st.time_input("⏱️Start Time", value=datetime.now().time())
+        start_date = st.date_input("📆 Start Date", value=datetime.today())
+        start_time = st.time_input("⏱️ Start Time", value=datetime.now().time())
         start_obs = st.text_area("🧿 First Day Observation")
 
         st.markdown("#### 🌧️ Initial Atmospheric Conditions")
-        start_temp = st.number_input("🌡️Temperature (°C)", step=0.1)
+        start_temp = st.number_input("🌡️ Temperature (°C)", step=0.1)
         start_rh = st.number_input("🌬️ Relative Humidity (%)", step=0.1)
-        start_pressure = st.number_input("🧭Pressure (mbar)", step=0.1)
-        start_weather = st.selectbox("🌦️Weather", weather_conditions)
-        start_wind_speed = st.text_input("💨Wind Speed (e.g. 10 km/h)")
-        start_wind_direction = st.selectbox("🌪️Wind Direction", wind_directions)
+        start_pressure = st.number_input("🧭 Pressure (mbar)", step=0.1)
+        start_weather = st.selectbox("🌦️ Weather", weather_conditions)
+        start_wind_speed = st.text_input("💨 Wind Speed (e.g. 10 km/h)")
+        start_wind_direction = st.selectbox("🌪️ Wind Direction", wind_directions)
 
         st.markdown("#### ⚙ Initial Sampler Information")
-        start_elapsed = st.number_input("⏰Initial Elapsed Time (min)", step=1)
-        start_flow = st.number_input("🧯Initial Flow Rate (L/min)", step=0.1)
+        start_elapsed = st.number_input("⏰ Initial Elapsed Time (min)", step=1)
+        start_flow = st.number_input("🧯 Initial Flow Rate (L/min)", step=0.1)
 
         if st.button("✅ Submit Start Day Data"):
             if all([id_selected, site_selected, officer_selected, driver_name]):
@@ -85,21 +85,21 @@ if entry_type == "START":
 # === STOP Section ===
 elif entry_type == "STOP":
     with st.expander("🔴 Stop Day Monitoring", expanded=True):
-        stop_date = st.date_input("Stop Date", value=datetime.today())
-        stop_time = st.time_input("Stop Time", value=datetime.now().time())
+        stop_date = st.date_input("📆 Stop Date", value=datetime.today())
+        stop_time = st.time_input("⏱️ Stop Time", value=datetime.now().time())
         stop_obs = st.text_area("🧿 Final Day Observation")
 
         st.markdown("#### 🌧️ Final Atmospheric Conditions")
-        stop_temp = st.number_input("🌡️Final Temperature (°C)", step=0.1)
-        stop_rh = st.number_input("🌬️Final Relative Humidity (%)", step=0.1)
-        stop_pressure = st.number_input("🧭Final Pressure (mbar)", step=0.1)
-        stop_weather = st.selectbox("🌦️Final Weather", weather_conditions)
-        stop_wind_speed = st.text_input("💨Final Wind Speed (e.g. 12 km/h)")
-        stop_wind_direction = st.selectbox("🌪️Final Wind Direction", wind_directions)
+        stop_temp = st.number_input("🌡️ Final Temperature (°C)", step=0.1)
+        stop_rh = st.number_input("🌬️ Final Relative Humidity (%)", step=0.1)
+        stop_pressure = st.number_input("🧭 Final Pressure (mbar)", step=0.1)
+        stop_weather = st.selectbox("🌦️ Final Weather", weather_conditions)
+        stop_wind_speed = st.text_input("💨 Final Wind Speed (e.g. 12 km/h)")
+        stop_wind_direction = st.selectbox("🌪️ Final Wind Direction", wind_directions)
 
         st.markdown("#### ⚙ Final Sampler Information")
-        stop_elapsed = st.number_input("⏰Final Elapsed Time (min)", step=1)
-        stop_flow = st.number_input("🧯Final Flow Rate (L/min)", step=0.1)
+        stop_elapsed = st.number_input("⏰ Final Elapsed Time (min)", step=1)
+        stop_flow = st.number_input("🧯 Final Flow Rate (L/min)", step=0.1)
 
         if st.button("✅ Submit Stop Day Data"):
             if all([id_selected, site_selected, officer_selected, driver_name]):
