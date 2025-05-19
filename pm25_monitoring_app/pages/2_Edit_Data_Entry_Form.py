@@ -276,7 +276,7 @@ st.title("🗃️ Restore Deleted Record")
 st.markdown("Select a deleted record below to restore it to the main sheet.")
 
 try:
-    backup_sheet = spreadsheet.worksheet(DELETED_SHEET_NAME)
+    backup_sheet = spreadsheet.worksheet(Deleted Records)
     deleted_rows = backup_sheet.get_all_values()
 
     if len(deleted_rows) <= 1:
