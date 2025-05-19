@@ -178,7 +178,19 @@ def handle_merge_logic():
 # --- Sidebar Filter Controls ---
 st.sidebar.header("🔍 Filter Records")
 df_all = load_data_from_sheet(sheet)
-df_all["Date"] = pd.to_datetime(df_all["Date"], errors='coerce').dt.date
+
+# Try to locate the Date column
+date_column = None
+for col in df_all.columns:
+    if col.strip().lower() in ["date", "sampling date", "start date"]:
+        date_column = col
+        break
+
+if not date_column:
+    st.error("❌ No 'Date' column found. Please check your Google Sheet headers.")
+    st.stop()
+
+df_all["Date"] = pd.to_datetime(df_all[date_column], errors='coerce').dt.date
 unique_sites = sorted(df_all["Site"].dropna().unique())
 selected_site = st.sidebar.selectbox("Filter by Site", ["All"] + unique_sites)
 selected_date = st.sidebar.date_input("Filter by Date", value=None)
@@ -274,12 +286,13 @@ try:
         records = deleted_rows[1:]
         df_deleted = pd.DataFrame(records, columns=headers)
 
-        df_deleted["Date"] = pd.to_datetime(df_deleted["Date"], errors='coerce').dt.date
+        if date_column and date_column in df_deleted.columns:
+            df_deleted["Date"] = pd.to_datetime(df_deleted[date_column], errors='coerce').dt.date
 
-        if selected_site != "All":
-            df_deleted = df_deleted[df_deleted["Site"] == selected_site]
-        if selected_date:
-            df_deleted = df_deleted[df_deleted["Date"] == selected_date]
+            if selected_site != "All":
+                df_deleted = df_deleted[df_deleted["Site"] == selected_site]
+            if selected_date:
+                df_deleted = df_deleted[df_deleted["Date"] == selected_date]
 
         if df_deleted.empty:
             st.info("No deleted records match the filter.")
