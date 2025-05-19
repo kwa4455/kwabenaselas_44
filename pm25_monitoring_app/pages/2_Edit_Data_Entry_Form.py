@@ -273,6 +273,7 @@ else:
                 st.rerun()
 
 
+
 # --- Restore Deleted Records ---
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
