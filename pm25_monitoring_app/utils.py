@@ -195,38 +195,28 @@ def delete_merged_record_by_index(index_to_delete):
     backup_deleted_row(row_data, "Merged Sheet", index_to_delete + 2)
     worksheet.delete_rows(index_to_delete + 2)
 
-def make_unique_headers(headers):
-    """Ensure column headers are unique for use in a DataFrame."""
-    seen = {}
-    result = []
-    for h in headers:
-        if h not in seen:
-            seen[h] = 1
-            result.append(h)
-        else:
-            seen[h] += 1
-            result.append(f"{h}_{seen[h]}")
-    return result
-
-def restore_specific_deleted_record(index):
-    """Restore a deleted record from the Deleted Records sheet back to the Main sheet."""
+def restore_specific_deleted_record(selected_index: int) -> str:
     try:
-        deleted_rows = deleted_sheet.get_all_values()
+        backup_sheet = spreadsheet.worksheet(DELETED_SHEET_NAME)
+        deleted_rows = backup_sheet.get_all_values()
+
         if len(deleted_rows) <= 1:
             return "❌ No deleted records to restore."
 
         headers = deleted_rows[0]
-        record_rows = deleted_rows[1:]
+        records = deleted_rows[1:]
 
-        if not (0 <= index < len(record_rows)):
+        if not (0 <= selected_index < len(records)):
             return "❌ Invalid selection."
 
-        selected_row = record_rows[index]
-        restored_data = selected_row[:-2]  # Exclude metadata (e.g., deleted timestamp)
+        selected_row = records[selected_index]
+        restored_data = selected_row[:-2]  # Remove metadata columns
 
-        # Append to Main Sheet and remove from Deleted Sheet
-        main_sheet.append_row(restored_data)
-        deleted_sheet.delete_rows(index + 2)  # +2 to account for header and 0-index
+        # Append to main sheet
+        sheet.append_row(restored_data)
+
+        # Delete from Deleted Records
+        backup_sheet.delete_rows(selected_index + 2)
 
         return "✅ Selected deleted record has been restored."
 
