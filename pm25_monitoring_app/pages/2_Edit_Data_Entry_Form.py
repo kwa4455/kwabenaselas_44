@@ -10,6 +10,7 @@ from utils import (
     delete_row,
     delete_merged_record_by_index,
     backup_deleted_row,
+    make_unique_headers,
     restore_specific_deleted_record,
     sheet,
     spreadsheet,
