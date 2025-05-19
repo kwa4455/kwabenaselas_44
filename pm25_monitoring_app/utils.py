@@ -181,11 +181,32 @@ def make_unique_headers(headers):
             unique_headers.append(h)
     return unique_headers
 
+def delete_row(sheet, row_to_delete, deleted_by):
+    """
+    Deletes a row from the Google Sheet and logs the username of the person deleting the record.
+    """
+    # First, back up the row before deleting it
+    row_to_backup = sheet.row_values(row_to_delete)
+    row_to_backup.append(deleted_by)  # Add the username who deleted the record
+    backup_sheet = spreadsheet.worksheet("Deleted Records")
+    backup_sheet.append_row(row_to_backup)
 
-def delete_row(sheet, row_number):
-    row_data = sheet.row_values(row_number)
-    backup_deleted_row(row_data, "Main Sheet", row_number)
-    sheet.delete_rows(row_number)
+    # Now delete the row from the main sheet
+    sheet.delete_rows(row_to_delete)
+    
+def delete_row(sheet, row_to_delete, deleted_by):
+    """
+    Deletes a row from the Google Sheet and logs the username of the person deleting the record.
+    """
+    # First, back up the row before deleting it
+    row_to_backup = sheet.row_values(row_to_delete)
+    row_to_backup.append(deleted_by)  # Add the username who deleted the record
+    backup_sheet = spreadsheet.worksheet("Deleted Records")
+    backup_sheet.append_row(row_to_backup)
+
+    # Now delete the row from the main sheet
+    sheet.delete_rows(row_to_delete)
+
 
 
 
