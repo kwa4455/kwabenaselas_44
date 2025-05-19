@@ -188,32 +188,8 @@ elif entry_type == "STOP":
             else:
                 st.error("⚠ Please complete all required fields before submitting.")
 
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-# Show Submitted Records
-if st.checkbox("📖 Show Submitted Monitoring Records", key="submitted_records_checkbox"):
-    try:
-        df = load_data_from_sheet(sheet)
-        df_saved = display_and_merge_data(df, spreadsheet, MERGED_SHEET)
 
-        st.markdown("### 📋 Submitted Monitoring Records")
-
-        gb = GridOptionsBuilder.from_dataframe(df_saved)
-        gb.configure_pagination(paginationAutoPageSize=True)
-        gb.configure_side_bar()
-        gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=False)
-        grid_options = gb.build()
-
-        AgGrid(
-            df_saved,
-            gridOptions=grid_options,
-            update_mode=GridUpdateMode.NO_UPDATE,
-            fit_columns_on_grid_load=True,
-            theme="balham",  # Other options: "streamlit", "light", "dark", "blue", "fresh"
-            allow_unsafe_jscode=True
-        )
-    except Exception as e:
-        st.warning(f"⚠ Could not load Submitted Monitoring Records: {e}")
 # --- Footer ---
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
