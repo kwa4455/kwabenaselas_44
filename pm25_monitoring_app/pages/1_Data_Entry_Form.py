@@ -123,6 +123,18 @@ if entry_type:
     driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
 # === START Section ===
+if entry_type:
+    id_selected = st.selectbox("📌 Select Site ID", ids)
+
+    # Automatically get and display site name
+    site_selected = site_id_map.get(id_selected, "")
+    if site_selected:
+        st.text_input("📍 Site", value=site_selected, disabled=True)
+
+    officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
+    driver_name = st.text_input("🧑‍🌾 Driver's Name")
+
+# === START Section ===
 if entry_type == "START":
     with st.expander("🟢 Start Day Monitoring", expanded=True):
         start_date = st.date_input("📆 Start Date", value=datetime.today())
@@ -150,7 +162,7 @@ if entry_type == "START":
                     start_wind_speed, start_wind_direction,
                     start_elapsed, start_flow, start_obs
                 ]
-                add_data(start_row)
+                add_data(start_row, st.session_state.username)  # Pass username here
                 st.success("✅ Start day data submitted successfully!")
             else:
                 st.error("⚠ Please complete all required fields before submitting.")
@@ -183,15 +195,16 @@ elif entry_type == "STOP":
                     stop_wind_speed, stop_wind_direction,
                     stop_elapsed, stop_flow, stop_obs
                 ]
-                add_data(stop_row)
+                add_data(stop_row, st.session_state.username)  # Pass username here
                 st.success("✅ Stop day data submitted successfully!")
             else:
                 st.error("⚠ Please complete all required fields before submitting.")
+
+# Show Submitted Records
 if st.checkbox("📖 Show Submitted Monitoring Records"):
     try:
         df = load_data_from_sheet(sheet)
-        df_saved = display_and_merge_data(df, spreadsheet, MERGED_SHEET)
-        st.dataframe(df_saved, use_container_width=True)
+        st.dataframe(df, use_container_width=True)
     except Exception as e:
         st.warning(f"⚠ Could not load Submitted Monitoring Records: {e}")
 # --- Footer ---
