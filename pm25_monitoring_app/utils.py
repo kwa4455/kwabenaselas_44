@@ -3,6 +3,7 @@ import pandas as pd
 import gspread
 from datetime import datetime
 from oauth2client.service_account import ServiceAccountCredentials
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import json
 import time
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET, CALC_SHEET
@@ -193,10 +194,6 @@ def delete_merged_record_by_index(index_to_delete):
     worksheet.delete_rows(index_to_delete + 2)
 
 def restore_specific_deleted_record(selected_index: int):
-    """
-    Restores a specific deleted row from 'Deleted Records' to the main sheet.
-    Removes the selected row from the Deleted Records sheet.
-    """
     try:
         backup_sheet = spreadsheet.worksheet("Deleted Records")
         deleted_rows = backup_sheet.get_all_values()
@@ -211,19 +208,15 @@ def restore_specific_deleted_record(selected_index: int):
             return "❌ Invalid selection."
 
         selected_row = record_rows[selected_index]
-        restored_data = selected_row[:-2]  # Remove metadata columns
+        restored_data = selected_row[:-2]  # Remove metadata
 
-        # Append to main sheet
         sheet.append_row(restored_data)
-
-        # Delete the corresponding row (add 2 to skip header and index offset)
-        backup_sheet.delete_rows(selected_index + 2)
+        backup_sheet.delete_rows(selected_index + 2)  # +2 for header and offset
 
         return "✅ Selected deleted record has been restored."
 
     except Exception as e:
         return f"❌ Restore failed: {e}"
-
 
 
 
