@@ -247,7 +247,7 @@ def edit_submitted_record():
 
 # --- Run Editor Logic ---
 edit_submitted_record()
-# --- Delete from Submitted Records ---
+#  --- Delete from Submitted Records ---
 st.subheader("🗑️ Delete from Submitted Records")
 df_submitted = load_data_from_sheet(sheet)
 
@@ -266,11 +266,14 @@ else:
         
         if st.checkbox("✅ Confirm deletion of submitted record"):
             if st.button("🗑️ Delete Submitted Record"):
-                delete_row(sheet, row_to_delete)
-                st.success("✅ Submitted record deleted and backed up successfully.")
+                # Capture the current username who is deleting the record
+                deleted_by = st.session_state.username
+                delete_row(sheet, row_to_delete, deleted_by)  # Pass the username to the delete function
+                st.success(f"✅ Submitted record deleted by {deleted_by} and backed up successfully.")
                 st.rerun()
 
 
+# --- Restore Deleted Records ---
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
 
@@ -285,7 +288,7 @@ try:
         records = deleted_rows[1:]
 
         # Generate options for display
-        options = [f"{i + 1}. " + " | ".join(row[:-2]) for i, row in enumerate(records)]
+        options = [f"{i + 1}. " + " | ".join(row[:-2]) + f" (Deleted by: {row[-1]})" for i, row in enumerate(records)]
         selection_list = [""] + options  # Include empty default for dropdown
         selected = st.selectbox("Select a deleted record to restore:", selection_list)
 
