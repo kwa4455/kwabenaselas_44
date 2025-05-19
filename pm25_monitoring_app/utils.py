@@ -117,7 +117,8 @@ def load_data_from_sheet(sheet):
         st.error(f"❌ Failed to load data from sheet: {e}")
         return pd.DataFrame()
 
-def add_data(row):
+def add_data(row, username):
+    row.append(username)
     row.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     sheet.append_row(row)
 
