@@ -271,39 +271,42 @@ else:
                 st.rerun()
 
 
-# --- Streamlit UI ---
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
 
 try:
-    backup_sheet = spreadsheet.worksheet("Deleted Records")
-    deleted_rows = backup_sheet.get_all_values()
+    deleted_data = deleted_sheet.get_all_values()
 
-    if len(deleted_rows) <= 1:
-        st.info("No deleted records available.")
+    if len(deleted_data) <= 1:
+        st.info("There are no deleted records to restore.")
     else:
-        headers = deleted_rows[0]
-        records = deleted_rows[1:]
+        headers = make_unique_headers(deleted_data[0])
+        records = deleted_data[1:]
+        df = pd.DataFrame(records, columns=headers)
 
-        # Ensure column headers are unique
-        def make_unique(headers):
-            seen = {}
-            result = []
-            for h in headers:
-                if h not in seen:
-                    seen[h] = 1
-                    result.append(h)
-                else:
-                    seen[h] += 1
-                    result.append(f"{h}_{seen[h]}")
-            return result
-
-        unique_headers = make_unique(headers)
-        df = pd.DataFrame(records, columns=unique_headers)
-
-        # Configure AgGrid table
+        # ---------------------
+        # Configure AgGrid
+        # ---------------------
         gb = GridOptionsBuilder.from_dataframe(df)
-        gb.configure_selection("single", use_checkbox=True)
+
+        gb.configure_selection(
+            selection_mode="single",
+            use_checkbox=True
+        )
+
+        gb.configure_pagination(paginationAutoPageSize=True)
+
+        gb.configure_grid_options(domLayout='normal')
+
+        # Optional: Add JS tooltip to a column (e.g., first column)
+        first_column = df.columns[0]
+        gb.configure_column(
+            first_column,
+            header_name=first_column + " (hover)",
+            tooltip_field=first_column,
+            tooltip_component="CustomTooltip"
+        )
+
         grid_options = gb.build()
 
         grid_response = AgGrid(
@@ -311,18 +314,18 @@ try:
             gridOptions=grid_options,
             update_mode=GridUpdateMode.SELECTION_CHANGED,
             fit_columns_on_grid_load=True,
-            enable_enterprise_modules=False,
-            height=400
+            allow_unsafe_jscode=True,
+            height=400,
+            enable_enterprise_modules=False
         )
 
-        selected = grid_response["selected_rows"]
+        selected_rows = grid_response["selected_rows"]
 
-        if selected:
-            # Match the selected row to its index in the DataFrame
-            selected_index = df.index[df.eq(selected[0]).all(axis=1)][0]
+        if selected_rows:
+            selected_index = df.index[df.eq(selected_rows[0]).all(axis=1)][0]
 
             st.write("📋 Selected Record:")
-            st.json(selected[0])
+            st.json(selected_rows[0])
 
             if st.button("↩️ Restore Selected Record"):
                 result = restore_specific_deleted_record(selected_index)
@@ -332,11 +335,10 @@ try:
                 else:
                     st.error(result)
         else:
-            st.warning("Select a record from the table to restore.")
+            st.warning("Please select a record from the table to restore.")
 
 except Exception as e:
-    st.error(f"Failed to load deleted records: {e}")
-
+    st.error(f"Error loading deleted records: {e}")
 # --- Footer ---
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
