@@ -271,79 +271,35 @@ else:
                 st.rerun()
 
 
-# --- UI Section ---
-st.title("🗃️ Restore Deleted Record")
-st.markdown("Select a deleted record below to restore it to the main sheet.")
+st.markdown("---")
+st.header("🗃️ Restore Deleted Record")
 
 try:
-    backup_sheet = spreadsheet.worksheet(Deleted Records)
+    backup_sheet = spreadsheet.worksheet("Deleted Records")
     deleted_rows = backup_sheet.get_all_values()
 
     if len(deleted_rows) <= 1:
-        st.info("There are no deleted records to restore.")
+        st.info("No deleted records available.")
     else:
         headers = deleted_rows[0]
         records = deleted_rows[1:]
 
-        # Make headers unique
-        def make_unique(headers):
-            seen = {}
-            result = []
-            for h in headers:
-                if h not in seen:
-                    seen[h] = 1
-                    result.append(h)
-                else:
-                    seen[h] += 1
-                    result.append(f"{h}_{seen[h]}")
-            return result
+        # Show dropdown with a summary of each record
+        options = [f"{i + 1}. " + " | ".join(row[:-2]) for i, row in enumerate(records)]
+        selected = st.selectbox("Select a deleted record to restore:", options)
 
-        unique_headers = make_unique(headers)
-        df = pd.DataFrame(records, columns=unique_headers)
+        selected_index = options.index(selected)
 
-        # --- Configure AgGrid ---
-        gb = GridOptionsBuilder.from_dataframe(df)
-        gb.configure_default_column(
-            editable=False,
-            groupable=True,
-            filter=True,
-            sortable=True,
-            resizable=True
-        )
-        gb.configure_selection(selection_mode="single", use_checkbox=True)
-        gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
-        grid_options = gb.build()
-
-        grid_response = AgGrid(
-            df,
-            gridOptions=grid_options,
-            update_mode=GridUpdateMode.SELECTION_CHANGED,
-            fit_columns_on_grid_load=True,
-            allow_unsafe_jscode=True,  # Allow JS customization
-            theme="streamlit",  # Optional themes: "light", "dark", "streamlit", etc.
-            height=400
-        )
-
-        selected = grid_response["selected_rows"]
-
-        if selected:
-            selected_index = df.index[df.eq(selected[0]).all(axis=1)][0]
-
-            st.subheader("📋 Selected Record")
-            st.json(selected[0])
-
-            if st.button("↩️ Restore Selected Record"):
-                result = restore_specific_deleted_record(selected_index)
-                if "✅" in result:
-                    st.success(result)
-                    st.rerun()
-                else:
-                    st.error(result)
-        else:
-            st.warning("☝️ Please select a record from the table to restore.")
+        if st.button("↩️ Restore Selected Record"):
+            result = restore_specific_deleted_record(selected_index)
+            if "✅" in result:
+                st.success(result)
+                st.rerun()
+            else:
+                st.error(result)
 
 except Exception as e:
-    st.error(f"❌ Failed to load deleted records: {e}")
+    st.error(f"Failed to load deleted records: {e}")
 
 # --- Footer ---
 st.markdown("""
