@@ -270,13 +270,35 @@ else:
 
 
 st.markdown("---")
-if st.button("↩️ Undo Last Deleted Record"):
-    result = undo_last_delete()
-    if "✅" in result:
-        st.success(result)
-        st.rerun()  # Refresh to reflect restored row
+st.header("🗃️ Restore Deleted Record")
+
+try:
+    backup_sheet = spreadsheet.worksheet("Deleted Records")
+    deleted_rows = backup_sheet.get_all_values()
+
+    if len(deleted_rows) <= 1:
+        st.info("No deleted records available.")
     else:
-        st.error(result)
+        headers = deleted_rows[0]
+        records = deleted_rows[1:]
+
+        # Show dropdown with a summary of each record
+        options = [f"{i + 1}. " + " | ".join(row[:-2]) for i, row in enumerate(records)]
+        selected = st.selectbox("Select a deleted record to restore:", options)
+
+        selected_index = options.index(selected)
+
+        if st.button("↩️ Restore Selected Record"):
+            result = restore_specific_deleted_record(selected_index)
+            if "✅" in result:
+                st.success(result)
+                st.rerun()
+            else:
+                st.error(result)
+
+except Exception as e:
+    st.error(f"Failed to load deleted records: {e}")
+
 
 # --- Footer ---
 st.markdown("""
