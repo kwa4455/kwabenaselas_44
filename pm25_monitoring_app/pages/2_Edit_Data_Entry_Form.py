@@ -180,16 +180,17 @@ def render_record_edit_form(record_data):
 
 # --- Edit Submitted Record ---
 def edit_submitted_record():
+    # Load the data
     df = load_data_from_sheet(sheet)
 
     if df.empty:
         st.warning("⚠ No records available to edit.")
         return
 
-    # Date conversion
+    # Convert 'Submitted At' column to datetime for filtering
     df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors='coerce')
 
-    # Apply Filters (Site and Date)
+    # Display filter options
     site_filter = st.selectbox("Filter by Site (Edit)", ["All"] + df["Site"].unique().tolist())
     date_filter = st.date_input("Filter by Date (Edit)", min_value=df["Submitted At"].min(), max_value=df["Submitted At"].max(), value=pd.to_datetime("today"))
 
@@ -200,41 +201,49 @@ def edit_submitted_record():
     if date_filter:
         filtered_df = filtered_df[filtered_df["Submitted At"].dt.date == date_filter]
 
-    # Check if filtered records exist
+    # Debugging: Check the filtered dataframe after applying filters
+    st.write("Filtered DataFrame after applying filters:")
+    st.write(filtered_df)
+
+    # If no records match the filters, show a warning
     if filtered_df.empty:
         st.warning("⚠ No records found after applying filters.")
         return
 
-    # Add Row Number and Record ID for easier reference
+    # Add 'Row Number' and 'Record ID' columns for easier selection
     filtered_df["Row Number"] = filtered_df.index + 2
     filtered_df["Record ID"] = filtered_df.apply(
         lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At'].strftime('%Y-%m-%d %H:%M')}",
         axis=1
     )
 
-    # Display filtered records
+    # Debugging: Check if 'Record ID' column is correctly populated
+    st.write("Record IDs generated:")
+    st.write(filtered_df["Record ID"].tolist())
+
+    # Display the 'Record ID' options in the selectbox for user to edit
     record_options = [""] + filtered_df["Record ID"].tolist()
     selected = st.selectbox("Select a record to edit:", record_options)
 
-    # Check if a record is selected
+    # If a record is selected, proceed to the edit form
     if selected:
         selected_index = filtered_df[filtered_df["Record ID"] == selected].index[0]
         record_data = filtered_df.loc[selected_index]
 
-        # Ensure the session state is managed properly
+        # Ensure session state for selected record and expand status
         if 'selected_record' not in st.session_state:
             st.session_state.selected_record = None
         if 'edit_expanded' not in st.session_state:
             st.session_state.edit_expanded = False
 
-        # Edit Form
+        # Edit Form for the selected record
         with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
-            # Ensure that the record is selected
+            # Check if a record is selected
             if not selected:
                 st.info("ℹ️ Please select a record from the dropdown above.")
             else:
                 try:
-                    # Rendering the edit form with current record data
+                    # Render the form with the selected record data
                     with st.form("edit_form"):
                         updated_data = render_record_edit_form(record_data)
                         submitted = st.form_submit_button("Update Record")
