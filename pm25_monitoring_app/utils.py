@@ -157,31 +157,27 @@ def make_unique_headers(headers):
     return unique_headers
 
 def backup_deleted_row(row_data, original_sheet_name, row_number, deleted_by):
-    """
-    Backup a deleted row to the 'Deleted Records' sheet with a timestamp, source info, and username of the person who deleted the row.
-    Creates the sheet if it doesn't exist, and avoids empty or duplicate column headers.
-    """
-    from datetime import datetime
+   
 
     try:
-        # Try to access the 'Deleted Records' sheet
         backup_sheet = spreadsheet.worksheet("Deleted Records")
     except Exception:
-        # If the sheet doesn't exist, create it
+        num_columns = len(row_data) + 3  # for Deleted At, Source, Deleted By
         backup_sheet = spreadsheet.add_worksheet(
-            title="Deleted Records",
-            rows="1000",
-            cols=str(len(row_data) + 3)  # Add 3 columns: metadata (Deleted At, Source, Deleted By)
+            title="Deleted Records", rows="1000", cols=str(num_columns)
         )
-
-        # Create headers for the backup sheet (including new 'Deleted By' column)
-        header = [f"Field {i+1}" for i in range(len(row_data))] + ["Deleted At", "Source", "Deleted By"]
+        header = [
+            "Entry Type", "ID", "Site", "Monitoring Officer", "Driver", "Date", "Time",
+            "Temperature (°C)", "RH (%)", "Pressure (mbar)", "Weather", "Wind Speed",
+            "Wind Direction", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
+            "Submitted by", "Submitted At", "Deleted At", "Source", "Deleted By"
+        ]
         backup_sheet.append_row(header)
 
-    # Add deletion metadata (timestamp, source info, and username of the user who deleted the row)
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    deleted_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     source = f"{original_sheet_name} - Row {row_number}"
-    backup_sheet.append_row(row_data + [timestamp, source, deleted_by])
+
+    backup_sheet.append_row(row_data + [deleted_at, source, deleted_by])
 
     
 def delete_row(sheet, row_number, deleted_by):
