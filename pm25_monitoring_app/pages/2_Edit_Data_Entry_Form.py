@@ -282,7 +282,10 @@ try:
         filtered_deleted = filter_by_site_and_date(df_deleted, context_label="(Restore)")
 
         options = [
-            f"{i + 1}. " + " | ".join(row[:-2]) + f" (Deleted by: {row[-1]})"
+            f"{i + 1}. " + " | ".join(
+                str(item.date()) if isinstance(item, pd.Timestamp) else str(item)
+                for item in row[:-2]
+            ) + f" (Deleted by: {row[-1]})"
             for i, row in filtered_deleted.iterrows()
         ]
         selection_list = [""] + options
