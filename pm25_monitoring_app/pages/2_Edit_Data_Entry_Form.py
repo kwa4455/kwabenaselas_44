@@ -8,7 +8,7 @@ from utils import (
     delete_row,
     delete_merged_record_by_index,
     backup_deleted_row,
-    undo_last_delete,
+    restore_specific_deleted_record,
     sheet,
     spreadsheet,
     display_and_merge_data,
@@ -269,6 +269,7 @@ else:
                 st.rerun()
 
 
+# ---- Streamlit UI ----
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
 
@@ -282,23 +283,39 @@ try:
         headers = deleted_rows[0]
         records = deleted_rows[1:]
 
-        # Show dropdown with a summary of each record
-        options = [f"{i + 1}. " + " | ".join(row[:-2]) for i, row in enumerate(records)]
-        selected = st.selectbox("Select a deleted record to restore:", options)
+        # Build DataFrame-like structure
+        import pandas as pd
+        df = pd.DataFrame(records, columns=headers)
 
-        selected_index = options.index(selected)
+        # Create AgGrid table
+        gb = GridOptionsBuilder.from_dataframe(df)
+        gb.configure_selection("single", use_checkbox=True)
+        grid_options = gb.build()
 
-        if st.button("↩️ Restore Selected Record"):
-            result = restore_specific_deleted_record(selected_index)
-            if "✅" in result:
-                st.success(result)
-                st.rerun()
-            else:
-                st.error(result)
+        grid_response = AgGrid(
+            df,
+            gridOptions=grid_options,
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
+            fit_columns_on_grid_load=True,
+            enable_enterprise_modules=False
+        )
+
+        selected = grid_response["selected_rows"]
+
+        if selected:
+            selected_index = df.index[df.eq(selected[0]).all(axis=1)][0]  # Match selected row
+            if st.button("↩️ Restore Selected Record"):
+                result = restore_specific_deleted_record(selected_index)
+                if "✅" in result:
+                    st.success(result)
+                    st.rerun()
+                else:
+                    st.error(result)
+        else:
+            st.warning("Select a record from the table to restore.")
 
 except Exception as e:
     st.error(f"Failed to load deleted records: {e}")
-
 
 # --- Footer ---
 st.markdown("""
