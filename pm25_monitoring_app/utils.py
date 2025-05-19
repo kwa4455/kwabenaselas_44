@@ -123,31 +123,6 @@ def add_data(row, username):
     sheet.append_row(row)
 
 
-def backup_deleted_row(row_data, original_sheet_name, row_number):
-    """
-    Backup a deleted row to the 'Deleted Records' sheet with a timestamp and source info.
-    Creates the sheet if it doesn't exist, and avoids empty or duplicate column headers.
-    """
-    from datetime import datetime
-
-    try:
-        backup_sheet = spreadsheet.worksheet("Deleted Records")
-    except Exception:
-        # Only create the number of columns we need
-        backup_sheet = spreadsheet.add_worksheet(
-            title="Deleted Records",
-            rows="1000",
-            cols=str(len(row_data) + 2)  # 2 for metadata columns
-        )
-
-        # Create clean headers (Field 1, Field 2, ..., Deleted At, Source)
-        header = [f"Field {i+1}" for i in range(len(row_data))] + ["Deleted At", "Source"]
-        backup_sheet.append_row(header)
-
-    # Add deletion metadata
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    source = f"{original_sheet_name} - Row {row_number}"
-    backup_sheet.append_row(row_data + [timestamp, source])
 
 def validate_inputs(temp, rh, pressure, wind_speed):
     if not (-40 <= temp <= 60):
@@ -181,21 +156,47 @@ def make_unique_headers(headers):
             unique_headers.append(h)
     return unique_headers
 
+def backup_deleted_row(row_data, original_sheet_name, row_number, deleted_by):
+    """
+    Backup a deleted row to the 'Deleted Records' sheet with a timestamp, source info, and username of the person who deleted the row.
+    Creates the sheet if it doesn't exist, and avoids empty or duplicate column headers.
+    """
+    from datetime import datetime
+
+    try:
+        # Try to access the 'Deleted Records' sheet
+        backup_sheet = spreadsheet.worksheet("Deleted Records")
+    except Exception:
+        # If the sheet doesn't exist, create it
+        backup_sheet = spreadsheet.add_worksheet(
+            title="Deleted Records",
+            rows="1000",
+            cols=str(len(row_data) + 3)  # Add 3 columns: metadata (Deleted At, Source, Deleted By)
+        )
+
+        # Create headers for the backup sheet (including new 'Deleted By' column)
+        header = [f"Field {i+1}" for i in range(len(row_data))] + ["Deleted At", "Source", "Deleted By"]
+        backup_sheet.append_row(header)
+
+    # Add deletion metadata (timestamp, source info, and username of the user who deleted the row)
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    source = f"{original_sheet_name} - Row {row_number}"
+    backup_sheet.append_row(row_data + [timestamp, source, deleted_by])
 
     
-def delete_row(sheet, row_to_delete, deleted_by):
+def delete_row(sheet, row_number, deleted_by):
     """
-    Deletes a row from the Google Sheet and logs the username of the person deleting the record.
+    Deletes a row from the Google Sheet, backs up the row to the "Deleted Records" sheet,
+    and logs the username of the person deleting the record.
     """
-    # First, back up the row before deleting it
-    row_to_backup = sheet.row_values(row_to_delete)
-    row_to_backup.append(deleted_by)  # Add the username who deleted the record
-    backup_sheet = spreadsheet.worksheet("Deleted Records")
-    backup_sheet.append_row(row_to_backup)
-
-    # Now delete the row from the main sheet
-    sheet.delete_rows(row_to_delete)
-
+    # Get the row data from the main sheet
+    row_data = sheet.row_values(row_number)
+    
+    # Back up the row data along with the username who deleted it
+    backup_deleted_row(row_data, deleted_by, row_number)
+    
+    # Delete the row from the main sheet
+    sheet.delete_rows(row_number)
 
 
 
