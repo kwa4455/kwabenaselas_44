@@ -9,6 +9,7 @@ from utils import (
     save_merged_data_to_sheet,
     delete_row,
     delete_merged_record_by_index,
+    filter_by_site_and_date,
     backup_deleted_row,
     restore_specific_deleted_record,
     sheet,
@@ -185,7 +186,6 @@ def edit_submitted_record():
         st.warning("⚠ No records available to edit.")
         return
 
-    df = apply_filters(df, label_prefix="Edit")
     df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors='coerce')
     df["Row Number"] = df.index + 2
     df["Record ID"] = df.apply(
@@ -193,12 +193,14 @@ def edit_submitted_record():
         axis=1
     )
 
+    filtered_df = filter_by_site_and_date(df, context_label="(Edit)")
+
     if 'selected_record' not in st.session_state:
         st.session_state.selected_record = None
     if 'edit_expanded' not in st.session_state:
         st.session_state.edit_expanded = False
 
-    record_options = [""] + df["Record ID"].tolist()
+    record_options = [""] + filtered_df["Record ID"].tolist()
     selected = st.selectbox(
         "Select a record to edit:",
         record_options,
@@ -214,8 +216,8 @@ def edit_submitted_record():
             st.info("ℹ️ Please select a record from the dropdown above.")
         else:
             try:
-                selected_index = df[df["Record ID"] == st.session_state.selected_record].index[0]
-                record_data = df.loc[selected_index]
+                selected_index = filtered_df[filtered_df["Record ID"] == st.session_state.selected_record].index[0]
+                record_data = filtered_df.loc[selected_index]
                 row_number = record_data["Row Number"]
 
                 with st.form("edit_form"):
@@ -229,8 +231,8 @@ def edit_submitted_record():
                         st.success("✅ Record updated successfully!")
                         st.session_state.selected_record = None
                         st.session_state.edit_expanded = False
-                        handle_merge_logic()
 
+                        handle_merge_logic()
             except Exception as e:
                 st.error(f"❌ Error: {e}")
 
@@ -242,16 +244,17 @@ df_submitted = load_data_from_sheet(sheet)
 if df_submitted.empty:
     st.info("No submitted records available.")
 else:
-    df_submitted = apply_filters(df_submitted, label_prefix="Delete")
     df_submitted["Row Number"] = df_submitted.index + 2
+    df_submitted["Submitted At"] = pd.to_datetime(df_submitted["Submitted At"], errors='coerce')
     df_submitted["Record ID"] = df_submitted.apply(
         lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At']}", axis=1
     )
 
-    selected_record = st.selectbox("Select submitted record to delete:", [""] + df_submitted["Record ID"].tolist())
+    filtered_df = filter_by_site_and_date(df_submitted, context_label="(Delete)")
+    selected_record = st.selectbox("Select submitted record to delete:", [""] + filtered_df["Record ID"].tolist())
 
     if selected_record:
-        row_to_delete = int(df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0])
+        row_to_delete = int(filtered_df[filtered_df["Record ID"] == selected_record]["Row Number"].values[0])
 
         if st.checkbox("✅ Confirm deletion of submitted record"):
             if st.button("🗑️ Delete Submitted Record"):
@@ -260,8 +263,6 @@ else:
                 st.success(f"✅ Submitted record deleted by {deleted_by} and backed up successfully.")
                 st.rerun()
 
-
-# --- Restore Deleted Record ---
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
 
@@ -272,16 +273,24 @@ try:
     if len(deleted_rows) <= 1:
         st.info("No deleted records available.")
     else:
-        df_deleted = pd.DataFrame(deleted_rows[1:], columns=deleted_rows[0])
-        df_deleted = apply_filters(df_deleted, date_key="Deleted At", label_prefix="Restore")
-        records = df_deleted.values.tolist()
+        headers = deleted_rows[0]
+        records = deleted_rows[1:]
 
-        options = [f"{i + 1}. " + " | ".join(row[:-2]) + f" (Deleted by: {row[-1]})" for i, row in enumerate(records)]
+        df_deleted = pd.DataFrame(records, columns=headers)
+        df_deleted["Submitted At"] = pd.to_datetime(df_deleted["Submitted At"], errors="coerce")
+
+        filtered_deleted = filter_by_site_and_date(df_deleted, context_label="(Restore)")
+
+        options = [
+            f"{i + 1}. " + " | ".join(row[:-2]) + f" (Deleted by: {row[-1]})"
+            for i, row in filtered_deleted.iterrows()
+        ]
         selection_list = [""] + options
+
         selected = st.selectbox("Select a deleted record to restore:", selection_list)
 
         if st.button("↩️ Restore Selected Record", disabled=(selected == "")):
-            selected_index = options.index(selected)
+            selected_index = filtered_deleted.index[options.index(selected) - 1]
             result = restore_specific_deleted_record(selected_index)
             if "✅" in result:
                 st.success(result)
