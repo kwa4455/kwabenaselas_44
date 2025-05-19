@@ -197,7 +197,7 @@ def delete_merged_record_by_index(index_to_delete):
 
 def restore_specific_deleted_record(selected_index: int) -> str:
     try:
-        backup_sheet = spreadsheet.worksheet(DELETED_SHEET_NAME)
+        backup_sheet = spreadsheet.worksheet(Deleted Records)
         deleted_rows = backup_sheet.get_all_values()
 
         if len(deleted_rows) <= 1:
