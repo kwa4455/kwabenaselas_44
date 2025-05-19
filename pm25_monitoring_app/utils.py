@@ -186,19 +186,15 @@ def backup_deleted_row(row_data, original_sheet_name, row_number, deleted_by):
     
 def delete_row(sheet, row_number, deleted_by):
     """
-    Deletes a row from the Google Sheet, backs up the row to the "Deleted Records" sheet,
-    and logs the username of the person deleting the record.
+    Deletes a row from the Google Sheet, backs it up with full metadata.
     """
-    # Get the row data from the main sheet
     row_data = sheet.row_values(row_number)
-    
-    deleted_by = st.session_state.username  
-    
-    # Back up the row data along with the username who deleted it
-    backup_deleted_row(row_data, "Main Sheet", row_number)
-    
-    # Delete the row from the main sheet
+
+    # ✅ FIXED: Now passing all required arguments
+    backup_deleted_row(row_data, "Main Sheet", row_number, deleted_by)
+
     sheet.delete_rows(row_number)
+
 
 
 
