@@ -286,7 +286,7 @@ try:
 
         # Show dropdown with a summary of each record
         options = [f"{i + 1}. " + " | ".join(row[:-2]) for i, row in enumerate(records)]
-        selected = st.selectbox("Select a deleted record to restore:",[""] options)
+        selected = st.selectbox("Select a deleted record to restore:",[""] + options)
 
         selected_index = options.index(selected)
 
