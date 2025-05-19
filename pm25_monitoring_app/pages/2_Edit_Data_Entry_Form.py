@@ -271,7 +271,7 @@ else:
                 st.rerun()
 
 
-# ---- Streamlit UI ----
+# --- Streamlit UI ---
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
 
@@ -285,11 +285,23 @@ try:
         headers = deleted_rows[0]
         records = deleted_rows[1:]
 
-        # Build DataFrame-like structure
-        import pandas as pd
-        df = pd.DataFrame(records, columns=headers)
+        # Ensure column headers are unique
+        def make_unique(headers):
+            seen = {}
+            result = []
+            for h in headers:
+                if h not in seen:
+                    seen[h] = 1
+                    result.append(h)
+                else:
+                    seen[h] += 1
+                    result.append(f"{h}_{seen[h]}")
+            return result
 
-        # Create AgGrid table
+        unique_headers = make_unique(headers)
+        df = pd.DataFrame(records, columns=unique_headers)
+
+        # Configure AgGrid table
         gb = GridOptionsBuilder.from_dataframe(df)
         gb.configure_selection("single", use_checkbox=True)
         grid_options = gb.build()
@@ -299,13 +311,19 @@ try:
             gridOptions=grid_options,
             update_mode=GridUpdateMode.SELECTION_CHANGED,
             fit_columns_on_grid_load=True,
-            enable_enterprise_modules=False
+            enable_enterprise_modules=False,
+            height=400
         )
 
         selected = grid_response["selected_rows"]
 
         if selected:
-            selected_index = df.index[df.eq(selected[0]).all(axis=1)][0]  # Match selected row
+            # Match the selected row to its index in the DataFrame
+            selected_index = df.index[df.eq(selected[0]).all(axis=1)][0]
+
+            st.write("📋 Selected Record:")
+            st.json(selected[0])
+
             if st.button("↩️ Restore Selected Record"):
                 result = restore_specific_deleted_record(selected_index)
                 if "✅" in result:
