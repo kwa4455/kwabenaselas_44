@@ -49,7 +49,7 @@ USERS = {
     "moses": {"password": "moses123", "role": "collector", "email": "peter@epa.gov.gh"},
     "john_G": {"password": "john123", "role": "collector", "email": "peter@epa.gov.gh"},
     "mawuli": {"password": "mawuli123", "role": "editor", "email": "mawuli@epa.gov.gh"},
-    "obed": {"password": "viewer123", "role": "editor", "email": "obed@epa.gov.gh"},
+    "obed": {"password": "obed123", "role": "editor", "email": "obed@epa.gov.gh"},
     "maxwell": {"password": "maxwell123", "role": "viewer", "email": "obed@epa.gov.gh"},
     "selina": {"password": "selinal123", "role": "viewer", "email": "obed@epa.gov.gh"},
     "john": {"password": "john124", "role": "viewer", "email": "obed@epa.gov.gh"},
