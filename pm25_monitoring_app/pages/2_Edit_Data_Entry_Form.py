@@ -102,25 +102,12 @@ require_roles("admin", "editor","collector")
 
 
 
+# --- Utility Functions ---
 def safe_float(val, default=0.0):
     try:
         return float(val)
     except (ValueError, TypeError):
         return default
-
-def apply_filters(df, site_key="Site", date_key="Submitted At", label_prefix=""):
-    with st.expander(f"🔍 Filter Records ({label_prefix})", expanded=True):
-        site_filter = st.text_input(f"Filter by Site ({label_prefix})", "")
-        date_filter = st.date_input(f"Filter by Date ({label_prefix})", None)
-
-        if site_filter:
-            df = df[df[site_key].str.contains(site_filter, case=False, na=False)]
-        if date_filter:
-            df[date_key] = pd.to_datetime(df[date_key], errors='coerce')
-            df = df[df[date_key].dt.date == date_filter]
-
-    return df
-
 
 def render_record_edit_form(record_data):
     weather_options = ["Clear", "Cloudy", "Rainy", "Foggy", "Windy", "Hazy", "Dusty", "Other"]
@@ -157,14 +144,14 @@ def render_record_edit_form(record_data):
     temperature = st.number_input("Temperature (°C)", value=get_float("Temperature (°C)"), step=0.1)
     rh = st.number_input("Relative Humidity (%)", value=get_float("RH (%)"), step=0.1)
     pressure = st.number_input("Pressure (mbar)", value=get_float("Pressure (mbar)"), step=0.1)
-
+    
     weather_value = get_str("Weather", "Other")
     weather = st.selectbox("Weather", weather_options, index=weather_options.index(weather_value) if weather_value in weather_options else len(weather_options) - 1)
-
+    
     wind_speed = st.number_input("Wind Speed (m/s)", value=get_float("Wind Speed (m/s)"), step=0.1)
     wind_dir_value = get_str("Wind Direction", "Variable")
     wind_direction = st.selectbox("Wind Direction", wind_dir_options, index=wind_dir_options.index(wind_dir_value) if wind_dir_value in wind_dir_options else wind_dir_options.index("Variable"))
-
+    
     elapsed_time = st.number_input("Elapsed Time (min)", value=get_float("Elapsed Time (min)"), step=1.0)
     flow_rate = st.number_input("Flow Rate (L/min)", value=get_float("Flow Rate (L/min)"), step=0.1)
     observation = st.text_area("Observation", value=get_str("Observation"))
@@ -177,115 +164,94 @@ def render_record_edit_form(record_data):
         elapsed_time, flow_rate, observation
     ]
 
+def handle_merge_logic():
+    df = load_data_from_sheet(sheet)
+    merged_df = merge_start_stop(df)
+
+    if not merged_df.empty:
+        save_merged_data_to_sheet(merged_df, spreadsheet, sheet_name=MERGED_SHEET)
+        st.success("✅ Merged records updated.")
+        st.dataframe(merged_df, use_container_width=True)
+    else:
+        st.warning("⚠ No matching records to merge.")
+
+# --- Sidebar Filter Controls ---
+st.sidebar.header("🔍 Filter Records")
+df_all = load_data_from_sheet(sheet)
+df_all["Date"] = pd.to_datetime(df_all["Date"], errors='coerce').dt.date
+unique_sites = sorted(df_all["Site"].dropna().unique())
+selected_site = st.sidebar.selectbox("Filter by Site", ["All"] + unique_sites)
+selected_date = st.sidebar.date_input("Filter by Date", value=None)
+
+filtered_df = df_all.copy()
+if selected_site != "All":
+    filtered_df = filtered_df[filtered_df["Site"] == selected_site]
+if selected_date:
+    filtered_df = filtered_df[filtered_df["Date"] == selected_date]
 
 # --- Edit Submitted Record ---
 def edit_submitted_record():
-    # Load the data
-    df = load_data_from_sheet(sheet)
-
+    df = filtered_df.copy()
     if df.empty:
-        st.warning("⚠ No records available to edit.")
+        st.warning("⚠ No records available to edit with selected filters.")
         return
 
-    # Convert 'Submitted At' column to datetime for filtering
     df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors='coerce')
+    df["Row Number"] = df.index + 2
+    df["Record ID"] = df.apply(lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At'].strftime('%Y-%m-%d %H:%M')}", axis=1)
 
-    # Display filter options
-    site_filter = st.selectbox("Filter by Site (Edit)", ["All"] + df["Site"].unique().tolist())
-    date_filter = st.date_input("Filter by Date (Edit)", min_value=df["Submitted At"].min(), max_value=df["Submitted At"].max(), value=pd.to_datetime("today"))
+    if 'selected_record' not in st.session_state:
+        st.session_state.selected_record = None
+    if 'edit_expanded' not in st.session_state:
+        st.session_state.edit_expanded = False
 
-    # Apply Site and Date filters
-    filtered_df = df
-    if site_filter != "All":
-        filtered_df = filtered_df[filtered_df["Site"] == site_filter]
-    if date_filter:
-        filtered_df = filtered_df[filtered_df["Submitted At"].dt.date == date_filter]
+    record_options = [""] + df["Record ID"].tolist()
+    selected = st.selectbox("Select a record to edit:", record_options, index=record_options.index(st.session_state.selected_record) if st.session_state.selected_record in record_options else 0)
 
-    # Debugging: Check the filtered dataframe after applying filters
-    st.write("Filtered DataFrame after applying filters:")
-    st.write(filtered_df)
+    if selected and selected != st.session_state.selected_record:
+        st.session_state.selected_record = selected
+        st.session_state.edit_expanded = True
 
-    # If no records match the filters, show a warning
-    if filtered_df.empty:
-        st.warning("⚠ No records found after applying filters.")
-        return
+    with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
+        if not st.session_state.selected_record:
+            st.info("ℹ️ Please select a record from the dropdown above.")
+        else:
+            try:
+                selected_index = df[df["Record ID"] == st.session_state.selected_record].index[0]
+                record_data = df.loc[selected_index]
+                row_number = record_data["Row Number"]
 
-    # Add 'Row Number' and 'Record ID' columns for easier selection
-    filtered_df["Row Number"] = filtered_df.index + 2
-    filtered_df["Record ID"] = filtered_df.apply(
-        lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At'].strftime('%Y-%m-%d %H:%M')}",
-        axis=1
-    )
+                with st.form("edit_form"):
+                    updated_data = render_record_edit_form(record_data)
+                    submitted = st.form_submit_button("Update Record")
 
-    # Debugging: Check if 'Record ID' column is correctly populated
-    st.write("Record IDs generated:")
-    st.write(filtered_df["Record ID"].tolist())
+                    if submitted:
+                        for col_index, value in enumerate(updated_data, start=1):
+                            sheet.update_cell(row_number, col_index, value)
 
-    # Display the 'Record ID' options in the selectbox for user to edit
-    record_options = [""] + filtered_df["Record ID"].tolist()
-    selected = st.selectbox("Select a record to edit:", record_options)
+                        st.success("✅ Record updated successfully!")
+                        st.session_state.selected_record = None
+                        st.session_state.edit_expanded = False
 
-    # If a record is selected, proceed to the edit form
-    if selected:
-        selected_index = filtered_df[filtered_df["Record ID"] == selected].index[0]
-        record_data = filtered_df.loc[selected_index]
+                        handle_merge_logic()
+            except Exception as e:
+                st.error(f"❌ Error: {e}")
 
-        # Ensure session state for selected record and expand status
-        if 'selected_record' not in st.session_state:
-            st.session_state.selected_record = None
-        if 'edit_expanded' not in st.session_state:
-            st.session_state.edit_expanded = False
+edit_submitted_record()
 
-        # Edit Form for the selected record
-        with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
-            # Check if a record is selected
-            if not selected:
-                st.info("ℹ️ Please select a record from the dropdown above.")
-            else:
-                try:
-                    # Render the form with the selected record data
-                    with st.form("edit_form"):
-                        updated_data = render_record_edit_form(record_data)
-                        submitted = st.form_submit_button("Update Record")
-
-                        if submitted:
-                            # Update the selected record in the sheet
-                            row_number = record_data["Row Number"]
-                            for col_index, value in enumerate(updated_data, start=1):
-                                sheet.update_cell(row_number, col_index, value)
-
-                            st.success("✅ Record updated successfully!")
-                            st.session_state.selected_record = None
-                            st.session_state.edit_expanded = False
-
-                            # Optional: Handle merge logic if needed
-                            handle_merge_logic()
-
-                except Exception as e:
-                    st.error(f"❌ Error: {e}")
-
-
-
-
-# --- Delete Submitted Record ---
+# --- Delete from Submitted Records ---
 st.subheader("🗑️ Delete from Submitted Records")
-df_submitted = load_data_from_sheet(sheet)
+df_submitted = filtered_df.copy()
 
 if df_submitted.empty:
-    st.info("No submitted records available.")
+    st.info("No submitted records available with current filter.")
 else:
     df_submitted["Row Number"] = df_submitted.index + 2
-    df_submitted["Submitted At"] = pd.to_datetime(df_submitted["Submitted At"], errors='coerce')
-    df_submitted["Record ID"] = df_submitted.apply(
-        lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At']}", axis=1
-    )
-
-    filtered_df = filter_by_site_and_date(df_submitted, context_label="(Delete)")
-    selected_record = st.selectbox("Select submitted record to delete:", [""] + filtered_df["Record ID"].tolist())
+    df_submitted["Record ID"] = df_submitted.apply(lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At']}", axis=1)
+    selected_record = st.selectbox("Select submitted record to delete:", [""] + df_submitted["Record ID"].tolist())
 
     if selected_record:
-        row_to_delete = int(filtered_df[filtered_df["Record ID"] == selected_record]["Row Number"].values[0])
-
+        row_to_delete = int(df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0])
         if st.checkbox("✅ Confirm deletion of submitted record"):
             if st.button("🗑️ Delete Submitted Record"):
                 deleted_by = st.session_state.username
@@ -293,6 +259,7 @@ else:
                 st.success(f"✅ Submitted record deleted by {deleted_by} and backed up successfully.")
                 st.rerun()
 
+# --- Restore Deleted Records ---
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
 
@@ -305,36 +272,33 @@ try:
     else:
         headers = deleted_rows[0]
         records = deleted_rows[1:]
-
         df_deleted = pd.DataFrame(records, columns=headers)
-        df_deleted["Submitted At"] = pd.to_datetime(df_deleted["Submitted At"], errors="coerce")
 
-        filtered_deleted = filter_by_site_and_date(df_deleted, context_label="(Restore)")
+        df_deleted["Date"] = pd.to_datetime(df_deleted["Date"], errors='coerce').dt.date
 
-        options = [
-            f"{i + 1}. " + " | ".join(
-                str(item.date()) if isinstance(item, pd.Timestamp) else str(item)
-                for item in row[:-2]
-            ) + f" (Deleted by: {row[-1]})"
-            for i, row in filtered_deleted.iterrows()
-        ]
-        selection_list = [""] + options
+        if selected_site != "All":
+            df_deleted = df_deleted[df_deleted["Site"] == selected_site]
+        if selected_date:
+            df_deleted = df_deleted[df_deleted["Date"] == selected_date]
 
-        selected = st.selectbox("Select a deleted record to restore:", selection_list)
+        if df_deleted.empty:
+            st.info("No deleted records match the filter.")
+        else:
+            options = [f"{i + 1}. " + " | ".join(row[:-2]) + f" (Deleted by: {row[-1]})" for i, row in df_deleted.iterrows()]
+            selection_list = [""] + options
+            selected = st.selectbox("Select a deleted record to restore:", selection_list)
 
-        if st.button("↩️ Restore Selected Record", disabled=(selected == "")):
-            selected_index = filtered_deleted.index[options.index(selected) - 1]
-            result = restore_specific_deleted_record(selected_index)
-            if "✅" in result:
-                st.success(result)
-                st.rerun()
-            else:
-                st.error(result)
+            if st.button("↩️ Restore Selected Record", disabled=(selected == "")):
+                selected_index = options.index(selected)
+                result = restore_specific_deleted_record(selected_index)
+                if "✅" in result:
+                    st.success(result)
+                    st.rerun()
+                else:
+                    st.error(result)
 
 except Exception as e:
     st.error(f"Failed to load deleted records: {e}")
-
-
 
 # --- Footer ---
 st.markdown("""
