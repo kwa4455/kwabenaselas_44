@@ -109,51 +109,39 @@ wind_directions = ["", "N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 weather_conditions = ["", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
 
 # --- Entry Type Selection ---
-entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"])
+entry_type = st.selectbox("📝 Select Entry Type", ["", "START", "STOP"], key="entry_type_selectbox")
 
 if entry_type:
-    id_selected = st.selectbox("📌 Select Site ID", ids)
+    id_selected = st.selectbox("📌 Select Site ID", ids, key="site_id_selectbox")  # Add unique key here
 
     # Automatically get and display site name
     site_selected = site_id_map.get(id_selected, "")
     if site_selected:
-        st.text_input("📍 Site", value=site_selected, disabled=True)
+        st.text_input("📍 Site", value=site_selected, disabled=True, key="site_name_textbox")  # Add unique key here
 
-    officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
-    driver_name = st.text_input("🧑‍🌾 Driver's Name")
-
-# === START Section ===
-if entry_type:
-    id_selected = st.selectbox("📌 Select Site ID", ids)
-
-    # Automatically get and display site name
-    site_selected = site_id_map.get(id_selected, "")
-    if site_selected:
-        st.text_input("📍 Site", value=site_selected, disabled=True)
-
-    officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers)
-    driver_name = st.text_input("🧑‍🌾 Driver's Name")
+    officer_selected = st.multiselect("🧑‍🔬 Monitoring Officer(s)", officers, key="officer_selectbox")  # Add unique key here
+    driver_name = st.text_input("🧑‍🌾 Driver's Name", key="driver_name_input")  # Add unique key here
 
 # === START Section ===
 if entry_type == "START":
     with st.expander("🟢 Start Day Monitoring", expanded=True):
-        start_date = st.date_input("📆 Start Date", value=datetime.today())
-        start_time = st.time_input("⏱️ Start Time", value=datetime.now().time())
-        start_obs = st.text_area("🧿 First Day Observation")
+        start_date = st.date_input("📆 Start Date", value=datetime.today(), key="start_date_input")  # Add unique key here
+        start_time = st.time_input("⏱️ Start Time", value=datetime.now().time(), key="start_time_input")  # Add unique key here
+        start_obs = st.text_area("🧿 First Day Observation", key="start_observation_input")  # Add unique key here
 
         st.markdown("#### 🌧️ Initial Atmospheric Conditions")
-        start_temp = st.number_input("🌡️ Temperature (°C)", step=0.1)
-        start_rh = st.number_input("🌬️ Relative Humidity (%)", step=0.1)
-        start_pressure = st.number_input("🧭 Pressure (mbar)", step=0.1)
-        start_weather = st.selectbox("🌦️ Weather", weather_conditions)
-        start_wind_speed = st.text_input("💨 Wind Speed (e.g. 10 km/h)")
-        start_wind_direction = st.selectbox("🌪️ Wind Direction", wind_directions)
+        start_temp = st.number_input("🌡️ Temperature (°C)", step=0.1, key="start_temp_input")  # Add unique key here
+        start_rh = st.number_input("🌬️ Relative Humidity (%)", step=0.1, key="start_rh_input")  # Add unique key here
+        start_pressure = st.number_input("🧭 Pressure (mbar)", step=0.1, key="start_pressure_input")  # Add unique key here
+        start_weather = st.selectbox("🌦️ Weather", weather_conditions, key="start_weather_selectbox")  # Add unique key here
+        start_wind_speed = st.text_input("💨 Wind Speed (e.g. 10 km/h)", key="start_wind_speed_input")  # Add unique key here
+        start_wind_direction = st.selectbox("🌪️ Wind Direction", wind_directions, key="start_wind_direction_selectbox")  # Add unique key here
 
         st.markdown("#### ⚙ Initial Sampler Information")
-        start_elapsed = st.number_input("⏰ Initial Elapsed Time (min)", step=1)
-        start_flow = st.number_input("🧯 Initial Flow Rate (L/min)", step=0.1)
+        start_elapsed = st.number_input("⏰ Initial Elapsed Time (min)", step=1, key="start_elapsed_input")  # Add unique key here
+        start_flow = st.number_input("🧯 Initial Flow Rate (L/min)", step=0.1, key="start_flow_input")  # Add unique key here
 
-        if st.button("✅ Submit Start Day Data"):
+        if st.button("✅ Submit Start Day Data", key="start_submit_button"):  # Add unique key here
             if all([id_selected, site_selected, officer_selected, driver_name]):
                 start_row = [
                     "START", id_selected, site_selected, ", ".join(officer_selected), driver_name,
@@ -170,23 +158,23 @@ if entry_type == "START":
 # === STOP Section ===
 elif entry_type == "STOP":
     with st.expander("🔴 Stop Day Monitoring", expanded=True):
-        stop_date = st.date_input("📆 Stop Date", value=datetime.today())
-        stop_time = st.time_input("⏱️ Stop Time", value=datetime.now().time())
-        stop_obs = st.text_area("🧿 Final Day Observation")
+        stop_date = st.date_input("📆 Stop Date", value=datetime.today(), key="stop_date_input")  # Add unique key here
+        stop_time = st.time_input("⏱️ Stop Time", value=datetime.now().time(), key="stop_time_input")  # Add unique key here
+        stop_obs = st.text_area("🧿 Final Day Observation", key="stop_observation_input")  # Add unique key here
 
         st.markdown("#### 🌧️ Final Atmospheric Conditions")
-        stop_temp = st.number_input("🌡️ Final Temperature (°C)", step=0.1)
-        stop_rh = st.number_input("🌬️ Final Relative Humidity (%)", step=0.1)
-        stop_pressure = st.number_input("🧭 Final Pressure (mbar)", step=0.1)
-        stop_weather = st.selectbox("🌦️ Final Weather", weather_conditions)
-        stop_wind_speed = st.text_input("💨 Final Wind Speed (e.g. 12 km/h)")
-        stop_wind_direction = st.selectbox("🌪️ Final Wind Direction", wind_directions)
+        stop_temp = st.number_input("🌡️ Final Temperature (°C)", step=0.1, key="stop_temp_input")  # Add unique key here
+        stop_rh = st.number_input("🌬️ Final Relative Humidity (%)", step=0.1, key="stop_rh_input")  # Add unique key here
+        stop_pressure = st.number_input("🧭 Final Pressure (mbar)", step=0.1, key="stop_pressure_input")  # Add unique key here
+        stop_weather = st.selectbox("🌦️ Final Weather", weather_conditions, key="stop_weather_selectbox")  # Add unique key here
+        stop_wind_speed = st.text_input("💨 Final Wind Speed (e.g. 12 km/h)", key="stop_wind_speed_input")  # Add unique key here
+        stop_wind_direction = st.selectbox("🌪️ Final Wind Direction", wind_directions, key="stop_wind_direction_selectbox")  # Add unique key here
 
         st.markdown("#### ⚙ Final Sampler Information")
-        stop_elapsed = st.number_input("⏰ Final Elapsed Time (min)", step=1)
-        stop_flow = st.number_input("🧯 Final Flow Rate (L/min)", step=0.1)
+        stop_elapsed = st.number_input("⏰ Final Elapsed Time (min)", step=1, key="stop_elapsed_input")  # Add unique key here
+        stop_flow = st.number_input("🧯 Final Flow Rate (L/min)", step=0.1, key="stop_flow_input")  # Add unique key here
 
-        if st.button("✅ Submit Stop Day Data"):
+        if st.button("✅ Submit Stop Day Data", key="stop_submit_button"):  # Add unique key here
             if all([id_selected, site_selected, officer_selected, driver_name]):
                 stop_row = [
                     "STOP", id_selected, site_selected, ", ".join(officer_selected), driver_name,
@@ -201,7 +189,7 @@ elif entry_type == "STOP":
                 st.error("⚠ Please complete all required fields before submitting.")
 
 # Show Submitted Records
-if st.checkbox("📖 Show Submitted Monitoring Records"):
+if st.checkbox("📖 Show Submitted Monitoring Records", key="submitted_records_checkbox"):
     try:
         df = load_data_from_sheet(sheet)
         st.dataframe(df, use_container_width=True)
