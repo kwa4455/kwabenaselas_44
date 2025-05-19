@@ -192,7 +192,8 @@ elif entry_type == "STOP":
 if st.checkbox("📖 Show Submitted Monitoring Records", key="submitted_records_checkbox"):
     try:
         df = load_data_from_sheet(sheet)
-        st.dataframe(df, use_container_width=True)
+        df_saved = display_and_merge_data(df, spreadsheet, MERGED_SHEET)
+        st.dataframe(df_saved, use_container_width=True)
     except Exception as e:
         st.warning(f"⚠ Could not load Submitted Monitoring Records: {e}")
 # --- Footer ---
