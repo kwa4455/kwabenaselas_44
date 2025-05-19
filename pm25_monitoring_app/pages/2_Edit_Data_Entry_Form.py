@@ -193,7 +193,12 @@ def edit_submitted_record():
         axis=1
     )
 
+    # Apply filtering based on site and date
     filtered_df = filter_by_site_and_date(df, context_label="(Edit)")
+
+    if filtered_df.empty:
+        st.warning("⚠ No records found after applying filters.")
+        return
 
     if 'selected_record' not in st.session_state:
         st.session_state.selected_record = None
@@ -201,15 +206,19 @@ def edit_submitted_record():
         st.session_state.edit_expanded = False
 
     record_options = [""] + filtered_df["Record ID"].tolist()
+
+    # Select record for editing
     selected = st.selectbox(
         "Select a record to edit:",
         record_options,
         index=record_options.index(st.session_state.selected_record) if st.session_state.selected_record in record_options else 0
     )
 
+    # Update session state when a new record is selected
     if selected and selected != st.session_state.selected_record:
         st.session_state.selected_record = selected
         st.session_state.edit_expanded = True
+        st.experimental_rerun()  # Force re-render to reflect changes
 
     with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
         if not st.session_state.selected_record:
@@ -220,8 +229,11 @@ def edit_submitted_record():
                 record_data = filtered_df.loc[selected_index]
                 row_number = record_data["Row Number"]
 
+                # Render the form
                 with st.form("edit_form"):
                     updated_data = render_record_edit_form(record_data)
+                    st.write(updated_data)  # Debug: check what data is being passed
+
                     submitted = st.form_submit_button("Update Record")
 
                     if submitted:
@@ -235,6 +247,7 @@ def edit_submitted_record():
                         handle_merge_logic()
             except Exception as e:
                 st.error(f"❌ Error: {e}")
+
 
 
 # --- Delete Submitted Record ---
