@@ -190,33 +190,30 @@ elif entry_type == "STOP":
 
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
+# Show Submitted Records
 if st.checkbox("📖 Show Submitted Monitoring Records", key="submitted_records_checkbox"):
     try:
         df = load_data_from_sheet(sheet)
-        if df is None or df.empty:
-            st.warning("⚠ No raw data found. Please ensure data exists in the sheet.")
-        else:
-            df_saved = display_and_merge_data(df, spreadsheet, MERGED_SHEET)
-            if df_saved is None or df_saved.empty:
-                st.warning("⚠ No merged records found or merging failed.")
-            else:
-                st.markdown("### 📋 Submitted Monitoring Records")
-                gb = GridOptionsBuilder.from_dataframe(df_saved)
-                gb.configure_pagination(paginationAutoPageSize=True)
-                gb.configure_side_bar()
-                gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=False)
-                grid_options = gb.build()
+        df_saved = display_and_merge_data(df, spreadsheet, MERGED_SHEET)
 
-                AgGrid(
-                    df_saved,
-                    gridOptions=grid_options,
-                    update_mode=GridUpdateMode.NO_UPDATE,
-                    fit_columns_on_grid_load=True,
-                    theme="balham",
-                    allow_unsafe_jscode=True
-                )
+        st.markdown("### 📋 Submitted Monitoring Records")
+
+        gb = GridOptionsBuilder.from_dataframe(df_saved)
+        gb.configure_pagination(paginationAutoPageSize=True)
+        gb.configure_side_bar()
+        gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=False)
+        grid_options = gb.build()
+
+        AgGrid(
+            df_saved,
+            gridOptions=grid_options,
+            update_mode=GridUpdateMode.NO_UPDATE,
+            fit_columns_on_grid_load=True,
+            theme="balham",  # Other options: "streamlit", "light", "dark", "blue", "fresh"
+            allow_unsafe_jscode=True
+        )
     except Exception as e:
-        st.error(f"❌ Unexpected error: {e}")
+        st.warning(f"⚠ Could not load Submitted Monitoring Records: {e}")
 # --- Footer ---
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
