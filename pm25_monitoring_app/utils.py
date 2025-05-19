@@ -192,34 +192,37 @@ def delete_merged_record_by_index(index_to_delete):
     backup_deleted_row(row_data, "Merged Sheet", index_to_delete + 2)
     worksheet.delete_rows(index_to_delete + 2)
 
-def undo_last_delete():
+def restore_specific_deleted_record(selected_index: int):
     """
-    Restores the last deleted row from 'Deleted Records' to the main sheet.
-    Assumes deleted rows were backed up using `backup_deleted_row`.
+    Restores a specific deleted row from 'Deleted Records' to the main sheet.
+    Removes the selected row from the Deleted Records sheet.
     """
     try:
         backup_sheet = spreadsheet.worksheet("Deleted Records")
         deleted_rows = backup_sheet.get_all_values()
 
         if len(deleted_rows) <= 1:
-            return "❌ No deleted records available to undo."
+            return "❌ No deleted records to restore."
 
         headers = deleted_rows[0]
-        last_row = deleted_rows[-1]
+        record_rows = deleted_rows[1:]
 
-        # Remove metadata (last 2 columns)
-        restored_data = last_row[:-2]
+        if not (0 <= selected_index < len(record_rows)):
+            return "❌ Invalid selection."
 
-        # Append to the main sheet
+        selected_row = record_rows[selected_index]
+        restored_data = selected_row[:-2]  # Remove metadata columns
+
+        # Append to main sheet
         sheet.append_row(restored_data)
 
-        # Delete the last row from Deleted Records sheet
-        backup_sheet.delete_rows(len(deleted_rows))
+        # Delete the corresponding row (add 2 to skip header and index offset)
+        backup_sheet.delete_rows(selected_index + 2)
 
-        return "✅ Last deleted record has been restored to the main sheet."
+        return "✅ Selected deleted record has been restored."
 
     except Exception as e:
-        return f"❌ Undo failed: {e}"
+        return f"❌ Restore failed: {e}"
 
 
 
