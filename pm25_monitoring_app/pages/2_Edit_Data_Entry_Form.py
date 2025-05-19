@@ -100,18 +100,31 @@ require_roles("admin", "editor","collector")
 
 
 
-# --- Utility Functions ---
+
 def safe_float(val, default=0.0):
     try:
         return float(val)
     except (ValueError, TypeError):
         return default
 
+def apply_filters(df, site_key="Site", date_key="Submitted At", label_prefix=""):
+    with st.expander(f"🔍 Filter Records ({label_prefix})", expanded=True):
+        site_filter = st.text_input(f"Filter by Site ({label_prefix})", "")
+        date_filter = st.date_input(f"Filter by Date ({label_prefix})", None)
+
+        if site_filter:
+            df = df[df[site_key].str.contains(site_filter, case=False, na=False)]
+        if date_filter:
+            df[date_key] = pd.to_datetime(df[date_key], errors='coerce')
+            df = df[df[date_key].dt.date == date_filter]
+
+    return df
+
+
 def render_record_edit_form(record_data):
     weather_options = ["Clear", "Cloudy", "Rainy", "Foggy", "Windy", "Hazy", "Dusty", "Other"]
     wind_dir_options = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "Variable", "Calm"]
 
-    # Safe defaults
     def get_str(key, default=""):
         return str(record_data.get(key, default))
 
@@ -133,12 +146,7 @@ def render_record_edit_form(record_data):
         except Exception:
             return pd.Timestamp.now().time()
 
-    entry_type = st.selectbox(
-        "Entry Type",
-        ["START", "STOP"],
-        index=["START", "STOP"].index(get_str("Entry Type", "START"))
-    )
-
+    entry_type = st.selectbox("Entry Type", ["START", "STOP"], index=["START", "STOP"].index(get_str("Entry Type", "START")))
     site_id = st.text_input("ID", value=get_str("ID"))
     site = st.text_input("Site", value=get_str("Site"))
     monitoring_officer = st.text_input("Monitoring Officer", value=get_str("Monitoring Officer"))
@@ -150,20 +158,11 @@ def render_record_edit_form(record_data):
     pressure = st.number_input("Pressure (mbar)", value=get_float("Pressure (mbar)"), step=0.1)
 
     weather_value = get_str("Weather", "Other")
-    weather = st.selectbox(
-        "Weather", 
-        weather_options,
-        index=weather_options.index(weather_value) if weather_value in weather_options else len(weather_options) - 1
-    )
+    weather = st.selectbox("Weather", weather_options, index=weather_options.index(weather_value) if weather_value in weather_options else len(weather_options) - 1)
 
     wind_speed = st.number_input("Wind Speed (m/s)", value=get_float("Wind Speed (m/s)"), step=0.1)
-
     wind_dir_value = get_str("Wind Direction", "Variable")
-    wind_direction = st.selectbox(
-        "Wind Direction",
-        wind_dir_options,
-        index=wind_dir_options.index(wind_dir_value) if wind_dir_value in wind_dir_options else wind_dir_options.index("Variable")
-    )
+    wind_direction = st.selectbox("Wind Direction", wind_dir_options, index=wind_dir_options.index(wind_dir_value) if wind_dir_value in wind_dir_options else wind_dir_options.index("Variable"))
 
     elapsed_time = st.number_input("Elapsed Time (min)", value=get_float("Elapsed Time (min)"), step=1.0)
     flow_rate = st.number_input("Flow Rate (L/min)", value=get_float("Flow Rate (L/min)"), step=0.1)
@@ -178,18 +177,7 @@ def render_record_edit_form(record_data):
     ]
 
 
-
-def handle_merge_logic():
-    df = load_data_from_sheet(sheet)
-    merged_df = merge_start_stop(df)
-
-    if not merged_df.empty:
-        save_merged_data_to_sheet(merged_df, spreadsheet, sheet_name=MERGED_SHEET)
-        st.success("✅ Merged records updated.")
-        st.dataframe(merged_df, use_container_width=True)
-    else:
-        st.warning("⚠ No matching records to merge.")
-
+# --- Edit Submitted Record ---
 def edit_submitted_record():
     df = load_data_from_sheet(sheet)
 
@@ -197,6 +185,7 @@ def edit_submitted_record():
         st.warning("⚠ No records available to edit.")
         return
 
+    df = apply_filters(df, label_prefix="Edit")
     df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors='coerce')
     df["Row Number"] = df.index + 2
     df["Record ID"] = df.apply(
@@ -240,21 +229,21 @@ def edit_submitted_record():
                         st.success("✅ Record updated successfully!")
                         st.session_state.selected_record = None
                         st.session_state.edit_expanded = False
-
                         handle_merge_logic()
+
             except Exception as e:
                 st.error(f"❌ Error: {e}")
 
-# --- Run Editor Logic ---
-edit_submitted_record()
-#  --- Delete from Submitted Records ---
+
+# --- Delete Submitted Record ---
 st.subheader("🗑️ Delete from Submitted Records")
 df_submitted = load_data_from_sheet(sheet)
 
 if df_submitted.empty:
     st.info("No submitted records available.")
 else:
-    df_submitted["Row Number"] = df_submitted.index + 2  # Google Sheets is 1-indexed + header
+    df_submitted = apply_filters(df_submitted, label_prefix="Delete")
+    df_submitted["Row Number"] = df_submitted.index + 2
     df_submitted["Record ID"] = df_submitted.apply(
         lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At']}", axis=1
     )
@@ -263,18 +252,16 @@ else:
 
     if selected_record:
         row_to_delete = int(df_submitted[df_submitted["Record ID"] == selected_record]["Row Number"].values[0])
-        
+
         if st.checkbox("✅ Confirm deletion of submitted record"):
             if st.button("🗑️ Delete Submitted Record"):
-                # Capture the current username who is deleting the record
                 deleted_by = st.session_state.username
-                delete_row(sheet, row_to_delete, deleted_by)  # Pass the username to the delete function
+                delete_row(sheet, row_to_delete, deleted_by)
                 st.success(f"✅ Submitted record deleted by {deleted_by} and backed up successfully.")
                 st.rerun()
 
 
-
-# --- Restore Deleted Records ---
+# --- Restore Deleted Record ---
 st.markdown("---")
 st.header("🗃️ Restore Deleted Record")
 
@@ -285,17 +272,16 @@ try:
     if len(deleted_rows) <= 1:
         st.info("No deleted records available.")
     else:
-        headers = deleted_rows[0]
-        records = deleted_rows[1:]
+        df_deleted = pd.DataFrame(deleted_rows[1:], columns=deleted_rows[0])
+        df_deleted = apply_filters(df_deleted, date_key="Deleted At", label_prefix="Restore")
+        records = df_deleted.values.tolist()
 
-        # Generate options for display
         options = [f"{i + 1}. " + " | ".join(row[:-2]) + f" (Deleted by: {row[-1]})" for i, row in enumerate(records)]
-        selection_list = [""] + options  # Include empty default for dropdown
+        selection_list = [""] + options
         selected = st.selectbox("Select a deleted record to restore:", selection_list)
 
-        # Disable restore button until a valid selection is made
         if st.button("↩️ Restore Selected Record", disabled=(selected == "")):
-            selected_index = options.index(selected)  # safe because selected is valid
+            selected_index = options.index(selected)
             result = restore_specific_deleted_record(selected_index)
             if "✅" in result:
                 st.success(result)
@@ -305,6 +291,7 @@ try:
 
 except Exception as e:
     st.error(f"Failed to load deleted records: {e}")
+
 
 # --- Footer ---
 st.markdown("""
