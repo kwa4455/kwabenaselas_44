@@ -186,67 +186,75 @@ def edit_submitted_record():
         st.warning("⚠ No records available to edit.")
         return
 
+    # Date conversion
     df["Submitted At"] = pd.to_datetime(df["Submitted At"], errors='coerce')
-    df["Row Number"] = df.index + 2
-    df["Record ID"] = df.apply(
-        lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At'].strftime('%Y-%m-%d %H:%M')}",
-        axis=1
-    )
 
-    # Apply filtering based on site and date
-    filtered_df = filter_by_site_and_date(df, context_label="(Edit)")
+    # Apply Filters (Site and Date)
+    site_filter = st.selectbox("Filter by Site (Edit)", ["All"] + df["Site"].unique().tolist())
+    date_filter = st.date_input("Filter by Date (Edit)", min_value=df["Submitted At"].min(), max_value=df["Submitted At"].max(), value=pd.to_datetime("today"))
 
+    # Apply Site and Date filters
+    filtered_df = df
+    if site_filter != "All":
+        filtered_df = filtered_df[filtered_df["Site"] == site_filter]
+    if date_filter:
+        filtered_df = filtered_df[filtered_df["Submitted At"].dt.date == date_filter]
+
+    # Check if filtered records exist
     if filtered_df.empty:
         st.warning("⚠ No records found after applying filters.")
         return
 
-    if 'selected_record' not in st.session_state:
-        st.session_state.selected_record = None
-    if 'edit_expanded' not in st.session_state:
-        st.session_state.edit_expanded = False
-
-    record_options = [""] + filtered_df["Record ID"].tolist()
-
-    # Select record for editing
-    selected = st.selectbox(
-        "Select a record to edit:",
-        record_options,
-        index=record_options.index(st.session_state.selected_record) if st.session_state.selected_record in record_options else 0
+    # Add Row Number and Record ID for easier reference
+    filtered_df["Row Number"] = filtered_df.index + 2
+    filtered_df["Record ID"] = filtered_df.apply(
+        lambda x: f"{x['Entry Type']} | {x['ID']} | {x['Site']} | {x['Submitted At'].strftime('%Y-%m-%d %H:%M')}",
+        axis=1
     )
 
-    # Update session state when a new record is selected
-    if selected and selected != st.session_state.selected_record:
-        st.session_state.selected_record = selected
-        st.session_state.edit_expanded = True
-        st.experimental_rerun()  # Force re-render to reflect changes
+    # Display filtered records
+    record_options = [""] + filtered_df["Record ID"].tolist()
+    selected = st.selectbox("Select a record to edit:", record_options)
 
-    with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
-        if not st.session_state.selected_record:
-            st.info("ℹ️ Please select a record from the dropdown above.")
-        else:
-            try:
-                selected_index = filtered_df[filtered_df["Record ID"] == st.session_state.selected_record].index[0]
-                record_data = filtered_df.loc[selected_index]
-                row_number = record_data["Row Number"]
+    # Check if a record is selected
+    if selected:
+        selected_index = filtered_df[filtered_df["Record ID"] == selected].index[0]
+        record_data = filtered_df.loc[selected_index]
 
-                # Render the form
-                with st.form("edit_form"):
-                    updated_data = render_record_edit_form(record_data)
-                    st.write(updated_data)  # Debug: check what data is being passed
+        # Ensure the session state is managed properly
+        if 'selected_record' not in st.session_state:
+            st.session_state.selected_record = None
+        if 'edit_expanded' not in st.session_state:
+            st.session_state.edit_expanded = False
 
-                    submitted = st.form_submit_button("Update Record")
+        # Edit Form
+        with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
+            # Ensure that the record is selected
+            if not selected:
+                st.info("ℹ️ Please select a record from the dropdown above.")
+            else:
+                try:
+                    # Rendering the edit form with current record data
+                    with st.form("edit_form"):
+                        updated_data = render_record_edit_form(record_data)
+                        submitted = st.form_submit_button("Update Record")
 
-                    if submitted:
-                        for col_index, value in enumerate(updated_data, start=1):
-                            sheet.update_cell(row_number, col_index, value)
+                        if submitted:
+                            # Update the selected record in the sheet
+                            row_number = record_data["Row Number"]
+                            for col_index, value in enumerate(updated_data, start=1):
+                                sheet.update_cell(row_number, col_index, value)
 
-                        st.success("✅ Record updated successfully!")
-                        st.session_state.selected_record = None
-                        st.session_state.edit_expanded = False
+                            st.success("✅ Record updated successfully!")
+                            st.session_state.selected_record = None
+                            st.session_state.edit_expanded = False
 
-                        handle_merge_logic()
-            except Exception as e:
-                st.error(f"❌ Error: {e}")
+                            # Optional: Handle merge logic if needed
+                            handle_merge_logic()
+
+                except Exception as e:
+                    st.error(f"❌ Error: {e}")
+
 
 
 
