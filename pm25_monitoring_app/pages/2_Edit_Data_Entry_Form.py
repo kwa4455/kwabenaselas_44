@@ -302,6 +302,7 @@ except Exception as e:
     st.error(f"Failed to load deleted records: {e}")
 
 
+
 # --- Footer ---
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
