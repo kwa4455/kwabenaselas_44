@@ -284,13 +284,14 @@ try:
         headers = deleted_rows[0]
         records = deleted_rows[1:]
 
-        # Show dropdown with a summary of each record
+        # Generate options for display
         options = [f"{i + 1}. " + " | ".join(row[:-2]) for i, row in enumerate(records)]
-        selected = st.selectbox("Select a deleted record to restore:",[""] + options)
+        selection_list = [""] + options  # Include empty default for dropdown
+        selected = st.selectbox("Select a deleted record to restore:", selection_list)
 
-        selected_index = options.index(selected)
-
-        if st.button("↩️ Restore Selected Record"):
+        # Disable restore button until a valid selection is made
+        if st.button("↩️ Restore Selected Record", disabled=(selected == "")):
+            selected_index = options.index(selected)  # safe because selected is valid
             result = restore_specific_deleted_record(selected_index)
             if "✅" in result:
                 st.success(result)
