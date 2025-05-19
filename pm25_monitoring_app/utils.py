@@ -208,32 +208,30 @@ def make_unique_headers(headers):
             result.append(f"{h}_{seen[h]}")
     return result
 
-def restore_specific_deleted_record(selected_index: int):
+def restore_specific_deleted_record(index):
+    """Restore a deleted record from the Deleted Records sheet back to the Main sheet."""
     try:
-        backup_sheet = spreadsheet.worksheet("Deleted Records")
-        deleted_rows = backup_sheet.get_all_values()
-
+        deleted_rows = deleted_sheet.get_all_values()
         if len(deleted_rows) <= 1:
             return "❌ No deleted records to restore."
 
         headers = deleted_rows[0]
         record_rows = deleted_rows[1:]
 
-        if not (0 <= selected_index < len(record_rows)):
+        if not (0 <= index < len(record_rows)):
             return "❌ Invalid selection."
 
-        selected_row = record_rows[selected_index]
-        restored_data = selected_row[:-2]  # Remove metadata
+        selected_row = record_rows[index]
+        restored_data = selected_row[:-2]  # Exclude metadata (e.g., deleted timestamp)
 
-        sheet.append_row(restored_data)
-        backup_sheet.delete_rows(selected_index + 2)  # +2 for header and offset
+        # Append to Main Sheet and remove from Deleted Sheet
+        main_sheet.append_row(restored_data)
+        deleted_sheet.delete_rows(index + 2)  # +2 to account for header and 0-index
 
         return "✅ Selected deleted record has been restored."
 
     except Exception as e:
         return f"❌ Restore failed: {e}"
-
-
 
 def merge_start_stop(df):
     start_df = df[df["Entry Type"] == "START"].copy()
