@@ -7,5 +7,5 @@ google-auth-httplib2
 google-auth-oauthlib
 requests
 streamlit-js-eval
-st_aggrid
+st-aggrid>=0.3.4
 
