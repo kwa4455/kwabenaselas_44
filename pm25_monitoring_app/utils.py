@@ -192,8 +192,10 @@ def delete_row(sheet, row_number, deleted_by):
     # Get the row data from the main sheet
     row_data = sheet.row_values(row_number)
     
+    deleted_by = st.session_state.username  
+    
     # Back up the row data along with the username who deleted it
-    backup_deleted_row(row_data, deleted_by, row_number)
+    backup_deleted_row(row_data, "Main Sheet", row_number)
     
     # Delete the row from the main sheet
     sheet.delete_rows(row_number)
