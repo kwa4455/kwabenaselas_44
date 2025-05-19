@@ -195,6 +195,19 @@ def delete_merged_record_by_index(index_to_delete):
     backup_deleted_row(row_data, "Merged Sheet", index_to_delete + 2)
     worksheet.delete_rows(index_to_delete + 2)
 
+def make_unique_headers(headers):
+    """Ensure column headers are unique for use in a DataFrame."""
+    seen = {}
+    result = []
+    for h in headers:
+        if h not in seen:
+            seen[h] = 1
+            result.append(h)
+        else:
+            seen[h] += 1
+            result.append(f"{h}_{seen[h]}")
+    return result
+
 def restore_specific_deleted_record(selected_index: int):
     try:
         backup_sheet = spreadsheet.worksheet("Deleted Records")
