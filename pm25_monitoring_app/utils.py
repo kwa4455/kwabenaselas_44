@@ -60,53 +60,43 @@ USERS = {
 
 
 
+
 def login():
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
 
     if not st.session_state.logged_in:
-        # Inject background and glassmorphism
+        # 🌲 Background CSS and center column
         st.markdown("""
         <style>
-            body {
-                background-image: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1470&q=80");
-                background-size: cover;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
-                background-position: center;
-            }
-            .glass-box {
-                margin: 100px auto;
-                padding: 40px;
-                width: 350px;
-                border-radius: 20px;
-                background: rgba(255, 255, 255, 0.1);
-                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                border: 1px solid rgba(255, 255, 255, 0.18);
-                color: white;
-                text-align: center;
-            }
-            .glass-box h2 {
-                margin-bottom: 20px;
-                color: white;
-            }
-            .stTextInput input {
-                background-color: rgba(255,255,255,0.2);
-                color: white;
-            }
-            .stTextInput input::placeholder {
-                color: #ddd;
-            }
+        body {
+            background-image: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1470&q=80");
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 40px 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+        }
+        .glass h2 {
+            color: white;
+            margin-bottom: 25px;
+        }
         </style>
-        <div class="glass-box">
-            <h2>🔐 Login to EPA Ghana</h2>
         """, unsafe_allow_html=True)
 
-        # Render widgets inside the HTML box
-        box = st.empty()
-        with box.container():
+        # Layout: center column with glass styling
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.markdown('<div class="glass">', unsafe_allow_html=True)
+            st.markdown("<h2>🔐 Login to EPA Ghana</h2>", unsafe_allow_html=True)
+
             username = st.text_input("Username", placeholder="Enter your username")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
             login_button = st.button("Login")
@@ -122,8 +112,7 @@ def login():
                 else:
                     st.error("❌ Invalid credentials")
 
-        # Close the custom div
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
         st.stop()
 
 
