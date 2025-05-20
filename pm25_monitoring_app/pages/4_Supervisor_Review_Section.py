@@ -89,7 +89,7 @@ st.markdown("""
 st.markdown(
     """
     <div style='text-align: center;'>
-        <h2>🕵️ Supervisor Review Section </h2>
+        <h2>👷🏽‍♀️ Supervisor Review Section </h2>
         <p style='color: grey;'>For Supervisors to review, inspect, and audit monitoring records</p>
     </div>
     <hr>
