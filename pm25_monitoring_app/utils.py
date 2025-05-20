@@ -59,91 +59,95 @@ USERS = {
 }
 
 
-import streamlit as st
 
 def login():
-    # Background & glassmorphism CSS
-    st.markdown("""
-        <style>
-        body {
-            background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=80');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
 
-        .glass-card {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 40px 30px;
-            width: 350px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
+    if not st.session_state.logged_in:
+        # Inject background and card style
+        st.markdown("""
+            <style>
+            body {
+                background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=80');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
 
-        .login-form {
-            margin-top: 20px;
-        }
+            .glass-card {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                border-radius: 20px;
+                padding: 40px 30px;
+                width: 350px;
+                text-align: center;
+                color: white;
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
 
-        .stTextInput>div>div>input {
-            background-color: rgba(255,255,255,0.2) !important;
-            color: white !important;
-        }
+            .login-form {
+                margin-top: 20px;
+            }
 
-        .stTextInput>div>div>input::placeholder {
-            color: #ddd;
-        }
+            .stTextInput>div>div>input {
+                background-color: rgba(255,255,255,0.2) !important;
+                color: white !important;
+            }
 
-        .stButton button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 25px;
-            background-color: #ffffffcc;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-        }
+            .stTextInput>div>div>input::placeholder {
+                color: #ddd;
+            }
 
-        .stButton button:hover {
-            background-color: #fff;
-        }
-        </style>
+            .stButton button {
+                width: 100%;
+                padding: 10px;
+                border: none;
+                border-radius: 25px;
+                background-color: #ffffffcc;
+                color: #000;
+                font-weight: bold;
+                cursor: pointer;
+            }
 
-        <div class="glass-card">
-            <h2>🔐 Login to EPA Ghana</h2>
-            <div class="login-form">
-                <!-- Placeholder for Streamlit inputs -->
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+            .stButton button:hover {
+                background-color: #fff;
+            }
+            </style>
 
-    # Use Streamlit columns to align input fields visually under the glass card
-    st.markdown("<div style='height: 300px'></div>", unsafe_allow_html=True)
+            <div class="glass-card">
+                <h2>🔐 Login to EPA Ghana</h2>
+                <div class="login-form">
+            """, unsafe_allow_html=True)
 
-    # 👇 Form inputs
-    username = st.text_input("Username", placeholder="Enter your username")
-    password = st.text_input("Password", type="password", placeholder="Enter your password")
+        # Render inputs inside same block
+        username = st.text_input("Username", placeholder="Enter your username")
+        password = st.text_input("Password", type="password", placeholder="Enter your password")
+        login_button = st.button("Login")
 
-    if st.button("Login"):
-        # Your logic here
-        if username == "admin" and password == "admin":
-            st.success("✅ Logged in")
-            st.session_state.logged_in = True
-        else:
-            st.error("❌ Invalid credentials")
+        st.markdown("""</div></div>""", unsafe_allow_html=True)  # Close glass div
 
-    st.stop()
+        # Your login logic
+        if login_button:
+            user = USERS.get(username)
+            if user and user["password"] == password:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.session_state.role = user["role"]
+                st.session_state.user_email = user.get("email", f"{username}@epa.gov.gh")
+                st.rerun()
+            else:
+                st.error("❌ Invalid credentials")
+
+        st.stop()
 
         
 def require_roles(*allowed_roles):
