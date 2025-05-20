@@ -63,23 +63,53 @@ def login():
         st.session_state.logged_in = False
 
     if not st.session_state.logged_in:
-        st.title("🔐 Login to 🇬🇭 EPA Ghana | Air Quality Field Data Entry App")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
+        # Apply Glassmorphic CSS
+        st.markdown("""
+        <style>
+        .glass-login {
+            max-width: 350px;
+            margin: 80px auto;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #fff;
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .glass-login h2 {
+            margin-bottom: 20px;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
-        if st.button("Login"):
-            user = USERS.get(username)
-            if user and user["password"] == password:
-                st.session_state.logged_in = True
-                st.session_state.username = username
-                st.session_state.role = user["role"]
-                st.session_state.user_email = user.get("email", f"{username}@epa.gov.gh")
-                st.rerun()
-            else:
-                st.error("❌ Invalid credentials")
+        # Title + container
+        st.markdown('<div class="glass-login">', unsafe_allow_html=True)
+        st.markdown("## 🔐 EPA Ghana Login")
 
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submit = st.form_submit_button("Login")
+
+            if submit:
+                user = USERS.get(username)
+                if user and user["password"] == password:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.session_state.role = user["role"]
+                    st.session_state.user_email = user.get("email", f"{username}@epa.gov.gh")
+                    st.success("✅ Login successful")
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid username or password")
+
+        st.markdown("</div>", unsafe_allow_html=True)
         st.stop()
-
+        
 def require_roles(*allowed_roles):
     if "role" not in st.session_state:
         st.error("❌ Please log in first.")
