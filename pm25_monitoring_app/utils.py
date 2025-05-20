@@ -58,57 +58,75 @@ USERS = {
      "ludwick": {"password": "ludwick124", "role": "viewer", "email": "obed@epa.gov.gh"}
 }
 
+
 def login():
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
+    st.markdown("""
+    <style>
+    /* Full-screen forest background */
+    body {
+        background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-    if not st.session_state.logged_in:
-        # Apply Glassmorphic CSS
-        st.markdown("""
-        <style>
-        .glass-login {
-            max-width: 350px;
-            margin: 80px auto;
-            padding: 40px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            color: #fff;
-            text-align: center;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .glass-login h2 {
-            margin-bottom: 20px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+    /* Centered glass card */
+    .login-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        width: 350px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
 
-        # Title + container
-        st.markdown('<div class="glass-login">', unsafe_allow_html=True)
-        st.markdown("## 🔐 EPA Ghana Login")
+    .login-container h2 {
+        margin-bottom: 30px;
+    }
 
-        with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            submit = st.form_submit_button("Login")
+    .stTextInput>div>div>input {
+        background-color: rgba(255,255,255,0.2) !important;
+        color: white !important;
+        border: none;
+    }
 
-            if submit:
-                user = USERS.get(username)
-                if user and user["password"] == password:
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.session_state.role = user["role"]
-                    st.session_state.user_email = user.get("email", f"{username}@epa.gov.gh")
-                    st.success("✅ Login successful")
-                    st.rerun()
-                else:
-                    st.error("❌ Invalid username or password")
+    .stTextInput>div>div>input::placeholder {
+        color: #ccc;
+    }
 
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.stop()
+    .stButton button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 25px;
+        background-color: #ffffffaa;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .stButton button:hover {
+        background-color: #fff;
+        color: #000;
+    }
+
+    </style>
+
+    <div class="login-container">
+        <h2>🔐 Login to EPA Ghana</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
         
 def require_roles(*allowed_roles):
     if "role" not in st.session_state:
