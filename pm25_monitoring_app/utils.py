@@ -62,7 +62,6 @@ USERS = {
 def login():
     st.markdown("""
     <style>
-    /* Full-screen forest background */
     body {
         background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470');
         background-size: cover;
@@ -72,17 +71,16 @@ def login():
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Centered glass card */
-    .login-container {
+    .glass-card {
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border-radius: 20px;
-        padding: 40px;
+        padding: 50px 30px;
         width: 350px;
         text-align: center;
         color: white;
@@ -90,12 +88,8 @@ def login():
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    .login-container h2 {
-        margin-bottom: 30px;
-    }
-
     .stTextInput>div>div>input {
-        background-color: rgba(255,255,255,0.2) !important;
+        background-color: rgba(255,255,255,0.15) !important;
         color: white !important;
         border: none;
     }
@@ -109,7 +103,7 @@ def login():
         padding: 10px;
         border: none;
         border-radius: 25px;
-        background-color: #ffffffaa;
+        background-color: #ffffffdd;
         color: #000;
         font-weight: bold;
         cursor: pointer;
@@ -117,15 +111,33 @@ def login():
 
     .stButton button:hover {
         background-color: #fff;
-        color: #000;
     }
 
     </style>
 
-    <div class="login-container">
+    <div class="glass-card">
         <h2>🔐 Login to EPA Ghana</h2>
     </div>
     """, unsafe_allow_html=True)
+
+    # Overlay the form below the glass div
+    st.markdown("<div style='height: 380px'></div>", unsafe_allow_html=True)  # pushes form visually into place
+
+    username = st.text_input("Username", placeholder="Enter your username")
+    password = st.text_input("Password", type="password", placeholder="Enter your password")
+
+    if st.button("Login"):
+        user = USERS.get(username)
+        if user and user["password"] == password:
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.role = user["role"]
+            st.session_state.user_email = user.get("email", f"{username}@epa.gov.gh")
+            st.rerun()
+        else:
+            st.error("❌ Invalid credentials")
+
+    st.stop()
 
         
 def require_roles(*allowed_roles):
