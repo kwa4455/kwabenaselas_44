@@ -59,83 +59,73 @@ USERS = {
 }
 
 
-
 def login():
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
 
     if not st.session_state.logged_in:
-        # Inject background and card style
         st.markdown("""
-            <style>
+        <style>
             body {
                 background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1400&q=80');
                 background-size: cover;
+                background-attachment: fixed;
                 background-position: center;
                 background-repeat: no-repeat;
-                background-attachment: fixed;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
-
-            .glass-card {
+            .login-container {
                 position: fixed;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 background: rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
                 border-radius: 20px;
                 padding: 40px 30px;
                 width: 350px;
                 text-align: center;
                 color: white;
-                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-            }
-
-            .login-form {
-                margin-top: 20px;
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                z-index: 999;
             }
 
             .stTextInput>div>div>input {
-                background-color: rgba(255,255,255,0.2) !important;
+                background-color: rgba(255,255,255,0.15) !important;
                 color: white !important;
             }
 
             .stTextInput>div>div>input::placeholder {
-                color: #ddd;
+                color: #eee;
             }
 
-            .stButton button {
+            .stButton>button {
                 width: 100%;
-                padding: 10px;
-                border: none;
-                border-radius: 25px;
-                background-color: #ffffffcc;
-                color: #000;
+                background-color: #ffffffaa;
+                color: black;
                 font-weight: bold;
-                cursor: pointer;
+                border-radius: 8px;
             }
 
-            .stButton button:hover {
-                background-color: #fff;
+            .stButton>button:hover {
+                background-color: white;
             }
-            </style>
+        </style>
 
-            <div class="glass-card">
-                <h2>🔐 Login to EPA Ghana</h2>
-                <div class="login-form">
-            """, unsafe_allow_html=True)
+        <div class="login-container">
+            <h3>🔐 Login to EPA Ghana</h3>
+        """, unsafe_allow_html=True)
 
-        # Render inputs inside same block
-        username = st.text_input("Username", placeholder="Enter your username")
-        password = st.text_input("Password", type="password", placeholder="Enter your password")
-        login_button = st.button("Login")
+        # Use a container to keep inputs inside the custom div
+        with st.container():
+            username = st.text_input("Username", placeholder="Enter your username", label_visibility="collapsed")
+            password = st.text_input("Password", type="password", placeholder="Enter your password", label_visibility="collapsed")
+            login_button = st.button("Login")
 
-        st.markdown("""</div></div>""", unsafe_allow_html=True)  # Close glass div
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        # Your login logic
+        # Auth logic
         if login_button:
             user = USERS.get(username)
             if user and user["password"] == password:
