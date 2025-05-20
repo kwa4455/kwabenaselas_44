@@ -102,7 +102,7 @@ st.write("This page will display records and allow Supervisors to inspect and au
 
 
 # === Display Existing Data & Merge START/STOP ===
-st.header("📊 Submitted Monitoring Records")
+st.header("📡 Submitted Monitoring Records")
 df = load_data_from_sheet(sheet)
 
 display_and_merge_data(df, spreadsheet, MERGED_SHEET)
@@ -135,7 +135,7 @@ try:
 except Exception as e:
     st.error(f"❌ Failed to load saved entries: {e}")
 
-with st.expander("🕵️ View Deleted Records"):
+with st.expander("👷🏾‍♂️ View Deleted Records"):
     try:
         deleted_sheet = spreadsheet.worksheet("Deleted Records")
         deleted_data = deleted_sheet.get_all_values()
@@ -159,6 +159,6 @@ with st.expander("🕵️ View Deleted Records"):
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
     <div style='text-align: center; color: grey; font-size: 0.9em;'>
-        © 2025 EPA Ghana · Developed by Clement Mensah Ackaah · Built with 🦺 using Streamlit
+        © 2025 EPA Ghana · Developed by Clement Mensah Ackaah 🦺 · Built with 🪾 using Streamlit
     </div>
 """, unsafe_allow_html=True)
