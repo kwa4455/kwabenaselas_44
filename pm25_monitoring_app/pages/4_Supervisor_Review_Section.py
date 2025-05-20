@@ -155,4 +155,10 @@ with st.expander("🕵️ View Deleted Records"):
 
 
 
-
+# --- Footer ---
+st.markdown("""
+    <hr style="margin-top: 40px; margin-bottom:10px">
+    <div style='text-align: center; color: grey; font-size: 0.9em;'>
+        © 2025 EPA Ghana · Developed by Clement Mensah Ackaah · Built with ❤️ using Streamlit
+    </div>
+""", unsafe_allow_html=True)
