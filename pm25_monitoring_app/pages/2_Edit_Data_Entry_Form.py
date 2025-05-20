@@ -19,7 +19,7 @@ from utils import (
 )
 from constants import MERGED_SHEET
 
-st.set_page_config(page_title="Editor Tools", page_icon="✏️")
+st.set_page_config(page_title="Editor Tools", page_icon="✍🏼")
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
 st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -86,7 +86,7 @@ st.markdown("""
 st.markdown(
     """
     <div style='text-align: center;'>
-        <h2>✏️ Editor Tools</h2>
+        <h2>✍🏼 Editor Tools</h2>
         <p style='color: grey;'>This page allows authorized users to update or delete submitted records.</p>
     </div>
     <hr>
@@ -170,7 +170,7 @@ def handle_merge_logic():
 
     if not merged_df.empty:
         save_merged_data_to_sheet(merged_df, spreadsheet, sheet_name=MERGED_SHEET)
-        st.success("✅ Merged records updated.")
+        st.success("🩸 Merged records updated.")
         st.dataframe(merged_df, use_container_width=True)
     else:
         st.warning("⚠ No matching records to merge.")
@@ -187,7 +187,7 @@ for col in df_all.columns:
         break
 
 if not date_column:
-    st.error("❌ No 'Date' column found. Please check your Google Sheet headers.")
+    st.error("☠️ No 'Date' column found. Please check your Google Sheet headers.")
     st.stop()
 
 df_all["Date"] = pd.to_datetime(df_all[date_column], errors='coerce').dt.date
@@ -224,9 +224,9 @@ def edit_submitted_record():
         st.session_state.selected_record = selected
         st.session_state.edit_expanded = True
 
-    with st.expander("✏️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
+    with st.expander("✍️ Edit Submitted Record", expanded=st.session_state.edit_expanded):
         if not st.session_state.selected_record:
-            st.info("ℹ️ Please select a record from the dropdown above.")
+            st.info("🧐 Please select a record from the dropdown above.")
         else:
             try:
                 selected_index = df[df["Record ID"] == st.session_state.selected_record].index[0]
@@ -241,13 +241,13 @@ def edit_submitted_record():
                         for col_index, value in enumerate(updated_data, start=1):
                             sheet.update_cell(row_number, col_index, value)
 
-                        st.success("✅ Record updated successfully!")
+                        st.success("🧠 Record updated successfully!")
                         st.session_state.selected_record = None
                         st.session_state.edit_expanded = False
 
                         handle_merge_logic()
             except Exception as e:
-                st.error(f"❌ Error: {e}")
+                st.error(f"☠️ Error: {e}")
 
 edit_submitted_record()
 
@@ -304,7 +304,7 @@ try:
             if st.button("↩️ Restore Selected Record", disabled=(selected == "")):
                 selected_index = options.index(selected)
                 result = restore_specific_deleted_record(selected_index)
-                if "✅" in result:
+                if "🧠" in result:
                     st.success(result)
                     st.rerun()
                 else:
@@ -317,6 +317,6 @@ except Exception as e:
 st.markdown("""
     <hr style="margin-top: 40px; margin-bottom:10px">
     <div style='text-align: center; color: grey; font-size: 0.9em;'>
-        © 2025 EPA Ghana · Developed by Clement Mensah Ackaah · Built with ❤️ using Streamlit
+        © 2025 EPA Ghana · Developed by Clement Mensah Ackaah 🦺 · Built with 😍 using Streamlit
     </div>
 """, unsafe_allow_html=True)
