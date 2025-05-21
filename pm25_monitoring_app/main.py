@@ -1,95 +1,44 @@
 import streamlit as st
-from utils import login, load_data_from_sheet, sheet, spreadsheet, logout_button
-from streamlit_js_eval import streamlit_js_eval
+from streamlit_option_menu import option_menu
+from auth.login import login_user
+from auth.logout import logout_user
+from pages import data_entry, review_records, edit_records
+from admin import show as admin_panel  # 👈 import the admin panel
+from supabase_client import supabase
+from utils import load_data_from_sheet, sheet, spreadsheet
 
+# App configuration
+st.set_page_config(page_title="EPA Ghana | Air Quality Field Data Entry", layout="centered", page_icon="🌍")
 
-# Set page config
-st.set_page_config(
-    page_title="Air Quality Field Data Entry App",
-    layout="wide",
-    page_icon="🌍"
-)
+# Inject styles (make sure this is defined somewhere)
+def inject_global_css():
+    st.markdown(
+        """
+        <style>
+        .css-18e3th9 {padding-top: 1rem;}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-# Get screen width on load
-width_data = streamlit_js_eval(js_expressions="screen.width", key="SCR_WIDTH")
+inject_global_css()
 
-# Set flag
-if width_data:
-    st.session_state["is_mobile"] = width_data <= 768
-else:
-    st.session_state["is_mobile"] = False
-# Inject Google Fonts and custom CSS for glassmorphism and font clarity
-st.markdown("""
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+# Login check
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-    <style>
-    /* === Global Font and Text Effects === */
-    html, body, [class*="css"]  {
-        font-family: 'Poppins', sans-serif;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.08);
-        color: #1f1f1f;
-        background-color: #f4f7fa;
-    }
+# Show login form if not logged in
+if not st.session_state.logged_in:
+    login_user()
+    st.stop()
 
-    /* === App Title Styling === */
-    .main > div:first-child h1 {
-        color: #0a3d62;
-        font-size: 2.8rem;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        margin-bottom: 0.5rem;
-    }
+# Role and user info
+username = st.session_state.get("username")
+role = st.session_state.get("role")
 
-    /* === Sidebar Glass Effect === */
-    section[data-testid="stSidebar"] {
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(14px) saturate(160%);
-        -webkit-backdrop-filter: blur(14px) saturate(160%);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-    }
-
-    /* === Sidebar Navigation Styling === */
-    section[data-testid="stSidebar"] .st-radio > div {
-        background: rgba(255, 255, 255, 0.85);
-        color: #000;
-        border-radius: 12px;
-        padding: 0.4rem 0.6rem;
-        margin-bottom: 0.5rem;
-        transition: all 0.2s ease;
-    }
-    section[data-testid="stSidebar"] .st-radio > div:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    /* === Info box styling === */
-    .stAlert {
-        background-color: rgba(232, 244, 253, 0.9);
-        border-left: 6px solid #1f77b4;
-        border-radius: 8px;
-        padding: 1rem;
-    }
-
-    /* === Success message styling === */
-    .stSuccess {
-        background-color: rgba(230, 255, 230, 0.9);
-        border-left: 6px solid #33cc33;
-        border-radius: 8px;
-        padding: 1rem;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Handle authentication
-login()
-
-# Access session state
-username = st.session_state["username"]
-role = st.session_state["role"]
-
-# App Header
-st.title("🇬🇭 EPA Ghana | Air Quality Field Data Entry App")
-st.info(f"👤 Logged in as: **{username}** (Role: {role})")
+# App header
+st.title("🇬🇭 EPA Ghana | PM2.5 Field Data Platform")
+st.info(f"👤 Logged in as: **{username}** (Role: `{role}`)")
 
 # Load data once into session state
 if "df" not in st.session_state:
@@ -97,34 +46,38 @@ if "df" not in st.session_state:
         st.session_state.df = load_data_from_sheet(sheet)
         st.session_state.sheet = sheet
         st.session_state.spreadsheet = spreadsheet
+        
+# Sidebar navigation
+with st.sidebar:
+    st.title("📁 Navigation")
 
-# Define pages by role
-if role == "admin":
-    pages = ["📥 Data Entry", "✏️ Edit Records", "🗂️ Review"]
-elif role == "editor":
-    pages = ["✏️ Edit Records", "🗂️ Review"]
-elif role == "viewer":
-    pages = ["🔍 Review & Merge"]
-elif role == "collector":
-    pages = ["📥 Data Entry", "✏️ Edit Records"]
-else:
-    st.error("❌ Invalid role.")
-    st.stop()
+    pages = []
+    if role == "admin":
+        pages = ["📥 Data Entry", "✏️ Edit Records", "🗂️ Review", "⚙️ Admin Panel"]
+    elif role == "collector":
+        pages = ["📥 Data Entry", "✏️ Edit Records"]
+    elif role == "editor":
+        pages = ["✏️ Edit Records", "🗂️ Review"]
+    elif role == "viewer":
+        pages = ["🗂️ Review"]
 
+    choice = option_menu(
+        menu_title="Go to",
+        options=pages,
+        icons=["cloud-upload", "pencil", "folder", "gear"][:len(pages)],
+        menu_icon="cast",
+        default_index=0,
+    )
 
-# Sidebar Navigation
-st.sidebar.title("📁 Navigation")
-selected_page = st.sidebar.radio("Go to", pages)
+    st.markdown("---")
+    logout_user()
 
-# Show Logout
-logout_button()
-
-# Guide user
-st.success(f"✅ Use the sidebar to access: **{selected_page}**")
-# --- Footer ---
-st.markdown("""
-    <hr style="margin-top: 40px; margin-bottom:10px">
-    <div style='text-align: center; color: grey; font-size: 0.9em;'>
-        © 2025 EPA Ghana · Developed by Clement Mensah Ackaah 🦺 · Built with 😍 using Streamlit
-    </div>
-""", unsafe_allow_html=True)
+# Route page
+if choice == "📥 Data Entry":
+    data_entry.show()
+elif choice == "✏️ Edit Records":
+    edit_records.show()
+elif choice == "🗂️ Review":
+    review_records.show()
+elif choice == "⚙️ Admin Panel":
+    admin_panel()
