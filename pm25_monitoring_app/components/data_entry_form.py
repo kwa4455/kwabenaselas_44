@@ -8,8 +8,7 @@ from utils import (
     save_merged_data_to_sheet,
     sheet,
     spreadsheet,
-    display_and_merge_data,
-    require_roles
+    display_and_merge_data
 )
 from constants import MERGED_SHEET
 def show():
