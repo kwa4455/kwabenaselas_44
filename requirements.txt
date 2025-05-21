@@ -9,6 +9,7 @@ requests
 python-dotenv
 supabase
 bcrypt
+streamlit-option-menu
 
 
 
