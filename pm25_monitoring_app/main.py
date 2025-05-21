@@ -8,7 +8,7 @@ from components import (
     pm25_calculation,
     supervisor_review_section
 )
-from admin import show as admin_panel
+from admin.show import show as admin_panel
 from supabase_client import supabase
 from utils import load_data_from_sheet, sheet, spreadsheet
 
