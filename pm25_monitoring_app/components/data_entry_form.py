@@ -11,11 +11,14 @@ from utils import (
     display_and_merge_data
 )
 from constants import MERGED_SHEET
+
+st.set_page_config(page_title="Data Entry", page_icon="📋")
+
 def show():
     st.subheader("📥 Data Entry Form")
     
 # Streamlit page config
-st.set_page_config(page_title="Data Entry", page_icon="📋")
+
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
 st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
