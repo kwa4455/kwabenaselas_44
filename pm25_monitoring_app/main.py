@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from auth.login import login_user
 from auth.logout import logout_user
-from pages import data_entry, review_records, edit_records
+from pages import data_entry_form, edit_data_entry_form, pm25_calculation_supervisor_review_section
 from admin import show as admin_panel  # 👈 import the admin panel
 from supabase_client import supabase
 from utils import load_data_from_sheet, sheet, spreadsheet
@@ -53,7 +53,7 @@ with st.sidebar:
 
     pages = []
     if role == "admin":
-        pages = ["📥 Data Entry", "✏️ Edit Records", "🗂️ Review", "⚙️ Admin Panel"]
+        pages = ["📥 Data Entry Form", "✏️ Edit Data Entry Form ", "🗂️ PM25 Calculation", "⚙️ Admin Panel"]
     elif role == "collector":
         pages = ["📥 Data Entry", "✏️ Edit Records"]
     elif role == "editor":
