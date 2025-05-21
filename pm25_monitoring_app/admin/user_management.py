@@ -1,39 +1,43 @@
+
 import streamlit as st
-import os
-import streamlit as st
-from supabase_client import supabas
+from utils.authentication import require_role
+from utils.user_utils import (
+    get_gspread_client, SPREADSHEET_ID, REG_REQUESTS_SHEET,
+    approve_user, delete_registration_request, log_registration_event
+)
 
-# Load credentials
-load_dotenv()
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+require_role(["admin", "administrator"])
 
-def require_admin():
-    if "role" not in st.session_state or st.session_state["role"] != "admin":
-        st.error("🚫 You must be an admin to access this page.")
-        st.stop()
 
-def admin_panel():
-    st.header("⚙️ Admin Panel")
+gc = get_gspread_client()
+reg_sheet = gc.open_by_key(SPREADSHEET_ID).worksheet(REG_REQUESTS_SHEET)
+records = reg_sheet.get_all_records()
 
-    with st.expander("📝 Pending User Approvals"):
-        try:
-            response = supabase.table("profiles").select("*").eq("is_approved", False).execute()
-            pending_users = response.data
-
-            if not pending_users:
-                st.info("✅ No users pending approval.")
-            else:
-                for user in pending_users:
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        st.write(f"**{user['email']}** - Role: `{user['role']}`")
-                    with col2:
-                        if st.button("Approve", key=user['id']):
-                            supabase.table("profiles").update({"is_approved": True}).eq("id", user['id']).execute()
-                            st.success(f"✅ Approved {user['email']}")
-                            st.experimental_rerun()
-
-        except Exception as e:
-            st.error(f"Error loading users: {e}")
+if not records:
+    st.info("✅ No pending registration requests.")
+else:
+    for record in records:
+        with st.expander(f"📥 {record['username']} - {record['email']}"):
+            st.write(f"**Full Name**: {record['name']}")
+            st.write(f"**Requested At**: {record['timestamp']}")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("✅ Approve", key=f"approve_{record['username']}"):
+                    new_user = {
+                        "username": record["username"],
+                        "email": record["email"],
+                        "name": record["name"],
+                        "password_hash": record["password_hash"],
+                        "role": "User"
+                    }
+                    approve_user(new_user)
+                    delete_registration_request(record["username"])
+                    log_registration_event(record["username"], "Approved", st.session_state.get("username"))
+                    st.success(f"✅ {record['username']} approved and added to Users sheet.")
+                    st.experimental_rerun()
+            with col2:
+                if st.button("❌ Reject", key=f"reject_{record['username']}"):
+                    delete_registration_request(record["username"])
+                    log_registration_event(record["username"], "Rejected", st.session_state.get("username"))
+                    st.warning(f"🚫 {record['username']} was rejected.")
+                    st.experimental_rerun()
