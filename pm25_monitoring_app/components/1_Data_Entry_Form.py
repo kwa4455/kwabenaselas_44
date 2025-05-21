@@ -12,7 +12,9 @@ from utils import (
     require_roles
 )
 from constants import MERGED_SHEET
-
+def show():
+    st.subheader("📥 Data Entry Form")
+    
 # Streamlit page config
 st.set_page_config(page_title="Data Entry", page_icon="📋")
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
