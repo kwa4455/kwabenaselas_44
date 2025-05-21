@@ -16,11 +16,12 @@ from utils import (
 )
 from constants import MERGED_SHEET
 
+st.set_page_config(page_title="Editor Tools", page_icon="✍🏼")
 
 def show():
     st.subheader("📥 Edit Data Entry Form")
     
-st.set_page_config(page_title="Editor Tools", page_icon="✍🏼")
+
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
 st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
