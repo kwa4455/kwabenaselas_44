@@ -1,42 +1,43 @@
 import streamlit as st
-import bcrypt
-from supabase_client import supabase
+from .user_utils import register_user_to_sheet
+from .recovery import reset_password, recover_username
 
-def register_user():
-    st.title("📝 Register")
+def show_registration_form(sheet):
+    st.subheader("🆕 Register")
+    with st.form("register_form"):
+        username = st.text_input("Username")
+        name = st.text_input("Full Name")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        confirm = st.text_input("Confirm Password", type="password")
+        role = st.selectbox("Role", ["viewer", "editor"])
+        submitted = st.form_submit_button("Register")
 
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    confirm = st.text_input("Confirm Password", type="password")
-    role = st.selectbox("Select Role", ["collector", "editor", "viewer"])
+        if submitted:
+            if password != confirm:
+                st.error("❌ Passwords do not match")
+            else:
+                success, message = register_user_to_sheet(username, name, email, password, role, sheet)
+                st.success(message) if success else st.error(message)
 
-    if st.button("Register"):
-        if password != confirm:
-            st.error("❌ Passwords do not match.")
-            return
+def display_password_reset_form(sheet):
+    st.subheader("🔑 Reset Password")
+    email = st.text_input("Enter your email")
+    new_password = st.text_input("Enter new password", type="password")
+    if st.button("Reset Password"):
+        success, message = reset_password(email, new_password, sheet)
+        st.success(message) if success else st.error(message)
 
-        try:
-            # Step 1: Create Auth user
-            auth_response = supabase.auth.sign_up({
-                "email": email,
-                "password": password
-            })
+def display_username_recovery_form(sheet):
+    st.subheader("🆔 Recover Username")
+    email = st.text_input("Enter your email", key="recover_email")
+    if st.button("Recover Username", key="recover_username_btn"):
+        success, message = recover_username(email, sheet)
+        st.success(message) if success else st.error(message)
 
-            user = auth_response.user
-            if not user:
-                st.error("Registration failed. User not created.")
-                return
-
-            # Step 2: Insert into `profiles`
-            supabase.table("profiles").insert({
-                "id": user.id,
-                "email": email,
-                "role": role,
-                "is_approved": False  # default: waiting for admin approval
-            }).execute()
-
-            st.success("✅ Registered successfully. Awaiting admin approval.")
-
-        except Exception as e:
-            st.error(f"❌ Error: {e}")
-
+def show_account_recovery(sheet):
+    tab1, tab2 = st.tabs(["🔑 Reset Password", "🆔 Recover Username"])
+    with tab1:
+        display_password_reset_form(sheet)
+    with tab2:
+        display_username_recovery_form(sheet)
