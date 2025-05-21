@@ -12,8 +12,7 @@ from utils import (
     make_unique_headers,
     display_and_merge_data,
     sheet,
-    spreadsheet,
-    require_roles
+    spreadsheet
 )
 from constants import MERGED_SHEET,CALC_SHEET
 
@@ -21,7 +20,6 @@ def show():
     st.subheader("📥 Supervisor Review Section")
 
 
-require_roles("admin", "viewer")
 
 
 
