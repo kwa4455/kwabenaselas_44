@@ -16,7 +16,6 @@ from utils import (
 )
 from constants import MERGED_SHEET
 
-st.set_page_config(page_title="Editor Tools", page_icon="✍🏼")
 
 def show():
     st.subheader("📥 Edit Data Entry Form")
