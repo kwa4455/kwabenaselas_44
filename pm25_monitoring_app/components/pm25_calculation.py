@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils import require_roles, spreadsheet
+from utils import spreadsheet
 from constants import MERGED_SHEET, CALC_SHEET
 
 
@@ -85,8 +85,7 @@ st.markdown(
 
 st.write("Enter Pre and Post Weights to calculate PM₂.₅ concentrations in µg/m³.")
 
-# --- Role Check ---
-require_roles("admin", "editor")
+
 
 # --- Load Merged Data ---
 try:
