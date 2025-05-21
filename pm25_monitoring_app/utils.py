@@ -276,8 +276,16 @@ def display_and_merge_data(df, spreadsheet, merged_sheet_name):
         return
 
     with st.expander("🔍 Filter Records"):
-        site_filter = st.selectbox("Filter by Site", ["All"] + sorted(df["Site"].dropna().unique()))
-        date_range = st.date_input("Filter by Date Range", [])
+        site_filter = st.selectbox(
+            "Filter by Site", 
+            ["All"] + sorted(df["Site"].dropna().unique()))
+            key=f"site_filter_{merged_sheet_name}"
+        )
+        date_range = st.date_input(
+            "Filter by Date Range", 
+            [])
+            key=f"date_range_{merged_sheet_name}"
+        )
 
     filtered_df = filter_dataframe(df, site_filter, date_range)
     st.dataframe(filtered_df, use_container_width=True)
