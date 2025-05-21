@@ -176,19 +176,16 @@ def handle_merge_logic():
         st.warning("⚠ No matching records to merge.")
 
 # --- Sidebar Filter Controls ---
-st.sidebar.header("🔍 Filter Records")
-df_all = load_data_from_sheet(sheet)
-
-# Try to locate the Date column
-date_column = None
-for col in df_all.columns:
-    if col.strip().lower() in ["date", "sampling date", "start date"]:
-        date_column = col
-        break
-
-if not date_column:
-    st.error("☠️ No 'Date' column found. Please check your Google Sheet headers.")
-    st.stop()
+with st.expander("🔍 Filter Records"):
+    df_all = load_data_from_sheet(sheet)
+    date_column = None
+    for col in df_all.columns:
+        if col.strip().lower() in ["date", "sampling date", "start date"]:
+            date_column = col
+            break
+            if not date_column:
+                st.error("☠️ No 'Date' column found. Please check your Google Sheet headers.")
+                st.stop()
 
 df_all["Date"] = pd.to_datetime(df_all[date_column], errors='coerce').dt.date
 unique_sites = sorted(df_all["Site"].dropna().unique())
