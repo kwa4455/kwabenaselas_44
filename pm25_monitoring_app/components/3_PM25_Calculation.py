@@ -4,6 +4,10 @@ from datetime import datetime
 from utils import require_roles, spreadsheet
 from constants import MERGED_SHEET, CALC_SHEET
 
+
+def show():
+    st.subheader("📥 PM25 Calculation")
+
 st.set_page_config(page_title="Audit Records", page_icon="🕵️")
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
 st.markdown("""
