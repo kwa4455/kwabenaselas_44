@@ -2,7 +2,12 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from auth.login import login_user
 from auth.logout import logout_user
-from pages import data_entry_form, edit_data_entry_form, pm25_calculation, supervisor_review_section
+from components import (
+    data_entry_form,
+    edit_data_entry_form,
+    pm25_calculation,
+    supervisor_review_section,
+)
 from admin import show as admin_panel
 from supabase_client import supabase
 from utils import load_data_from_sheet, sheet, spreadsheet
