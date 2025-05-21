@@ -6,7 +6,7 @@ from components import (
     data_entry_form,
     edit_data_entry_form,
     pm25_calculation,
-    supervisor_review_section,
+    supervisor_review_section
 )
 from admin import show as admin_panel
 from supabase_client import supabase
