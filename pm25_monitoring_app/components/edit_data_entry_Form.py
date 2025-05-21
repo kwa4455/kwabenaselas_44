@@ -16,6 +16,7 @@ from utils import (
     spreadsheet,
     display_and_merge_data
 )
+
 from constants import MERGED_SHEET
 
 def show():
