@@ -1,8 +1,11 @@
 import streamlit as st
+
+# App configuration
+st.set_page_config(page_title="EPA Ghana | Air Quality Field Data Entry", layout="centered", page_icon="🌍")
+
+
 import sys
 import os
-
-
 from streamlit_option_menu import option_menu
 from auth.login import login_user
 from auth.logout import logout_user
@@ -18,8 +21,6 @@ from admin.user_management import admin_panel, require_admin
 from supabase_client import supabase
 from utils import load_data_from_sheet, sheet, spreadsheet
 
-# App configuration
-st.set_page_config(page_title="EPA Ghana | Air Quality Field Data Entry", layout="centered", page_icon="🌍")
 
 # Inject styles (define CSS globally)
 def inject_global_css():
