@@ -10,29 +10,36 @@ def login_user():
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        if not email or not password:
-            st.warning("⚠️ Please enter both email and password.")
-            return None
-
         try:
-            response = supabase.table("users").select("*").eq("email", email).single().execute()
-            user = response.data
+            auth_response = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
 
-            if user and check_password(password, user["password_hash"]):
-                if not user["is_approved"]:
-                    st.warning("⏳ Awaiting admin approval.")
-                    return None
-                st.success("✅ Login successful")
-                return user
-            else:
-                st.error("❌ Invalid email or password")
+            session = auth_response.session
+            user = auth_response.user
+
+            if not session:
+                st.error("❌ Invalid credentials.")
                 return None
 
-        except APIError as e:
-            # Print full Supabase error
-            error_details = e.args[0] if e.args else "Unknown error"
-            st.error("❌ Supabase error during login")
-            st.code(str(error_details), language="json")
-            return None
+            # Fetch profile from your `profiles` table
+            profile_resp = supabase.table("profiles").select("*").eq("id", user.id).single().execute()
+            profile = profile_resp.data
 
-    return None
+            if not profile["is_approved"]:
+                st.warning("⏳ Awaiting admin approval.")
+                return None
+
+            # Save session state
+            st.session_state.logged_in = True
+            st.session_state.username = profile["email"]
+            st.session_state.role = profile["role"]
+            st.session_state.user_id = user.id
+
+            st.success("✅ Login successful")
+            return profile
+
+        except Exception as e:
+            st.error(f"Login failed: {e}")
+            return None
