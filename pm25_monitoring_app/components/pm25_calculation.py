@@ -4,7 +4,6 @@ from datetime import datetime
 from utils import spreadsheet
 from constants import MERGED_SHEET, CALC_SHEET
 
-st.set_page_config(page_title="Audit Records", page_icon="🕵️")
 
 def show():
     st.subheader("📥 PM25 Calculation")
