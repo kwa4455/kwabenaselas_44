@@ -6,8 +6,9 @@ google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 requests
-streamlit-js-eval
-streamlit-aggrid
+python-dotenv
+supabase
+bcrypt
 
 
 
