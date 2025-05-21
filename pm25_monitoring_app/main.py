@@ -83,5 +83,7 @@ elif choice == "✏️ Edit Data Entry Form":
     edit_data_entry_form.show()
 elif choice == "🗂️ PM25 Calculation":
     pm25_calculation.show()
+elif choice == "🗂️ Supervisor Review Section":
+    supervisor_review_section.show()
 elif choice == "⚙️ Admin Panel":
     admin_panel()
