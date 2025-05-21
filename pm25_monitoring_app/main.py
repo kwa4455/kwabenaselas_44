@@ -59,24 +59,25 @@ if "df" not in st.session_state:
         st.session_state.sheet = sheet
         st.session_state.spreadsheet = spreadsheet
 
+role_pages = {
+    "admin": ["📥 Data Entry Form", "✏️ Edit Data Entry Form", "🗂️ PM25 Calculation", "⚙️ Admin Panel"],
+    "collector": ["📥 Data Entry Form", "✏️ Edit Data Entry Form"],
+    "editor": ["✏️ Edit Data Entry Form", "🗂️ PM25 Calculation"],
+    "viewer": ["🗂️ PM25 Calculation"],
+    "supervisor": ["🗂️ PM25 Calculation", "🗂️ Supervisor Review Section"]
+}
+
+# Assign pages based on the user's role
+pages = role_pages.get(role, [])
+
 # Sidebar navigation
 with st.sidebar:
     st.title("📁 Navigation")
 
-    pages = []
-    if role == "admin":
-        pages = ["📥 Data Entry Form", "✏️ Edit Data Entry Form", "🗂️ PM25 Calculation", "⚙️ Admin Panel"]
-    elif role == "collector":
-        pages = ["📥 Data Entry Form", "✏️ Edit Data Entry Form"]
-    elif role == "editor":
-        pages = ["✏️ Edit Data Entry Form", "🗂️ PM25 Calculation"]
-    elif role == "viewer":
-        pages = ["🗂️ PM25 Calculation"]
-
     choice = option_menu(
         menu_title="Go to",
         options=pages,
-        icons=["cloud-upload", "pencil", "folder", "gear"][:len(pages)],
+        icons=["cloud-upload", "pencil", "folder", "gear", "clipboard"][:len(pages)],  # Add icons here as needed
         menu_icon="cast",
         default_index=0,
     )
@@ -84,6 +85,7 @@ with st.sidebar:
     st.markdown("---")
     logout_user()
 
+# Show corresponding page based on the selection
 if choice == "📥 Data Entry Form":
     data_entry_form.show()
 elif choice == "✏️ Edit Data Entry Form":
