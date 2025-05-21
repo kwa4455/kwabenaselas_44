@@ -89,7 +89,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-require_roles("admin", "editor", "collector")
 
 # --- Dropdown Options ---
 ids = ["", '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
