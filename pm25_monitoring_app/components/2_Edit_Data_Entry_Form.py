@@ -19,6 +19,9 @@ from utils import (
 )
 from constants import MERGED_SHEET
 
+def show():
+    st.subheader("📥 Edit Data Entry Form")
+    
 st.set_page_config(page_title="Editor Tools", page_icon="✍🏼")
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
 st.markdown("""
