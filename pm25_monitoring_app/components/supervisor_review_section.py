@@ -16,6 +16,8 @@ from utils import (
 )
 from constants import MERGED_SHEET,CALC_SHEET
 
+st.set_page_config(page_title="Supervisor Review Section", page_icon="🕵️")
+
 def show():
     st.subheader("📥 Supervisor Review Section")
 
@@ -23,7 +25,7 @@ def show():
 
 
 
-st.set_page_config(page_title="Supervisor Review Section", page_icon="🕵️")
+
 
 # Inject Google Fonts and custom CSS for glassmorphism and font clarity
 st.markdown("""
