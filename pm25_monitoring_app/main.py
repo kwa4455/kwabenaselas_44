@@ -12,8 +12,9 @@ from components import (
     pm25_calculation,
     supervisor_review_section
 )
-from .show import show
-from .user_management import admin_panel, require_admin
+from admin.show import show
+from admin.user_management import admin_panel, require_admin
+
 from supabase_client import supabase
 from utils import load_data_from_sheet, sheet, spreadsheet
 
