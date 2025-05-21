@@ -2,15 +2,15 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from auth.login import login_user
 from auth.logout import logout_user
-from pages import data_entry_form, edit_data_entry_form, pm25_calculation,supervisor_review_section
-from admin import show as admin_panel  # 👈 import the admin panel
+from pages import data_entry_form, edit_data_entry_form, pm25_calculation, supervisor_review_section
+from admin import show as admin_panel
 from supabase_client import supabase
 from utils import load_data_from_sheet, sheet, spreadsheet
 
 # App configuration
 st.set_page_config(page_title="EPA Ghana | Air Quality Field Data Entry", layout="centered", page_icon="🌍")
 
-# Inject styles (make sure this is defined somewhere)
+# Inject styles (define CSS globally)
 def inject_global_css():
     st.markdown(
         """
@@ -46,20 +46,20 @@ if "df" not in st.session_state:
         st.session_state.df = load_data_from_sheet(sheet)
         st.session_state.sheet = sheet
         st.session_state.spreadsheet = spreadsheet
-        
+
 # Sidebar navigation
 with st.sidebar:
     st.title("📁 Navigation")
 
     pages = []
     if role == "admin":
-        pages = ["📥 Data Entry Form", "✏️ Edit Data Entry Form ", "🗂️ PM25 Calculation", "⚙️ Admin Panel"]
+        pages = ["📥 Data Entry Form", "✏️ Edit Data Entry Form", "🗂️ PM25 Calculation", "⚙️ Admin Panel"]
     elif role == "collector":
-        pages = ["📥 Data Entry", "✏️ Edit Records"]
+        pages = ["📥 Data Entry Form", "✏️ Edit Data Entry Form"]
     elif role == "editor":
-        pages = ["✏️ Edit Records", "🗂️ Review"]
+        pages = ["✏️ Edit Data Entry Form", "🗂️ PM25 Calculation"]
     elif role == "viewer":
-        pages = ["🗂️ Review"]
+        pages = ["🗂️ PM25 Calculation"]
 
     choice = option_menu(
         menu_title="Go to",
@@ -72,12 +72,12 @@ with st.sidebar:
     st.markdown("---")
     logout_user()
 
-# Route page
-if choice == "📥 Data Entry":
-    data_entry.show()
-elif choice == "✏️ Edit Records":
-    edit_records.show()
-elif choice == "🗂️ Review":
-    review_records.show()
+# Route pages correctly
+if choice == "📥 Data Entry Form":
+    data_entry_form.show()
+elif choice == "✏️ Edit Data Entry Form":
+    edit_data_entry_form.show()
+elif choice == "🗂️ PM25 Calculation":
+    pm25_calculation.show()
 elif choice == "⚙️ Admin Panel":
     admin_panel()
