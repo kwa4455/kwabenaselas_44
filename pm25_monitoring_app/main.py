@@ -77,7 +77,6 @@ with st.sidebar:
     st.markdown("---")
     logout_user()
 
-# Route pages correctly
 if choice == "📥 Data Entry Form":
     data_entry_form.show()
 elif choice == "✏️ Edit Data Entry Form":
