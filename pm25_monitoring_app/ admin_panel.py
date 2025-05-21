@@ -10,6 +10,9 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+def show():
+    st.subheader("📥 Admin Panel")
+
 def require_admin():
     if "role" not in st.session_state or st.session_state["role"] != "admin":
         st.error("🚫 You must be an admin to access this page.")
