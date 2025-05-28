@@ -20,7 +20,7 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
+
 
 spreadsheet = client.open_by_key(SPREADSHEET_ID)
 
