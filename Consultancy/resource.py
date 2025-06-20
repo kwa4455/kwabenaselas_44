@@ -4,12 +4,11 @@ import gspread
 from datetime import datetime
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import APIError, WorksheetNotFound
-import json
+
 from constants import SPREADSHEET_ID, MAIN_SHEET, MERGED_SHEET, CALC_SHEET
 
 # === Google Sheets Setup ===
-creds_json = st.secrets["GOOGLE_CREDENTIALS"]
-creds_dict = json.loads(creds_json)
+creds_dict = st.secrets["GOOGLE_CREDENTIALS"]  # Already a dictionary; no json.loads needed
 
 scope = [
     "https://spreadsheets.google.com/feeds",
@@ -22,7 +21,6 @@ client = gspread.authorize(creds)
 
 spreadsheet = client.open_by_key(SPREADSHEET_ID)
 
-
 # === Ensure Observations worksheet exists and is initialized ===
 def ensure_main_sheet_initialized(spreadsheet, sheet_name):
     try:
@@ -33,7 +31,7 @@ def ensure_main_sheet_initialized(spreadsheet, sheet_name):
     if not sheet.get_all_values():
         sheet.append_row([
             "Entry Type", "Sector", "Company", "Region", "City", "Sampling Point",
-            "Sampling Point Description", "Longitude", "Latitude", "Pollutant" "Monitoring Officer", "Driver",
+            "Sampling Point Description", "Longitude", "Latitude", "Pollutant", "Monitoring Officer", "Driver",
             "Date", "Time", "Temperature (°C)", "RH (%)", "Pressure (mbar)",
             "Weather", "Wind Speed", "Wind Direction", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
             "Submitted At"
@@ -42,13 +40,11 @@ def ensure_main_sheet_initialized(spreadsheet, sheet_name):
 
 sheet = ensure_main_sheet_initialized(spreadsheet, MAIN_SHEET)
 
-
 # === Data Utilities ===
 def convert_timestamps_to_string(df):
     for col in df.select_dtypes(include=['datetime64[ns]']).columns:
         df[col] = df[col].dt.strftime('%Y-%m-%d %H:%M:%S')
     return df
-
 
 def load_data_from_sheet(sheet):
     try:
@@ -69,12 +65,10 @@ def load_data_from_sheet(sheet):
         st.error(f"❌ Unexpected error: {e}")
         return pd.DataFrame()
 
-
 def add_data(row, username):
     row.append(username)
     row.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     sheet.append_row(row)
-
 
 def merge_start_stop(df):
     df.columns = df.columns.str.strip()
@@ -115,12 +109,12 @@ def merge_start_stop(df):
 
     desired_order = [
         "Sector", "Company",
-        "Entry Type_Start", "Sampling Point_Start", "Sampling Point Description", "Longitude", "Latitude","Pollutant",
+        "Entry Type_Start", "Sampling Point_Start", "Sampling Point Description", "Longitude", "Latitude", "Pollutant",
         "Monitoring Officer_Start", "Driver_Start", "Date_Start", "Time_Start",
         "Temperature (°C)_Start", "RH (%)_Start", "Pressure (mbar)_Start", "Weather_Start",
         "Wind Speed_Start", "Wind Direction_Start", "Elapsed Time (min)_Start", "Flow Rate (L/min)_Start",
         "Observation_Start", "Submitted At_Start",
-        "Entry Type_Stop", "Sampling Point_Start","Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
+        "Entry Type_Stop", "Sampling Point_Start", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
         "Temperature (°C)_Stop", "RH (%)_Stop", "Pressure (mbar)_Stop", "Weather_Stop",
         "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", "Flow Rate (L/min)_Stop",
         "Observation_Stop", "Submitted At_Stop",
@@ -130,14 +124,12 @@ def merge_start_stop(df):
     existing_cols = [col for col in desired_order if col in merged.columns]
     return merged[existing_cols]
 
-
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     df = convert_timestamps_to_string(df)
     if sheet_name in [ws.title for ws in spreadsheet.worksheets()]:
         spreadsheet.del_worksheet(spreadsheet.worksheet(sheet_name))
     new_sheet = spreadsheet.add_worksheet(title=sheet_name, rows="1000", cols="50")
     new_sheet.update([df.columns.tolist()] + df.values.tolist())
-
 
 def filter_dataframe(df, site_filter=None, date_range=None):
     if df.empty:
@@ -150,7 +142,6 @@ def filter_dataframe(df, site_filter=None, date_range=None):
         start, end = date_range
         df = df[(df["Submitted At"].dt.date >= start) & (df["Submitted At"].dt.date <= end)]
     return df
-
 
 # === Display and Merge ===
 def display_and_merge_data(df, spreadsheet, merged_sheet_name):
