@@ -65,7 +65,7 @@ sector_data = {
             "Sidalco Ltd": {"region": "Greater Accra", "city": "Tema"},
             "Chemico Ghana Ltd": {"region": "Greater Accra", "city": "Tema"}
         }
-    }
+    },
     "Paper": {
         "companies": {
             "Three Dreamers": {"region": "Greater Accra", "city": "Tema"},
