@@ -32,7 +32,7 @@ def ensure_main_sheet_initialized(spreadsheet, sheet_name):
         sheet.append_row([
             "Entry Type", "Sector", "Company", "Region", "City", "Sampling Point",
             "Sampling Point Description", "Longitude", "Latitude", "Pollutant", "Monitoring Officer", "Driver",
-            "Date", "Time", "Temperature (°C)", "RH (%)", "Pressure (mbar)",
+            "Date Time", "Temperature (°C)", "RH (%)", "Pressure (mbar)",
             "Weather", "Wind Speed", "Wind Direction", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
             "Submitted At"
         ])
@@ -110,11 +110,11 @@ def merge_start_stop(df):
     desired_order = [
         "Sector", "Company",
         "Entry Type_Start", "Sampling Point_Start", "Sampling Point Description", "Longitude", "Latitude", "Pollutant",
-        "Monitoring Officer_Start", "Driver_Start", "Date_Start", "Time_Start",
+        "Monitoring Officer_Start", "Driver_Start", "Date_Time_Start",
         "Temperature (°C)_Start", "RH (%)_Start", "Pressure (mbar)_Start", "Weather_Start",
         "Wind Speed_Start", "Wind Direction_Start", "Elapsed Time (min)_Start", "Flow Rate (L/min)_Start",
         "Observation_Start", "Submitted At_Start",
-        "Entry Type_Stop", "Sampling Point_Start", "Monitoring Officer_Stop", "Driver_Stop", "Date_Stop", "Time_Stop",
+        "Entry Type_Stop", "Sampling Point_Start", "Monitoring Officer_Stop", "Driver_Stop", "Date_Time_Stop",
         "Temperature (°C)_Stop", "RH (%)_Stop", "Pressure (mbar)_Stop", "Weather_Stop",
         "Wind Speed_Stop", "Wind Direction_Stop", "Elapsed Time (min)_Stop", "Flow Rate (L/min)_Stop",
         "Observation_Stop", "Submitted At_Stop",
