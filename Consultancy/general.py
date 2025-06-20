@@ -193,6 +193,8 @@ def get_region_city(company_name):
             return info.get("region", "Unknown"), info.get("city", "Unknown")
     return "Unknown", "Unknown"
 
+
+
 def general_info_form():
     st.subheader("1. General Information")
     sector_options = ["-- Select --"] + list(sector_data.keys())
@@ -220,7 +222,9 @@ def general_info_form():
 
     # Date and Time
     st.subheader("3. Date and Time")
-    date_time = st.datetime_input("Select Date & Time", value=datetime.now(), key="date_time")
+    date = st.date_input("Select Date", value=datetime.now().date(), key="date")
+    time = st.time_input("Select Time", value=datetime.now().time(), key="time")
+    date_time = datetime.combine(date, time)
 
     # Weather
     st.subheader("4. Weather Conditions")
@@ -254,7 +258,3 @@ def general_info_form():
         "selected_officers": selected_officers,
         "driver": driver,
     }
-
-
-
-
