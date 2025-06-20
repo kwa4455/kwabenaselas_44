@@ -108,5 +108,3 @@ def show():
                 st.error(f"Failed to save data: {e}")
 
 
-# 🔸 Call the function to display the form
-show()
