@@ -6,12 +6,14 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from admin.show import show
 from admin.user_management import admin_panel
+
 from components import (
     pm_form,
     env_form,
-    pm_caculation,
+    pm_calculation,
     apartment
 )
+
 from modules.authentication import login, logout_button
 from modules.user_utils import ensure_users_sheet
 from resource import load_data_from_sheet, sheet, spreadsheet
@@ -349,7 +351,7 @@ elif choice == "Enter Field Observation":
 elif choice == "Enter Analysis Result":
     env_form.show()
 elif choice == "Supervisor Review Section":
-    pm_caculation.show()
+    pm_calculation.show()
 elif choice == "Admin Panel":
     admin_panel()
 
