@@ -268,7 +268,7 @@ role_pages = {
     "admin": [
         ("🏠 Home", "Home"),
         ("🦺 Particulate Matter", "Particulate Matter"),
-        ("✍️ Other Measurement", "Other Measurement"),
+        ("✍️ NSGV", "NSGV"),
         ("☘️ PM Calculation", "PM Calculation"),
         ("⚙️ Admin Panel", "Admin Panel")
     ],
@@ -349,7 +349,7 @@ if choice == "Home":
     apartment.show()
 elif choice == "Particulate Matter":
     pm_form.show()
-elif choice == "Other Measurement":
+elif choice == "NSGV":
     env_form.show()
 elif choice == "PM Calculation":
     pm_calculation.show()
