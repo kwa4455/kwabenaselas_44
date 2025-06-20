@@ -164,7 +164,7 @@ if entry_type:
                     stop_elapsed, stop_flow, stop_obs
                 ]
                 add_data(stop_row, st.session_state.username)
-                st.success("✅ Stop day data submitted successfully!"
+                st.success("✅ Stop day data submitted successfully!")
         
 
 # ----------- Show Data Records -----------
