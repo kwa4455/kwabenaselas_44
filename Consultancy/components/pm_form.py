@@ -157,7 +157,7 @@ if entry_type:
                     return
 
                 stop_row = [
-                    "STOP", selected_sector, selected_company,stop_sampling_point ", ".join(officer_selected), driver_name,
+                    "STOP", selected_sector, selected_company,stop_sampling_point, ", ".join(officer_selected), driver_name,
                     stop_date.strftime("%Y-%m-%d"), stop_time.strftime("%H:%M:%S"),
                     stop_temp, stop_rh, stop_pressure, stop_weather,
                     stop_wind_speed, stop_wind_direction,
