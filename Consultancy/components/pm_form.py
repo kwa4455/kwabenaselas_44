@@ -2,7 +2,15 @@ import streamlit as st
 from datetime import datetime, time
 import pandas as pd
 import os
-
+from resource import (
+    load_data_from_sheet,
+    add_data,
+    merge_start_stop,
+    save_merged_data_to_sheet,
+    sheet,
+    spreadsheet,
+    display_and_merge_data
+)
 from modules.authentication import require_role
 from general import sector_data  # Assumes your sector_data is saved here
 
