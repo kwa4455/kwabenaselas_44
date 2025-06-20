@@ -59,7 +59,7 @@ sector_data = {
             "Petroleum Hub Ltd": {"region": "Greater Accra", "city": "Kpone"},
             "Quantum Petroleum Ltd": {"region": "Greater Accra", "city": "Kpone"}
         }
-    }
+    },
     "Fertilizer": {
         "companies": {
             "Sidalco Ltd": {"region": "Greater Accra", "city": "Tema"},
