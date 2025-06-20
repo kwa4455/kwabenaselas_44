@@ -1,13 +1,6 @@
 import streamlit as st
 from datetime import datetime
 
-weather_conditions = ["Clear", "Cloudy", "Rainy", "Windy"]
-officers = ['Obed Korankye', 'Clement Ackaah', 'Peter Ohene-Twum', 'Benjamin Essien', 'Mawuli Amegah']
-drivers = ["Kanazoe Sia", "Kofi Adjei","Fatau"]
-
-
-
-
 sector_data = {
     "Alcoholic and Non-Alcoholic": {
         "companies": {
@@ -182,6 +175,35 @@ sector_data = {
 }
 
 
+# Constants
+weather_conditions = ["-- Select --", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
+wind_directions = ["-- Select --", "N", "NE", "E", "SE", "S", "SW", "W", "NW", "NNE", "ENE", "ESE", "SSE", "SSW", "WSW", "WNW", "NNW"]
+officers = ['Obed Korankye', 'Clement Ackaah', 'Peter Ohene-Twum', 'Benjamin Essien', 'Mawuli Amegah']
+drivers = ["Kanazoe Sia", "Kofi Adjei", "Fatau"]
+sampling_points = ["-- Select --", "Point 1", "Point 2", "Point 3", "Point 4"]
+
+# Weather defaults
+weather_defaults = {
+    "Sunny": {"temp": list(range(25, 41)), "rh": list(range(40, 91))},
+    "Rainy": {"temp": list(range(20, 27)), "rh": list(range(70, 101))},
+    "Cloudy": {"temp": list(range(25, 35)), "rh": list(range(40, 91))},
+    "Partly Cloudy": {"temp": list(range(21, 35)), "rh": list(range(35, 91))},
+    "Windy": {"temp": list(range(20, 30)), "rh": list(range(40, 91))},
+    "Hazy": {"temp": list(range(20, 31)), "rh": list(range(40, 91))},
+    "Stormy": {"temp": list(range(17, 25)), "rh": list(range(80, 101))},
+    "Foggy": {"temp": list(range(15, 22)), "rh": list(range(85, 101))}
+}
+
+# Helper for selecting time
+def get_custom_time(label, key_prefix, hour_key="hour", minute_key="minute"):
+    col1, col2 = st.columns(2)
+    with col1:
+        hour = st.selectbox(f"{label} - Hour", list(range(0, 24)), key=f"{key_prefix}_{hour_key}")
+    with col2:
+        minute = st.selectbox(f"{label} - Minute", list(range(0, 60, 5)), key=f"{key_prefix}_{minute_key}")
+    return datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
+
+
 def get_companies(sector):
     return list(sector_data.get(sector, {}).get("companies", {}).keys())
 
@@ -193,8 +215,7 @@ def get_region_city(company_name):
             return info.get("region", "Unknown"), info.get("city", "Unknown")
     return "Unknown", "Unknown"
 
-
-
+# === Main Form Function ===
 def general_info_form():
     st.subheader("1. General Information")
     sector_options = ["-- Select --"] + list(sector_data.keys())
@@ -216,25 +237,37 @@ def general_info_form():
 
     # Sampling Point
     st.subheader("2. Sampling Point Details")
-    sampling_point_name = st.text_input("Sampling Point Name", key="sampling_point_name")
-    coordinate = st.text_input("Coordinates (e.g., 12.3456, 78.9012)", key="coordinate")
+    sampling_point = st.selectbox("📍 Sampling Point", sampling_points)
     description = st.text_area("Sampling Point Description", key="description")
+    longitude = st.number_input("🌐 Longitude", step=0.0001, format="%.4f")
+    latitude = st.number_input("🌐 Latitude", step=0.0001, format="%.4f")
 
     # Date and Time
     st.subheader("3. Date and Time")
-    date = st.date_input("Select Date", value=datetime.now().date(), key="date")
-    time = st.time_input("Select Time", value=datetime.now().time(), key="time")
+    date = st.date_input("📅 Start Date", value=datetime.today())
+    time = get_custom_time("⏱️ Start Time", "start", "hour", "minute")
     date_time = datetime.combine(date, time)
 
     # Weather
     st.subheader("4. Weather Conditions")
-    weather = st.selectbox("Select Weather", ["-- Select --"] + weather_conditions, key="weather")
-    temperature = wind_speed = wind_direction = humidity = None
+    weather = st.selectbox("🌦️ Weather", weather_conditions)
+
     if weather != "-- Select --":
-        temperature = st.number_input("Temperature (°C)", step=0.1, key="temperature")
-        wind_speed = st.number_input("Wind Speed (km/h)", step=0.1, key="wind_speed")
-        wind_direction = st.text_input("Wind Direction", key="wind_direction")
-        humidity = st.slider("Humidity (%)", 0, 100, key="humidity")
+        temp_options = ["-- Select --"] + [str(t) for t in weather_defaults[weather]["temp"]]
+        rh_options = ["-- Select --"] + [str(rh) for rh in weather_defaults[weather]["rh"]]
+        wind_speed_options = ["-- Select --"] + [f"{round(ws, 1)}" for ws in [x * 0.5 for x in range(0, 41)]]
+
+        temperature = st.selectbox("🌡️ Temperature (°C)", temp_options)
+        wind_speed = st.selectbox("💨 Wind Speed (km/h)", wind_speed_options, key="wind_speed")
+        wind_direction = st.selectbox("🧭 Wind Direction", wind_directions, key="wind_direction")
+        humidity = st.selectbox("💧 Humidity (%)", rh_options)
+
+        # Convert selected values to numbers
+        temperature = int(temperature) if temperature != "-- Select --" else None
+        wind_speed = float(wind_speed) if wind_speed != "-- Select --" else None
+        humidity = int(humidity) if humidity != "-- Select --" else None
+    else:
+        temperature = humidity = wind_speed = wind_direction = None
 
     # Personnel
     st.subheader("5. Officer(s) Involved")
@@ -246,8 +279,8 @@ def general_info_form():
         "company": company,
         "region": region,
         "city": city,
-        "sampling_point_name": sampling_point_name,
-        "coordinate": coordinate,
+        "sampling_point_name": sampling_point,
+        "coordinate": f"{latitude}, {longitude}",
         "description": description,
         "date_time": date_time,
         "weather": weather,
