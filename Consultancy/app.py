@@ -14,7 +14,8 @@ from components import (
 )
 from modules.authentication import login, logout_button
 from modules.user_utils import ensure_users_sheet
-from constants import SPREADSHEET_ID
+from resource import load_data_from_sheet, sheet, spreadsheet
+from constants import MERGED_SHEET, CALC_SHEET, USERS_SHEET, SPREADSHEET_ID
 
 
 
@@ -251,6 +252,13 @@ div[role="alert"] svg {
 
 st.info(f"👤 Logged in as: **{username}** (Role: {role})")
 
+
+
+if "df" not in st.session_state:
+    with st.spinner("🔄 Loading data..."):
+        st.session_state.df = load_data_from_sheet(sheet)
+        st.session_state.sheet = sheet
+        st.session_state.spreadsheet = spreadsheet
 # ------------------------
 # 5. Role-Based Navigation
 # ------------------------
