@@ -9,7 +9,7 @@ from admin.user_management import admin_panel
 
 from components import (
     pm_form,
-    env,
+    noise,
     pm_calculation,
     apartment
 )
@@ -350,7 +350,7 @@ if choice == "Home":
 elif choice == "Particulate Matter":
     pm_form.show()
 elif choice == "NSGV":
-    env.show()
+    noise.show()
 elif choice == "PM Calculation":
     pm_calculation.show()
 elif choice == "Admin Panel":
