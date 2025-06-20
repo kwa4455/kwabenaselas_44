@@ -11,6 +11,8 @@ from resource import (
     spreadsheet,
     display_and_merge_data
 )
+from constants import MERGED_SHEET
+
 from modules.authentication import require_role
 from general import sector_data  # Assumes your sector_data is saved here
 
