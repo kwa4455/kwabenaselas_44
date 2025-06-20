@@ -1,7 +1,5 @@
 import streamlit as st
-from datetime import datetime, time
-import pandas as pd
-
+from datetime import datetime
 from resource import (
     load_data_from_sheet,
     add_data,
@@ -35,9 +33,6 @@ weather_defaults = {
     "Foggy": {"temp": list(range(15, 22)), "rh": list(range(85, 101))}
 }
 
-# -----------------------------
-# Helper Functions
-# -----------------------------
 def get_companies(sector):
     return list(sector_data.get(sector, {}).get("companies", {}).keys())
 
@@ -54,31 +49,25 @@ def get_custom_time(label, key_prefix, hour_key="hour", minute_key="minute"):
     with col1:
         hour = st.selectbox(f"{label} - Hour", list(range(0, 24)), key=f"{key_prefix}_{hour_key}")
     with col2:
-        minute = st.selectbox(f"{label} - Minute", list(range(0, 60, 1)), key=f"{key_prefix}_{minute_key}")
+        minute = st.selectbox(f"{label} - Minute", list(range(0, 60)), key=f"{key_prefix}_{minute_key}")
     return datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
 
-# -----------------------------
-# Main Show Function
-# -----------------------------
 def show():
     require_role(["admin", "officer"])
-
     st.title("📝 Field Observation Entry")
 
     entry_type = st.selectbox("Select Entry Type", ["", "START", "STOP"])
     if not entry_type:
         return
 
-    # ------------------ Sector & Company ------------------
+    # Sector and Company
     sector_options = ["-- Select --"] + list(sector_data.keys())
     selected_sector = st.selectbox("🏭 Select Industry Sector", sector_options)
-
     if selected_sector == "-- Select --":
         return
 
     company_options = ["-- Select --"] + get_companies(selected_sector)
     selected_company = st.selectbox("🏢 Select Company", company_options)
-
     if selected_company == "-- Select --":
         return
 
@@ -89,6 +78,8 @@ def show():
     officer_selected = st.multiselect("👷 Monitoring Officer(s)", officers)
     driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
+    wind_speed_options = [f"{x:.1f}" for x in [i * 0.5 for i in range(0, 41)]]
+
     # ------------------ START ENTRY ------------------
     if entry_type == "START":
         st.subheader("🟢 Start Monitoring")
@@ -98,14 +89,13 @@ def show():
         longitude = st.number_input("🌐 Longitude", step=0.0001, format="%.4f")
         latitude = st.number_input("🌐 Latitude", step=0.0001, format="%.4f")
         pollutants_selected = st.multiselect("🌫️ Pollutant", pollutants)
-        
+
         st.subheader("3. Date and Time")
         start_date = st.date_input("📅 Start Date", value=datetime.today())
-        start_time = get_custom_time("⏱️ Start Time", "start", "hour", "minute")
-        start_date_time = datetime.combine(date, time)
-        
-        start_obs = st.text_area("🧿 Final Observations")
+        start_time = get_custom_time("⏱️ Start Time", "start")
+        start_date_time = datetime.combine(start_date, start_time)
 
+        start_obs = st.text_area("🧿 Final Observations")
 
         start_weather = st.selectbox("🌦️ Weather", weather_conditions)
         if start_weather != "-- Select --":
@@ -117,7 +107,8 @@ def show():
             start_temp = start_rh = "-- Select --"
 
         start_pressure = st.number_input("🧭 Pressure (mbar)", step=0.1)
-        start_wind_speed = st.text_input("💨 Wind Speed")
+        start_wind_speed = st.selectbox("💨 Wind Speed (km/h)", ["-- Select --"] + wind_speed_options)
+        start_wind_speed = float(start_wind_speed) if start_wind_speed != "-- Select --" else None
         start_wind_direction = st.selectbox("🌪️ Wind Direction", wind_directions)
 
         start_elapsed = st.number_input("⏰ Elapsed Time (min)", step=0.1)
@@ -127,15 +118,15 @@ def show():
             if not all([selected_sector, selected_company, region, city, officer_selected, driver_name]):
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
-            if start_weather == "-- Select --" or start_temp == "-- Select --" or start_rh == "-- Select --" or start_wind_direction == "-- Select --":
-                st.error("⚠ Please select valid weather, temperature, humidity, and wind direction.")
+            if start_weather == "-- Select --" or start_temp == "-- Select --" or start_rh == "-- Select --" or start_wind_direction == "-- Select --" or start_wind_speed is None:
+                st.error("⚠ Please select valid weather, temperature, humidity, wind direction, and wind speed.")
                 return
 
             start_row = [
                 "START", selected_sector, selected_company, region, city,
                 start_sampling_point, sampling_point_description, longitude, latitude,
-                pollutants_selected, ", ".join(officer_selected), driver_name,
-                start_date_time,
+                ", ".join(pollutants_selected), ", ".join(officer_selected), driver_name,
+                start_date_time.strftime("%Y-%m-%d %H:%M:%S"),
                 start_temp, start_rh, start_pressure, start_weather,
                 start_wind_speed, start_wind_direction,
                 start_elapsed, start_flow, start_obs
@@ -148,12 +139,10 @@ def show():
         st.subheader("🔴 Stop Monitoring")
 
         stop_sampling_point = st.selectbox("📍 Sampling Point", sampling_points)
-        
-        st.subheader("3. Date and Time")
-        stop_date = st.date_input("📅 Start Date", value=datetime.today())
-        stop_time = get_custom_time("⏱️ Start Time", "start", "hour", "minute")
-        stop_date_time = datetime.combine(date, time)
-        
+        stop_date = st.date_input("📅 Stop Date", value=datetime.today())
+        stop_time = get_custom_time("⏱️ Stop Time", "stop")
+        stop_date_time = datetime.combine(stop_date, stop_time)
+
         stop_obs = st.text_area("🧿 Final Observations")
 
         stop_weather = st.selectbox("🌦️ Final Weather", weather_conditions)
@@ -166,7 +155,8 @@ def show():
             stop_temp = stop_rh = "-- Select --"
 
         stop_pressure = st.number_input("🧭 Final Pressure (mbar)", step=0.1)
-        stop_wind_speed = st.text_input("💨 Final Wind Speed")
+        stop_wind_speed = st.selectbox("💨 Final Wind Speed (km/h)", ["-- Select --"] + wind_speed_options)
+        stop_wind_speed = float(stop_wind_speed) if stop_wind_speed != "-- Select --" else None
         stop_wind_direction = st.selectbox("🌪️ Final Wind Direction", wind_directions)
 
         stop_elapsed = st.number_input("⏰ Final Elapsed Time (min)", step=0.1)
@@ -176,15 +166,15 @@ def show():
             if not all([selected_sector, selected_company, officer_selected, driver_name]):
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
-            if stop_weather == "-- Select --" or stop_temp == "-- Select --" or stop_rh == "-- Select --" or stop_wind_direction == "-- Select --":
-                st.error("⚠ Please select valid weather, temperature, humidity, and wind direction.")
+            if stop_weather == "-- Select --" or stop_temp == "-- Select --" or stop_rh == "-- Select --" or stop_wind_direction == "-- Select --" or stop_wind_speed is None:
+                st.error("⚠ Please select valid weather, temperature, humidity, wind direction, and wind speed.")
                 return
 
             stop_row = [
                 "STOP", selected_sector, selected_company, region, city,
-                stop_sampling_point, "", "", "",  # No description or GPS
-                [], ", ".join(officer_selected), driver_name,
-                stop_date_time,
+                stop_sampling_point, "", "", "",  # No GPS or description
+                "", ", ".join(officer_selected), driver_name,
+                stop_date_time.strftime("%Y-%m-%d %H:%M:%S"),
                 stop_temp, stop_rh, stop_pressure, stop_weather,
                 stop_wind_speed, stop_wind_direction,
                 stop_elapsed, stop_flow, stop_obs
