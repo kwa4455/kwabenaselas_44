@@ -12,8 +12,6 @@ def show():
 # Initialize Google Sheets client
 client = init_gsheet_client()
 
-# Input: Submitter's Name
-username = st.text_input("Your name (Submitter)", key="username")
 
 # Step 1: General Info Form
 general_data = general_info_form()
