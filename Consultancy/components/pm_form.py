@@ -49,11 +49,13 @@ def get_region_city(company_name):
             return info.get("region", "Unknown"), info.get("city", "Unknown")
     return "Unknown", "Unknown"
 
-def get_custom_time(label_prefix, key_prefix, hour_key, minute_key):
-    hour = st.selectbox(f"{label_prefix} Hour", list(range(0, 24)), key=f"{key_prefix}_{hour_key}")
-    valid_minutes = [m for m in range(60) if m not in [0, 15, 30, 45]]
-    minute = st.selectbox(f"{label_prefix} Minute (not 00, 15, 30, 45)", valid_minutes, key=f"{key_prefix}_{minute_key}")
-    return time(hour=hour, minute=minute)
+def get_custom_time(label, key_prefix, hour_key="hour", minute_key="minute"):
+    col1, col2 = st.columns(2)
+    with col1:
+        hour = st.selectbox(f"{label} - Hour", list(range(0, 24)), key=f"{key_prefix}_{hour_key}")
+    with col2:
+        minute = st.selectbox(f"{label} - Minute", list(range(0, 60, 1)), key=f"{key_prefix}_{minute_key}")
+    return datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
 
 # -----------------------------
 # Main Show Function
@@ -96,10 +98,14 @@ def show():
         longitude = st.number_input("🌐 Longitude", step=0.0001, format="%.4f")
         latitude = st.number_input("🌐 Latitude", step=0.0001, format="%.4f")
         pollutants_selected = st.multiselect("🌫️ Pollutant", pollutants)
-
+        
+        st.subheader("3. Date and Time")
         start_date = st.date_input("📅 Start Date", value=datetime.today())
         start_time = get_custom_time("⏱️ Start Time", "start", "hour", "minute")
-        start_obs = st.text_area("🧿 Initial Observations")
+        start_date_time = datetime.combine(date, time)
+        
+        start_obs = st.text_area("🧿 Final Observations")
+
 
         start_weather = st.selectbox("🌦️ Weather", weather_conditions)
         if start_weather != "-- Select --":
@@ -129,7 +135,7 @@ def show():
                 "START", selected_sector, selected_company, region, city,
                 start_sampling_point, sampling_point_description, longitude, latitude,
                 pollutants_selected, ", ".join(officer_selected), driver_name,
-                start_date.strftime("%Y-%m-%d"), start_time.strftime("%H:%M:%S"),
+                start_date_time,
                 start_temp, start_rh, start_pressure, start_weather,
                 start_wind_speed, start_wind_direction,
                 start_elapsed, start_flow, start_obs
@@ -142,8 +148,12 @@ def show():
         st.subheader("🔴 Stop Monitoring")
 
         stop_sampling_point = st.selectbox("📍 Sampling Point", sampling_points)
-        stop_date = st.date_input("📅 Stop Date", value=datetime.today())
-        stop_time = get_custom_time("⏱️ Stop Time", "stop", "hour", "minute")
+        
+        st.subheader("3. Date and Time")
+        stop_date = st.date_input("📅 Start Date", value=datetime.today())
+        stop_time = get_custom_time("⏱️ Start Time", "start", "hour", "minute")
+        stop_date_time = datetime.combine(date, time)
+        
         stop_obs = st.text_area("🧿 Final Observations")
 
         stop_weather = st.selectbox("🌦️ Final Weather", weather_conditions)
@@ -174,7 +184,7 @@ def show():
                 "STOP", selected_sector, selected_company, region, city,
                 stop_sampling_point, "", "", "",  # No description or GPS
                 [], ", ".join(officer_selected), driver_name,
-                stop_date.strftime("%Y-%m-%d"), stop_time.strftime("%H:%M:%S"),
+                stop_date_time,
                 stop_temp, stop_rh, stop_pressure, stop_weather,
                 stop_wind_speed, stop_wind_direction,
                 stop_elapsed, stop_flow, stop_obs
