@@ -1,15 +1,10 @@
 streamlit
-pandas
 gspread
 oauth2client
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-requests
-python-dotenv
-supabase
-bcrypt
 streamlit-option-menu
-
+requests
+streamlit-authenticator==0.2.3
+streamlit-extras
+streamlit-sal
 
 
