@@ -9,7 +9,7 @@ from admin.user_management import admin_panel
 from components import (
     pm_form,
     env_form,
-    pm_calculation,
+    pm_caculation,
     apartment
 )
 from modules.authentication import login, logout_button
