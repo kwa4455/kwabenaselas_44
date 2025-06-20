@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime, time
 import pandas as pd
-import os
+
 from resource import (
     load_data_from_sheet,
     add_data,
@@ -12,11 +12,12 @@ from resource import (
     display_and_merge_data
 )
 from constants import MERGED_SHEET
-
 from modules.authentication import require_role
 from general import sector_data  # Assumes your sector_data is saved here
 
-
+# -----------------------------
+# Constants and configuration
+# -----------------------------
 officers = ['Obed Korankye', 'Clement Ackaah', 'Peter Ohene-Twum', 'Benjamin Essien', 'Mawuli Amegah']
 wind_directions = ["-- Select --", "N", "NE", "E", "SE", "S", "NNE", "NEN", "SWS", "SES", "SSW", "SW", "W", "NW"]
 weather_conditions = ["-- Select --", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
@@ -34,6 +35,9 @@ weather_defaults = {
     "Foggy": {"temp": list(range(15, 22)), "rh": list(range(85, 101))}
 }
 
+# -----------------------------
+# Helper Functions
+# -----------------------------
 def get_companies(sector):
     return list(sector_data.get(sector, {}).get("companies", {}).keys())
 
@@ -51,15 +55,19 @@ def get_custom_time(label_prefix, key_prefix, hour_key, minute_key):
     minute = st.selectbox(f"{label_prefix} Minute (not 00, 15, 30, 45)", valid_minutes, key=f"{key_prefix}_{minute_key}")
     return time(hour=hour, minute=minute)
 
+# -----------------------------
+# Main Show Function
+# -----------------------------
 def show():
     require_role(["admin", "officer"])
 
-    
+    st.title("📝 Field Observation Entry")
+
     entry_type = st.selectbox("Select Entry Type", ["", "START", "STOP"])
-
     if not entry_type:
-        return  # Correct usage: inside function
+        return
 
+    # ------------------ Sector & Company ------------------
     sector_options = ["-- Select --"] + list(sector_data.keys())
     selected_sector = st.selectbox("🏭 Select Industry Sector", sector_options)
 
@@ -79,8 +87,10 @@ def show():
     officer_selected = st.multiselect("👷 Monitoring Officer(s)", officers)
     driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
+    # ------------------ START ENTRY ------------------
     if entry_type == "START":
         st.subheader("🟢 Start Monitoring")
+
         start_sampling_point = st.selectbox("📍 Sampling Point", sampling_points)
         sampling_point_description = st.text_input("📍 Sampling Point Description")
         longitude = st.number_input("🌐 Longitude", step=0.0001, format="%.4f")
@@ -125,10 +135,12 @@ def show():
                 start_elapsed, start_flow, start_obs
             ]
             add_data(start_row, st.session_state.username)
-            st.success("✅ Start data submitted successfully!")
+            st.success("✅ Start day data submitted successfully!")
 
+    # ------------------ STOP ENTRY ------------------
     elif entry_type == "STOP":
         st.subheader("🔴 Stop Monitoring")
+
         stop_sampling_point = st.selectbox("📍 Sampling Point", sampling_points)
         stop_date = st.date_input("📅 Stop Date", value=datetime.today())
         stop_time = get_custom_time("⏱️ Stop Time", "stop", "hour", "minute")
@@ -159,8 +171,8 @@ def show():
                 return
 
             stop_row = [
-                "STOP", selected_sector, selected_company, region, city, 
-                stop_sampling_point, "", "", "",  
+                "STOP", selected_sector, selected_company, region, city,
+                stop_sampling_point, "", "", "",  # No description or GPS
                 [], ", ".join(officer_selected), driver_name,
                 stop_date.strftime("%Y-%m-%d"), stop_time.strftime("%H:%M:%S"),
                 stop_temp, stop_rh, stop_pressure, stop_weather,
