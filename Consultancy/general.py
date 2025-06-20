@@ -31,7 +31,7 @@ sector_data = {
             "Ice Joy": {"region": "Greater Accra", "city": "Adjern Kotoku"},
             "Lan T soymilk": {"region": "Greater Accra", "city": "Kpone"}
         }
-    }
+    },
     "General Industry": {
         "companies": {
             "Baron Distilleries": {"region": "Greater Accra", "city": "Adenta"},
