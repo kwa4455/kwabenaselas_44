@@ -274,6 +274,7 @@ role_pages = {
     ],
     "officer": [
         ("🏠 Home", "Home"),
+        ("🦺 Particulate Matter", "Particulate Matter"),
         ("✍️ Other Measurement", "Other Measurement"),
         ("☘️ PM Calculation", "PM Calculation")
     ],
@@ -346,11 +347,11 @@ choice = st.session_state.get("selected_page")
 
 if choice == "Home":
     apartment.show()
-elif choice == "Enter Field Observation":
+elif choice == "Particulate Matter":
     pm_form.show()
-elif choice == "Enter Analysis Result":
+elif choice == "Other Measurement":
     env_form.show()
-elif choice == "Supervisor Review Section":
+elif choice == "PM Calculation":
     pm_calculation.show()
 elif choice == "Admin Panel":
     admin_panel()
