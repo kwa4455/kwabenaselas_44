@@ -54,7 +54,7 @@ def get_custom_time(label_prefix, key_prefix, hour_key, minute_key):
 def show():
     require_role(["admin", "officer"])
 
-    st.title("📝 PM Monitoring Form")
+    
     entry_type = st.selectbox("Select Entry Type", ["", "START", "STOP"])
 
     if not entry_type:
