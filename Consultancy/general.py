@@ -200,7 +200,7 @@ def get_custom_time(label, key_prefix, hour_key="hour", minute_key="minute"):
     with col1:
         hour = st.selectbox(f"{label} - Hour", list(range(0, 24)), key=f"{key_prefix}_{hour_key}")
     with col2:
-        minute = st.selectbox(f"{label} - Minute", list(range(0, 60, 5)), key=f"{key_prefix}_{minute_key}")
+        minute = st.selectbox(f"{label} - Minute", list(range(0, 60, 1)), key=f"{key_prefix}_{minute_key}")
     return datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
 
 
