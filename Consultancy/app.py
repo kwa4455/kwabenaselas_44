@@ -337,7 +337,7 @@ choice = st.session_state.get("selected_page")
 if choice == "Home":
     apartment.show()
 elif choice == "Enter Field Observation":
-    pm.show()
+    pm_form.show()
 elif choice == "Enter Analysis Result":
     env_form.show()
 elif choice == "Supervisor Review Section":
