@@ -14,8 +14,6 @@ from resource import (
 from modules.authentication import require_role
 from general import sector_data  # Assumes your sector_data is saved here
 
-def show():
-    require_role(["admin", "officer"])
 
 officers = ['Obed Korankye', 'Clement Ackaah', 'Peter Ohene-Twum', 'Benjamin Essien', 'Mawuli Amegah']
 wind_directions = ["-- Select --", "N", "NE", "E", "SE", "S", "NNE", "NEN", "SWS", "SES", "SSW", "SW", "W", "NW"]
@@ -34,7 +32,6 @@ weather_defaults = {
     "Foggy": {"temp": list(range(15, 22)), "rh": list(range(85, 101))}
 }
 
-# --- Helper Functions ---
 def get_companies(sector):
     return list(sector_data.get(sector, {}).get("companies", {}).keys())
 
@@ -52,29 +49,34 @@ def get_custom_time(label_prefix, key_prefix, hour_key, minute_key):
     minute = st.selectbox(f"{label_prefix} Minute (not 00, 15, 30, 45)", valid_minutes, key=f"{key_prefix}_{minute_key}")
     return time(hour=hour, minute=minute)
 
-# --- UI ---
-st.title("📝 Monitoring Data Entry")
-entry_type = st.selectbox("Select Entry Type", ["", "START", "STOP"])
+def show():
+    require_role(["admin", "officer"])
 
-selected_sector = selected_company = region = city = ""
+    st.title("📝 PM Monitoring Form")
+    entry_type = st.selectbox("Select Entry Type", ["", "START", "STOP"])
 
-if entry_type:
+    if not entry_type:
+        return  # Correct usage: inside function
+
     sector_options = ["-- Select --"] + list(sector_data.keys())
     selected_sector = st.selectbox("🏭 Select Industry Sector", sector_options)
 
-    if selected_sector != "-- Select --":
-        company_options = ["-- Select --"] + get_companies(selected_sector)
-        selected_company = st.selectbox("🏢 Select Company", company_options)
+    if selected_sector == "-- Select --":
+        return
 
-        if selected_company != "-- Select --":
-            region, city = get_region_city(selected_company)
-            st.text_input("🌍 Region", value=region, disabled=True)
-            st.text_input("🏙️ Town/City", value=city, disabled=True)
+    company_options = ["-- Select --"] + get_companies(selected_sector)
+    selected_company = st.selectbox("🏢 Select Company", company_options)
+
+    if selected_company == "-- Select --":
+        return
+
+    region, city = get_region_city(selected_company)
+    st.text_input("🌍 Region", value=region, disabled=True)
+    st.text_input("🏙️ Town/City", value=city, disabled=True)
 
     officer_selected = st.multiselect("👷 Monitoring Officer(s)", officers)
     driver_name = st.text_input("🧑‍🌾 Driver's Name")
 
-    # START ENTRY
     if entry_type == "START":
         st.subheader("🟢 Start Monitoring")
         start_sampling_point = st.selectbox("📍 Sampling Point", sampling_points)
@@ -89,8 +91,8 @@ if entry_type:
 
         start_weather = st.selectbox("🌦️ Weather", weather_conditions)
         if start_weather != "-- Select --":
-            temp_options = ["-- Select --"] + weather_defaults.get(start_weather, {}).get("temp", [])
-            rh_options = ["-- Select --"] + weather_defaults.get(start_weather, {}).get("rh", [])
+            temp_options = ["-- Select --"] + weather_defaults[start_weather]["temp"]
+            rh_options = ["-- Select --"] + weather_defaults[start_weather]["rh"]
             start_temp = st.selectbox("🌡️ Temperature (°C)", temp_options)
             start_rh = st.selectbox("💧 Humidity (%)", rh_options)
         else:
@@ -108,7 +110,7 @@ if entry_type:
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
             if start_weather == "-- Select --" or start_temp == "-- Select --" or start_rh == "-- Select --" or start_wind_direction == "-- Select --":
-                st.error("⚠ Please select valid weather, temp, RH, and wind direction.")
+                st.error("⚠ Please select valid weather, temperature, humidity, and wind direction.")
                 return
 
             start_row = [
@@ -121,9 +123,8 @@ if entry_type:
                 start_elapsed, start_flow, start_obs
             ]
             add_data(start_row, st.session_state.username)
-            st.success("✅ Start day data submitted successfully!")
+            st.success("✅ Start data submitted successfully!")
 
-    # STOP ENTRY
     elif entry_type == "STOP":
         st.subheader("🔴 Stop Monitoring")
         stop_sampling_point = st.selectbox("📍 Sampling Point", sampling_points)
@@ -133,8 +134,8 @@ if entry_type:
 
         stop_weather = st.selectbox("🌦️ Final Weather", weather_conditions)
         if stop_weather != "-- Select --":
-            temp_options = ["-- Select --"] + weather_defaults.get(stop_weather, {}).get("temp", [])
-            rh_options = ["-- Select --"] + weather_defaults.get(stop_weather, {}).get("rh", [])
+            temp_options = ["-- Select --"] + weather_defaults[stop_weather]["temp"]
+            rh_options = ["-- Select --"] + weather_defaults[stop_weather]["rh"]
             stop_temp = st.selectbox("🌡️ Final Temperature (°C)", temp_options)
             stop_rh = st.selectbox("💧 Final Humidity (%)", rh_options)
         else:
@@ -152,7 +153,7 @@ if entry_type:
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
             if stop_weather == "-- Select --" or stop_temp == "-- Select --" or stop_rh == "-- Select --" or stop_wind_direction == "-- Select --":
-                st.error("⚠ Please select valid weather, temp, RH, and wind direction.")
+                st.error("⚠ Please select valid weather, temperature, humidity, and wind direction.")
                 return
 
             stop_row = [
@@ -165,12 +166,3 @@ if entry_type:
             ]
             add_data(stop_row, st.session_state.username)
             st.success("✅ Stop day data submitted successfully!")
-
-    # ----------- Show Data Records -----------
-    if st.checkbox("📖 Show Submitted Monitoring Records"):
-        try:
-            df = load_data_from_sheet(sheet)
-            df_saved = display_and_merge_data(df, spreadsheet, MERGED_SHEET)
-            st.dataframe(df_saved, use_container_width=True)
-        except Exception as e:
-            st.warning(f"⚠ Could not load Submitted Monitoring Records: {e}")
