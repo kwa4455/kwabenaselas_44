@@ -109,3 +109,4 @@ if st.button("Submit Entry"):
 
         except Exception as e:
             st.error(f"Failed to save data: {e}")
+show()
