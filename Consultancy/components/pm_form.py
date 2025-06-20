@@ -21,6 +21,7 @@ wind_directions = ["-- Select --", "N", "NE", "E", "SE", "S", "NNE", "NEN", "SWS
 weather_conditions = ["-- Select --", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
 sampling_points = ["-- Select --", "Point 1", "Point 2", "Point 3", "Point 4"]
 pollutants = ["-- Select --", "PM₂.₅", "PM₁₀", "TSP"]
+drivers = ["Kanazoe Sia", "Kofi Adjei", "Fatau"]
 
 weather_defaults = {
     "Sunny": {"temp": list(range(25, 41)), "rh": list(range(40, 91))},
@@ -74,9 +75,10 @@ def show():
     region, city = get_region_city(selected_company)
     st.text_input("🌍 Region", value=region, disabled=True)
     st.text_input("🏙️ Town/City", value=city, disabled=True)
-
+    
+    st.subheader("5. Officer(s) Involved")
     officer_selected = st.multiselect("👷 Monitoring Officer(s)", officers)
-    driver_name = st.text_input("🧑‍🌾 Driver's Name")
+    driver = st.selectbox("🧑‍🌾 Select Driver", ["-- Select --"] + drivers, key="driver")
 
     wind_speed_options = [f"{x:.1f}" for x in [i * 0.5 for i in range(0, 41)]]
 
