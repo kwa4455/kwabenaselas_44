@@ -183,3 +183,11 @@ def show():
             ]
             add_data(stop_row, st.session_state.username)
             st.success("✅ Stop day data submitted successfully!")
+
+ if st.checkbox("📖 Show Submitted Monitoring Records"):
+        try:
+            df = load_data_from_sheet(sheet)
+            df_saved = display_and_merge_data(df, spreadsheet, MERGED_SHEET)
+            st.dataframe(df_saved, use_container_width=True)
+        except Exception as e:
+            st.warning(f"⚠ Could not load Submitted Monitoring Records: {e}")
