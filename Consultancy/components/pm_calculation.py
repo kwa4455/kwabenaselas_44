@@ -130,7 +130,7 @@ def show():
             return f"Error: {e}"
 
     # --- Calculate PM₂.₅ ---
-    edited_df["PM₂.₅ (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
+    edited_df["PM (µg/m³)"] = edited_df.apply(calculate_pm, axis=1)
 
     # --- Display Calculated Data ---
     st.subheader("📊 Calculated Results")
