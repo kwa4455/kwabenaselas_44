@@ -178,7 +178,7 @@ sector_data = {
 # Constants
 weather_conditions = ["-- Select --", "Sunny", "Cloudy", "Partly Cloudy", "Rainy", "Windy", "Hazy", "Stormy", "Foggy"]
 wind_directions = ["-- Select --", "N", "NE", "E", "SE", "S", "SW", "W", "NW", "NNE", "ENE", "ESE", "SSE", "SSW", "WSW", "WNW", "NNW"]
-officers = ['Obed Korankye', 'Clement Ackaah', 'Peter Ohene-Twum', 'Benjamin Essien', 'Mawuli Amegah', 'Ludwick Adjei']
+officers = ['Obed Korankye', 'Clement Ackaah', 'Peter Ohene-Twum', 'Benjamin Essien', 'Mawuli Amegah', 'Ludwick Adjei','Maxwell Sunu','John Nyante']
 drivers = ["Kanazoe Sia", "Kofi Adjei", "Fatau"]
 sampling_points = ["-- Select --", "Point 1", "Point 2", "Point 3", "Point 4"]
 
