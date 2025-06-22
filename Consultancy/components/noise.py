@@ -8,15 +8,27 @@ from constants import NOISE_SHEET_NAME, STACK_SHEET_NAME, VOC_SHEET_NAME
 
 
 
-SPREADSHEET_ID = "1F1nGYKzmeuMTtkRkazFFUOk7w7V9JXYdE7R5ZNJ6wyk" 
+# === Google Sheets Setup ===
+creds_dict = st.secrets["GOOGLE_CREDENTIALS"]  # Already a dictionary; no json.loads needed
+
+scope = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive"
+]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client = gspread.authorize(creds)
+
+spreadsheet = client.open_by_key(SPREADSHEET_ID)
+
 
 
 
 def show():
     require_role(["admin", "officer"])
 
-    # Initialize Google Sheets client
-    client = init_gsheet_client()
+    
 
     # Step 1: General Info Form
     general_data = general_info_form()
