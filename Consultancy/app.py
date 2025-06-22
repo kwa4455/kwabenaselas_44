@@ -349,10 +349,10 @@ if choice == "Home":
     apartment.show()
 elif choice == "Particulate Matter":
     pm_form.show()
-elif choice == "Noise/Stack/VOC/Gases":
-    noise.show()
 elif choice == "PM Calculation":
     pm_calculation.show()
+elif choice == "Noise/Stack/VOC/Gases":
+    noise.show()
 elif choice == "Admin Panel":
     admin_panel()
 
