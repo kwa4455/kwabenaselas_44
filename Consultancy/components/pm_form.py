@@ -117,7 +117,7 @@ def show():
         start_flow = st.selectbox("🧯 Flow Rate (L/min)", options=[5, 16.7])
 
         if st.button("✅ Submit Start Day Data"):
-            if not all([officer_selected]) or driver == "-- Select --":
+            if not officer_selected or driver == "-- Select --":
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
             if start_weather == "-- Select --" or start_temp == "-- Select --" or start_rh == "-- Select --" or start_wind_direction == "-- Select --" or start_wind_speed is None:
@@ -127,7 +127,7 @@ def show():
             start_row = [
                 "START", selected_sector, selected_company, region, city,
                 start_sampling_point, sampling_point_description, longitude, latitude,
-                ", ".join(pollutants_selected), ", ".join(officer_selected), driver_name,
+                ", ".join(pollutants_selected), ", ".join(officer_selected), driver,
                 start_date_time.strftime("%Y-%m-%d %H:%M:%S"),
                 start_temp, start_rh, start_pressure, start_weather,
                 start_wind_speed, start_wind_direction,
@@ -165,7 +165,7 @@ def show():
         stop_flow = st.selectbox("🧯 Final Flow Rate (L/min)", options=[5, 16.7])
 
         if st.button("✅ Submit Stop Day Data"):
-            if not all([officer_selected) or driver == "-- Select --":
+            if not officer_selected or driver == "-- Select --":
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
             if stop_weather == "-- Select --" or stop_temp == "-- Select --" or stop_rh == "-- Select --" or stop_wind_direction == "-- Select --" or stop_wind_speed is None:
@@ -175,7 +175,7 @@ def show():
             stop_row = [
                 "STOP", selected_sector, selected_company, region, city,
                 stop_sampling_point, "", "", "",  # No GPS or description
-                "", ", ".join(officer_selected), driver_name,
+                "", ", ".join(officer_selected), driver,
                 stop_date_time.strftime("%Y-%m-%d %H:%M:%S"),
                 stop_temp, stop_rh, stop_pressure, stop_weather,
                 stop_wind_speed, stop_wind_direction,
@@ -183,5 +183,3 @@ def show():
             ]
             add_data(stop_row, st.session_state.username)
             st.success("✅ Stop day data submitted successfully!")
-
- 
