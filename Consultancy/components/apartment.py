@@ -94,8 +94,8 @@ def show():
     st.markdown(f"""
         <ul>
             <li class='nav-item' title="{text['tooltips']['home'][lang]}"> <strong>{text['title'][lang]}</strong></li>
-            <li class='nav-item' title="{text['tooltips']['entry'][lang]}">🛰️ <strong>Data Entry Form</strong></li>
-            <li class='nav-item' title="{text['tooltips']['edit'][lang]}">🌡️ <strong>Edit Data Form</strong></li>
+            <li class='nav-item' title="{text['tooltips']['entry'][lang]}">🛰️ <strong>PM Monitoring Data Entry Form</strong></li>
+            <li class='nav-item' title="{text['tooltips']['edit'][lang]}">🌡️ <strong>Noise/Stack/VOC/Gases Data Form</strong></li>
             <li class='nav-item' title="{text['tooltips']['calc'][lang]}">🧪 <strong>PM Calculator</strong></li>
             <li class='nav-item' title="{text['tooltips']['review'][lang]}">📖 <strong>Supervisor & Review Section</strong></li>
             <li class='nav-item' title="{text['tooltips']['admin'][lang]}">⚙️ <strong>Administrative Panel</strong></li>
