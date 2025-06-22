@@ -117,7 +117,7 @@ def show():
         start_flow = st.selectbox("🧯 Flow Rate (L/min)", options=[5, 16.7])
 
         if st.button("✅ Submit Start Day Data"):
-            if not all([officer_selected, driver_name]):
+            if not all([officer_selected]) or driver == "-- Select --":
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
             if start_weather == "-- Select --" or start_temp == "-- Select --" or start_rh == "-- Select --" or start_wind_direction == "-- Select --" or start_wind_speed is None:
@@ -165,7 +165,7 @@ def show():
         stop_flow = st.selectbox("🧯 Final Flow Rate (L/min)", options=[5, 16.7])
 
         if st.button("✅ Submit Stop Day Data"):
-            if not all([officer_selected, driver_name]):
+            if not all([officer_selected) or driver == "-- Select --":
                 st.error("⚠ Please complete all required fields before submitting.")
                 return
             if stop_weather == "-- Select --" or stop_temp == "-- Select --" or stop_rh == "-- Select --" or stop_wind_direction == "-- Select --" or stop_wind_speed is None:
