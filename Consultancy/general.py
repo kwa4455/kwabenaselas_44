@@ -155,7 +155,7 @@ sector_data = {
             "Unichem Ghana Ltd": {"region": "Greater Accra", "city": "Spintex"},
             "Eskay Therapeutics": {"region": "Greater Accra", "city": "Spintex"},
             "New Global Pharmacy": {"region": "Greater Accra", "city": "Weija"},
-            "M&G Pharmaceuticals": {"region": "Greater Accra", "city": "James Town"}
+            "M & G Pharmaceuticals": {"region": "Greater Accra", "city": "James Town"}
         }
     },
 
