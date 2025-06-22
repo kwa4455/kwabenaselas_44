@@ -24,9 +24,9 @@ def show():
         },
         "tooltips": {
             "home": {"English": "Landing page after login", "Twi": "Fie krataa a ɛda kan"},
-            "entry": {"English": "Submit new data entries", "Twi": "To data foforɔ so"},
-            "edit": {"English": "Edit or update submitted entries", "Twi": "Sesa data a wɔde too hɔ"},
-            "calc": {"English": "Calculate PM2.5 concentrations", "Twi": "Bɔ PM2.5 dodow"},
+            "entry": {"English": "Submit new PM Monitoring data entries", "Twi": "To data foforɔ so"},
+            "edit": {"English": "Submit Noise/Stack/VOC/Gases entries", "Twi": "Sesa data a wɔde too hɔ"},
+            "calc": {"English": "Calculate PM concentrations", "Twi": "Bɔ PM2.5 dodow"},
             "review": {"English": "Supervisors can review and approve entries", "Twi": "Supervisors betumi ahwɛ nsɛm no"},
             "admin": {"English": "Admin-only access to manage users", "Twi": "Admins nkutoo betumi adi dwuma wɔ ho"}
         },
