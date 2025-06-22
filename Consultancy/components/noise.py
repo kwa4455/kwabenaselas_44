@@ -1,15 +1,20 @@
 import streamlit as st
+import gspread
 from datetime import datetime
-from gsheets import init_gsheet_client, open_worksheet, append_data_to_sheet
+from oauth2client.service_account import ServiceAccountCredentials
 from general import general_info_form
 from forms_monitoring import monitoring_type_form
 from modules.authentication import require_role
-from constants import NOISE_SHEET_NAME, STACK_SHEET_NAME, VOC_SHEET_NAME
-
-
+from constants import (
+    SPREADSHEET_ID,
+    NOISE_SHEET_NAME,
+    GASES_SHEET_NAME,
+    STACK_SHEET_NAME,
+    VOC_SHEET_NAME
+)
 
 # === Google Sheets Setup ===
-creds_dict = st.secrets["GOOGLE_CREDENTIALS"]  # Already a dictionary; no json.loads needed
+creds_dict = st.secrets["GOOGLE_CREDENTIALS"]  # Already a dictionary
 
 scope = [
     "https://spreadsheets.google.com/feeds",
@@ -20,15 +25,22 @@ scope = [
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 
-spreadsheet = client.open_by_key(SPREADSHEET_ID)
+def open_worksheet(client, sheet_name):
+    spreadsheet = client.open_by_key(SPREADSHEET_ID)
+    try:
+        worksheet = spreadsheet.worksheet(sheet_name)
+    except gspread.WorksheetNotFound:
+        worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="1000", cols="20")
+    return worksheet
 
+def append_data_to_sheet(worksheet, data_list):
+    worksheet.append_row(data_list, value_input_option='USER_ENTERED')
 
-
-
+# === Main App Function ===
 def show():
     require_role(["admin", "officer"])
 
-    
+    st.title("Environmental Monitoring Form")
 
     # Step 1: General Info Form
     general_data = general_info_form()
@@ -81,7 +93,7 @@ def show():
                     st.success("Noise data saved successfully!")
 
                 elif monitoring_type == "Gases":
-                    worksheet = open_worksheet(client, "Gases")
+                    worksheet = open_worksheet(client, GASES_SHEET_NAME)
                     gases_data = [
                         monitoring_data.get("no2", ""),
                         monitoring_data.get("so2", ""),
@@ -123,5 +135,3 @@ def show():
 
             except Exception as e:
                 st.error(f"Failed to save data: {e}")
-
-
