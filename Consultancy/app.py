@@ -268,14 +268,14 @@ role_pages = {
     "admin": [
         ("🏠 Home", "Home"),
         ("🦺 Particulate Matter", "Particulate Matter"),
-        ("✍️ NSGV", "NSGV"),
+        ("✍️ Noise/Stack/VOC/Gases", "Noise/Stack/VOC/Gases"),
         ("☘️ PM Calculation", "PM Calculation"),
         ("⚙️ Admin Panel", "Admin Panel")
     ],
     "officer": [
         ("🏠 Home", "Home"),
         ("🦺 Particulate Matter", "Particulate Matter"),
-        ("✍️ Other Measurement", "Other Measurement"),
+        ("✍️ Noise/Stack/VOC/Gases", "Noise/Stack/VOC/Gases"),
         ("☘️ PM Calculation", "PM Calculation")
     ],
     "supervisor": [
@@ -349,7 +349,7 @@ if choice == "Home":
     apartment.show()
 elif choice == "Particulate Matter":
     pm_form.show()
-elif choice == "NSGV":
+elif choice == "Noise/Stack/VOC/Gases":
     noise.show()
 elif choice == "PM Calculation":
     pm_calculation.show()
