@@ -33,7 +33,7 @@ def ensure_main_sheet_initialized(spreadsheet, sheet_name):
             "Entry Type", "Sector", "Company", "Region", "City", "Sampling Point",
             "Sampling Point Description", "Longitude", "Latitude", "Pollutant", "Monitoring Officer", "Driver",
             "Date Time", "Temperature (°C)", "RH (%)", "Pressure (mbar)",
-            "Weather", "Wind Speed", "Wind Direction", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation",
+            "Weather", "Wind Speed", "Wind Direction", "Elapsed Time (min)", "Flow Rate (L/min)", "Observation", "Submitted By",
             "Submitted At"
         ])
     return sheet
