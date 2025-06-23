@@ -98,9 +98,7 @@ def merge_start_stop(df):
         start_df[key] = start_df[key].astype(str).str.strip()
         stop_df[key] = stop_df[key].astype(str).str.strip()
 
-    st.write(f"🟢 Found {len(start_df)} START records")
-    st.write(f"🔴 Found {len(stop_df)} STOP records")
-
+    
     if start_df.empty or stop_df.empty:
         st.warning("⚠️ Either START or STOP entries are missing.")
         return pd.DataFrame()
@@ -108,8 +106,7 @@ def merge_start_stop(df):
     start_df["seq"] = start_df.groupby(merge_keys).cumcount() + 1
     stop_df["seq"] = stop_df.groupby(merge_keys).cumcount() + 1
 
-    st.write("🟢 START keys preview:", start_df[merge_keys + ["seq"]])
-    st.write("🔴 STOP keys preview:", stop_df[merge_keys + ["seq"]])
+    
 
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys + ["seq"] else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys + ["seq"] else x)
@@ -203,8 +200,7 @@ def display_and_merge_data(df, spreadsheet, merged_sheet_name):
 
     start_df = filtered_df[filtered_df["Entry Type"] == "START"]
     stop_df = filtered_df[filtered_df["Entry Type"] == "STOP"]
-    st.write(f"🟢 START entries: {len(start_df)}")
-    st.write(f"🔴 STOP entries: {len(stop_df)}")
+    
 
     merged_df = merge_start_stop(filtered_df)
     st.write("📦 Merged DataFrame shape:", merged_df.shape)
