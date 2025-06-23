@@ -71,7 +71,7 @@ def add_data(row, username):
     sheet.append_row(row)
 
 def merge_start_stop(df):
-    import pandas as pd  # Local import for safety
+
 
     # Clean column names
     df.columns = df.columns.str.strip()
