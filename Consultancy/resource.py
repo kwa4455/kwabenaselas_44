@@ -70,6 +70,25 @@ def add_data(row, username):
     row.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     sheet.append_row(row)
 
+def make_unique_headers(headers):
+    """
+    Ensure headers are unique by appending '.1', '.2', etc. to duplicates.
+    """
+    seen = {}
+    unique_headers = []
+    for h in headers:
+        if h == '':
+            h = 'Unnamed'
+        if h in seen:
+            seen[h] += 1
+            unique_headers.append(f"{h}.{seen[h]}")
+        else:
+            seen[h] = 0
+            unique_headers.append(h)
+    return unique_headers
+
+
+
 def merge_start_stop(df):
 
 
