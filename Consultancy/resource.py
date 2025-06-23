@@ -163,10 +163,24 @@ def merge_start_stop(df):
 
 def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     df = convert_timestamps_to_string(df)
-    if sheet_name in [ws.title for ws in spreadsheet.worksheets()]:
-        spreadsheet.del_worksheet(spreadsheet.worksheet(sheet_name))
-    new_sheet = spreadsheet.add_worksheet(title=sheet_name, rows="1000", cols="50")
-    new_sheet.update([df.columns.tolist()] + df.values.tolist())
+
+    try:
+        # Delete the existing sheet if it exists
+        existing_titles = [ws.title for ws in spreadsheet.worksheets()]
+        if sheet_name in existing_titles:
+            old_sheet = spreadsheet.worksheet(sheet_name)
+            spreadsheet.del_worksheet(old_sheet)
+
+        # Add new sheet
+        new_sheet = spreadsheet.add_worksheet(title=sheet_name, rows=str(len(df) + 10), cols=str(len(df.columns) + 5))
+
+        # Update sheet with data
+        new_sheet.update([df.columns.tolist()] + df.values.tolist())
+
+    except Exception as e:
+        st.error(f"❌ Failed to save merged data: {e}")
+        st.stop()
+)
 
 def filter_dataframe(df, site_filter=None, date_range=None):
     if df.empty:
