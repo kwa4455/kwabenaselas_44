@@ -180,7 +180,7 @@ def save_merged_data_to_sheet(df, spreadsheet, sheet_name):
     except Exception as e:
         st.error(f"❌ Failed to save merged data: {e}")
         st.stop()
-)
+
 
 def filter_dataframe(df, site_filter=None, date_range=None):
     if df.empty:
