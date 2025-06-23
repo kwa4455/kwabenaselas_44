@@ -34,8 +34,7 @@ def monitoring_type_form():
         if installation != "-- Select --":
             fuel = st.selectbox("Type of Fuel", ["-- Select --"] + installation_options[installation], key="fuel")
 
-        measurement_result = st.text_input("Measurement Result", key="measurement_result")
-
+       
         st.markdown("### Stack Emission Measurement Area")
         t_room = st.number_input("T-room (°C)", format="%.2f", key="t_room")
         t_gas = st.number_input("T-gas (°C)", format="%.2f", key="t_gas")
