@@ -71,55 +71,72 @@ def add_data(row, username):
     sheet.append_row(row)
 
 def merge_start_stop(df):
-    import pandas as pd  # Ensure pandas is available if not globally imported
+    import pandas as pd  # Local import for safety
 
-    # Clean column names (remove leading/trailing spaces)
+    # Clean column names
     df.columns = df.columns.str.strip()
 
-    # Define keys for grouping and merging
+    # Define grouping keys
     merge_keys = ["Sector", "Company"]
 
-    # Split data into START and STOP entries
+    # Filter START and STOP entries
     start_df = df[df["Entry Type"] == "START"].copy()
     stop_df = df[df["Entry Type"] == "STOP"].copy()
 
-    # Debug info (optional)
+    # Ensure keys are strings and strip whitespaces
+    for key in merge_keys:
+        start_df[key] = start_df[key].astype(str).str.strip()
+        stop_df[key] = stop_df[key].astype(str).str.strip()
+
+    # Debugging output
     st.write(f"🟢 Found {len(start_df)} START records")
     st.write(f"🔴 Found {len(stop_df)} STOP records")
 
     if start_df.empty or stop_df.empty:
+        st.warning("⚠️ Either START or STOP entries are missing.")
         return pd.DataFrame()
 
-    # Add sequence numbers to match START/STOP by order
+    # Add sequence number to preserve entry order within each group
     start_df["seq"] = start_df.groupby(merge_keys).cumcount() + 1
     stop_df["seq"] = stop_df.groupby(merge_keys).cumcount() + 1
 
-    # Rename columns to indicate source (START or STOP), except merge keys and sequence
+    # More debugging
+    st.write("🟢 START keys preview:", start_df[merge_keys + ["seq"]])
+    st.write("🔴 STOP keys preview:", stop_df[merge_keys + ["seq"]])
+
+    # Rename columns to identify source
     start_df = start_df.rename(columns=lambda x: f"{x}_Start" if x not in merge_keys + ["seq"] else x)
     stop_df = stop_df.rename(columns=lambda x: f"{x}_Stop" if x not in merge_keys + ["seq"] else x)
 
-    # Merge START and STOP data on merge keys + sequence number
+    # Perform merge
     merged = pd.merge(start_df, stop_df, on=merge_keys + ["seq"], how="inner")
 
-    # Convert numeric fields before calculating
+    # Safely convert and calculate numeric fields
+    def to_numeric_safe(df, col_name):
+        if col_name in df.columns:
+            df[col_name] = pd.to_numeric(df[col_name], errors="coerce")
+        return df
+
+    # Elapsed Time Difference (min) → converted to seconds
+    to_numeric_safe(merged, "Elapsed Time (min)_Start")
+    to_numeric_safe(merged, "Elapsed Time (min)_Stop")
     if "Elapsed Time (min)_Start" in merged.columns and "Elapsed Time (min)_Stop" in merged.columns:
-        merged["Elapsed Time (min)_Start"] = pd.to_numeric(merged["Elapsed Time (min)_Start"], errors="coerce")
-        merged["Elapsed Time (min)_Stop"] = pd.to_numeric(merged["Elapsed Time (min)_Stop"], errors="coerce")
         merged["Elapsed Time Diff (min)"] = (
             merged["Elapsed Time (min)_Stop"] - merged["Elapsed Time (min)_Start"]
-        ) * 60  # Convert to seconds
+        ) * 60  # Optional: multiply by 60 to get seconds
 
+    # Average Flow Rate (L/min)
+    to_numeric_safe(merged, "Flow Rate (L/min)_Start")
+    to_numeric_safe(merged, "Flow Rate (L/min)_Stop")
     if "Flow Rate (L/min)_Start" in merged.columns and "Flow Rate (L/min)_Stop" in merged.columns:
-        merged["Flow Rate (L/min)_Start"] = pd.to_numeric(merged["Flow Rate (L/min)_Start"], errors="coerce")
-        merged["Flow Rate (L/min)_Stop"] = pd.to_numeric(merged["Flow Rate (L/min)_Stop"], errors="coerce")
         merged["Average Flow Rate (L/min)"] = (
             merged["Flow Rate (L/min)_Start"] + merged["Flow Rate (L/min)_Stop"]
         ) / 2
 
-    # Drop the sequence column
-    merged = merged.drop(columns=["seq"])
+    # Drop sequence column
+    merged.drop(columns=["seq"], inplace=True)
 
-    # Define preferred column order (if available)
+    # Define preferred column order (only keep if they exist)
     desired_order = [
         "Sector", "Company",
         "Entry Type_Start", "Sampling Point_Start", "Sampling Point Description_Start",
@@ -135,9 +152,12 @@ def merge_start_stop(df):
 
         "Elapsed Time Diff (min)", "Average Flow Rate (L/min)"
     ]
-
-    # Only use columns that exist
     existing_cols = [col for col in desired_order if col in merged.columns]
+
+    # Final debug
+    st.write("🔁 Merged DataFrame shape:", merged.shape)
+    st.dataframe(merged[existing_cols].head(), use_container_width=True)
+
     return merged[existing_cols]
 
 
