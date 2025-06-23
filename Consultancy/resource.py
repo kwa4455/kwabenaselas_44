@@ -68,7 +68,15 @@ def load_data_from_sheet(sheet):
 def add_data(row, username):
     row.append(username)
     row.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    sheet.append_row(row)
+    try:
+        sheet.append_row(row, value_input_option='USER_ENTERED')
+    except APIError as e:
+        st.error(f"❌ API Error while writing to sheet '{sheet.title}': {e}")
+        st.stop()
+    except Exception as e:
+        st.error(f"❌ Unexpected error during append: {e}")
+        st.stop()
+
 
 def make_unique_headers(headers):
     """
