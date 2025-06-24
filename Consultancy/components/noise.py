@@ -107,7 +107,6 @@ def show():
                         monitoring_data.get("gen_set", ""),
                         monitoring_data.get("installation", ""),
                         monitoring_data.get("fuel", ""),
-                        monitoring_data.get("measurement_result", ""),
                         monitoring_data.get("t_room", ""),
                         monitoring_data.get("t_gas", ""),
                         monitoring_data.get("co2", ""),
