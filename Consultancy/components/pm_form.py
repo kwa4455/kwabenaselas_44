@@ -92,7 +92,7 @@ def show():
             sampling_point_description = st.text_input("📍 Sampling Point Description")
             longitude = st.number_input("🌐 Longitude", step=0.0001, format="%.4f")
             latitude = st.number_input("🌐 Latitude", step=0.0001, format="%.4f")
-            pollutants_selected = st.multiselect("🌫️ Pollutant", pollutants)
+            pollutants_selected = st.selectbox("🌫️ Pollutant", pollutants)
 
             start_date = st.date_input("📅 Start Date", value=datetime.today())
             start_time = get_custom_time("⏱️ Start Time", "start")
