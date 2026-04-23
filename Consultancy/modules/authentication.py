@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
+#from streamlit_extras.switch_page_button import switch_page
 import streamlit_authenticator as stauth
 from .user_utils import load_users_from_sheet, get_user_role
 from .ui_forms import show_registration_form, show_account_recovery
