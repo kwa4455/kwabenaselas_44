@@ -5,6 +5,6 @@ streamlit-option-menu
 requests
 streamlit-authenticator==0.2.3
 streamlit-extras
-streamlit-sal
+
 
 
